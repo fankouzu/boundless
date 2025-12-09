@@ -137,7 +137,7 @@ export function useAuthStatus() {
     };
 
     fetchProfile();
-  }, [session, userProfile, profileLoading]);
+  }, [session, userProfile]);
 
   return {
     isAuthenticated: !!(session && 'user' in session && session.user),

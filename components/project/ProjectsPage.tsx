@@ -36,9 +36,9 @@ export default function ProjectsClient({
 
   // Memoized project cards to prevent unnecessary re-renders
   const projectCards = React.useMemo(() => {
-    return projects.map(project => {
-      const cardData = transformProjectForCard(project);
-      return <ProjectCard isFullWidth={true} key={project._id} {...cardData} />;
+    return projects.map(campaign => {
+      const cardData = transformProjectForCard(campaign);
+      return <ProjectCard isFullWidth={true} key={campaign.id} {...cardData} />;
     });
   }, [projects, transformProjectForCard]);
 

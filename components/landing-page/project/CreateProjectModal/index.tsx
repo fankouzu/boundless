@@ -248,10 +248,9 @@ const CreateProjectModal = ({ open, setOpen }: CreateProjectModalProps) => {
         backup: contact.backupContact || '',
       },
       socialLinks: apiSocialLinks,
-      contractId: '',
-      escrowAddress: '',
+      escrowId: '',
       transactionHash: '',
-      escrowDetails: {},
+      validateMilestones: true,
     };
   };
 
@@ -353,24 +352,19 @@ const CreateProjectModal = ({ open, setOpen }: CreateProjectModalProps) => {
       // Add escrow data
       const projectRequest: CreateCrowdfundingProjectRequest = {
         ...apiRequest,
-        contractId,
-        escrowAddress: contractId, // In Stellar, contractId is the escrow address
+        escrowId: contractId, // Use contractId as escrowId
         transactionHash,
-        escrowDetails: {}, // Optional escrow details
+        validateMilestones: true,
       };
 
       // Create the project
-      const response = await createCrowdfundingProject(projectRequest);
+      await createCrowdfundingProject(projectRequest);
 
-      if (response.success) {
-        // Project created successfully
-        setFlowStep('success');
-        setShowSuccess(true);
-        setIsSigningTransaction(false);
-        setIsSubmitting(false);
-      } else {
-        throw new Error(response.message || 'Failed to create project');
-      }
+      // Project created successfully (new response structure)
+      setFlowStep('success');
+      setShowSuccess(true);
+      setIsSigningTransaction(false);
+      setIsSubmitting(false);
     } catch (error) {
       let errorMessage = 'Failed to create project. Please try again.';
 

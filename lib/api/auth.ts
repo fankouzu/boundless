@@ -10,6 +10,8 @@ import { authClient } from '@/lib/auth-client';
  * For server-side usage, use getMeServer() from '@/lib/api/auth-server' instead
  */
 export const getMe = async (): Promise<GetMeResponse> => {
+  console.trace('getMe called from:');
+
   const res = await api.get<{
     success: boolean;
     data: GetMeResponse;

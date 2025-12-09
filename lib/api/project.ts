@@ -10,7 +10,7 @@ import {
   ConfirmCrowdfundingProjectRequest,
   ConfirmCrowdfundingProjectResponse,
   GetCrowdfundingProjectsResponse,
-  GetCrowdfundingProjectResponse,
+  CrowdfundingCampaign,
   UpdateCrowdfundingProjectRequest,
   UpdateCrowdfundingProjectResponse,
   DeleteCrowdfundingProjectResponse,
@@ -20,7 +20,7 @@ import {
   PrepareFundingResponse,
   ConfirmFundingRequest,
   ConfirmFundingResponse,
-  VoteRequest,
+  // VoteRequest,
   VoteResponse,
   GetProjectVotesRequest,
   GetProjectVotesResponse,
@@ -85,6 +85,7 @@ export const updateProject = async (
 };
 
 export const getCampaignDetails = async (_projectId: string) => {
+  console.log('getCampaignDetails', _projectId);
   // Mock implementation for now
   return new Promise(resolve => {
     setTimeout(() => {
@@ -94,6 +95,7 @@ export const getCampaignDetails = async (_projectId: string) => {
 };
 
 export const launchCampaign = async (_projectId: string) => {
+  console.log('launchCampaign', _projectId);
   // Mock implementation for now
   return new Promise(resolve => {
     setTimeout(() => {
@@ -126,12 +128,12 @@ export const generateCampaignLink = async (_projectId: string) => {
 /**
  * Create a crowdfunding project
  * Frontend handles all blockchain transactions and provides escrow data
- * @param data - Project data including contractId, escrowAddress, and transactionHash
+ * @param data - Project data including escrowId, transactionHash, and validateMilestones
  */
 export const createCrowdfundingProject = async (
   data: CreateCrowdfundingProjectRequest
 ): Promise<CreateCrowdfundingProjectResponse> => {
-  const res = await api.post('/crowdfunding/projects', data);
+  const res = await api.post('/crowdfunding', data);
   return res.data;
 };
 
@@ -143,6 +145,7 @@ export const createCrowdfundingProject = async (
 export const prepareCrowdfundingProject = async (
   data: CreateCrowdfundingProjectRequest
 ): Promise<PrepareCrowdfundingProjectResponse> => {
+  console.log('prepareCrowdfundingProject', data);
   throw new Error(
     'prepareCrowdfundingProject is deprecated. All blockchain transactions should be handled in the frontend. Use createCrowdfundingProject with contractId, escrowAddress, and transactionHash.'
   );
@@ -156,6 +159,7 @@ export const prepareCrowdfundingProject = async (
 export const confirmCrowdfundingProject = async (
   data: ConfirmCrowdfundingProjectRequest
 ): Promise<ConfirmCrowdfundingProjectResponse> => {
+  console.log('confirmCrowdfundingProject', data);
   throw new Error(
     'confirmCrowdfundingProject is deprecated. All blockchain transactions should be handled in the frontend. Use createCrowdfundingProject with contractId, escrowAddress, and transactionHash.'
   );
@@ -172,6 +176,11 @@ export const getCrowdfundingProjects = async (
   filters?: {
     category?: string;
     status?: string;
+    minFundingGoal?: string;
+    maxFundingGoal?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    search?: string;
   }
 ): Promise<GetCrowdfundingProjectsResponse> => {
   const params = new URLSearchParams({
@@ -187,7 +196,30 @@ export const getCrowdfundingProjects = async (
     params.append('status', filters.status);
   }
 
-  const res = await api.get(`/crowdfunding/projects?${params.toString()}`);
+  if (filters?.minFundingGoal) {
+    params.append('minFundingGoal', filters.minFundingGoal);
+  }
+
+  if (filters?.maxFundingGoal) {
+    params.append('maxFundingGoal', filters.maxFundingGoal);
+  }
+
+  if (filters?.sortBy) {
+    params.append('sortBy', filters.sortBy);
+  }
+
+  if (filters?.sortOrder) {
+    params.append('sortOrder', filters.sortOrder);
+  }
+
+  if (filters?.search) {
+    params.append('search', filters.search);
+  }
+
+  const queryString = params.toString();
+  const url = queryString ? `/crowdfunding?${queryString}` : '/crowdfunding';
+
+  const res = await api.get(url);
   return res.data;
 };
 
@@ -196,8 +228,9 @@ export const getCrowdfundingProjects = async (
  */
 export const getCrowdfundingProject = async (
   projectId: string
-): Promise<GetCrowdfundingProjectResponse> => {
-  const res = await api.get(`/crowdfunding/projects/${projectId}`);
+): Promise<CrowdfundingCampaign> => {
+  const res = await api.get(`/crowdfunding/${projectId}`);
+  console.log(res);
   return res.data;
 };
 
@@ -208,7 +241,7 @@ export const updateCrowdfundingProject = async (
   projectId: string,
   data: UpdateCrowdfundingProjectRequest
 ): Promise<UpdateCrowdfundingProjectResponse> => {
-  const res = await api.put(`/crowdfunding/projects/${projectId}`, data);
+  const res = await api.put(`/crowdfunding/${projectId}`, data);
   return res.data;
 };
 
@@ -245,6 +278,7 @@ export const prepareProjectFunding = async (
   projectId: string,
   data: PrepareFundingRequest
 ): Promise<PrepareFundingResponse> => {
+  console.log('prepareProjectFunding', projectId, data);
   throw new Error(
     'prepareProjectFunding is deprecated. All blockchain transactions should be handled in the frontend. Use fundCrowdfundingProject with amount and transactionHash.'
   );
@@ -259,6 +293,7 @@ export const confirmProjectFunding = async (
   projectId: string,
   data: ConfirmFundingRequest
 ): Promise<ConfirmFundingResponse> => {
+  console.log('confirmProjectFunding', projectId, data);
   throw new Error(
     'confirmProjectFunding is deprecated. All blockchain transactions should be handled in the frontend. Use fundCrowdfundingProject with amount and transactionHash.'
   );

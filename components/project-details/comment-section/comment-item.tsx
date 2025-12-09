@@ -16,7 +16,7 @@ import { CommentInput } from './comment-input';
 import { ProjectComment } from '@/types/comment';
 
 interface CommentItemProps {
-  comment: ProjectComment;
+  comment: ProjectComment | any; // Accept adapted comment structure
   isReply?: boolean;
   onAddReply: (commentId: string, content: string) => void;
   onUpdate?: (commentId: string, content: string) => void;
@@ -298,7 +298,7 @@ export function CommentItem({
 
             {showReplies && comment.replies && comment.replies.length > 0 && (
               <div className='mt-4 space-y-4'>
-                {comment.replies.map(reply => (
+                {comment.replies.map((reply: any) => (
                   <CommentItem
                     key={reply._id}
                     comment={reply}

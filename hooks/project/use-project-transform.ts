@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import type { CrowdfundingProject } from '@/lib/api/types';
+import type { CrowdfundingCampaign } from '@/lib/api/types';
 
 interface TransformedProject {
   projectId: string;
@@ -25,26 +25,15 @@ interface TransformedProject {
 
 export function useProjectTransform() {
   const transformProjectForCard = React.useCallback(
-    (project: CrowdfundingProject): TransformedProject => {
+    (campaign: CrowdfundingCampaign): TransformedProject => {
       let deadlineInDays: number | null = null;
 
       try {
-        if (project.status === 'idea') {
-          const now = new Date();
-          const end = new Date(project.voting.endDate);
-          deadlineInDays = Math.ceil(
-            (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-          );
-        } else if (
-          project.status === 'active' ||
-          project.status === 'completed'
-        ) {
-          const now = new Date();
-          const end = new Date(project.funding.endDate);
-          deadlineInDays = Math.ceil(
-            (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-          );
-        }
+        const now = new Date();
+        const end = new Date(campaign.fundingEndDate);
+        deadlineInDays = Math.ceil(
+          (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        );
       } catch {
         // Handle error silently
         deadlineInDays = null;
@@ -53,37 +42,36 @@ export function useProjectTransform() {
       // Map project status to card status
       let cardStatus: 'Validation' | 'Funding' | 'Funded' | 'Completed' =
         'Funding';
-      if (project.status === 'draft' || project.status === 'idea') {
+      const status = campaign.project.status;
+      if (status === 'IDEA') {
         cardStatus = 'Validation';
-      } else if (project.status === 'active') {
+      } else if (status === 'ACTIVE') {
         cardStatus = 'Funding';
-      } else if (project.status === 'completed') {
+      } else if (status === 'COMPLETED') {
         cardStatus = 'Completed';
       }
 
       return {
-        projectId: project._id,
-        creatorName:
-          `${project.creator?.profile?.firstName ?? ''} ${project.creator?.profile?.lastName ?? ''}`.trim(),
-        creatorLogo: '/avatar.png',
+        projectId: campaign.id,
+        creatorName: campaign.project.creator?.name || 'Unknown Creator',
+        creatorLogo: campaign.project.creator?.image || '/avatar.png',
         projectImage:
-          project.media?.logo ||
-          project.media?.logo ||
-          '/landing/explore/project-placeholder-1.png',
-        projectTitle: project.title,
-        projectDescription: project.vision || project.description,
+          campaign.project.logo || '/landing/explore/project-placeholder-1.png',
+        projectTitle: campaign.project.title,
+        projectDescription:
+          campaign.project.description || campaign.project.vision || '',
         status: cardStatus,
         deadlineInDays: deadlineInDays || 0,
         funding: {
-          current: project.funding?.raised || 0,
-          goal: project.funding?.goal || 0,
-          currency: project.funding?.currency || 'USDC',
+          current: campaign.fundingRaised,
+          goal: campaign.fundingGoal,
+          currency: campaign.fundingCurrency,
         },
         votes:
-          project.status === 'idea'
+          status === 'IDEA'
             ? {
-                current: project.votes || 0,
-                goal: project.voting?.totalVotes || 100,
+                current: campaign.project.votes || 0,
+                goal: 100, // Default goal since voting structure changed
               }
             : undefined,
       };

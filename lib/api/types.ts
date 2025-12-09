@@ -404,10 +404,9 @@ export interface CreateCrowdfundingProjectRequest {
   contact: CrowdfundingContact;
   socialLinks?: CrowdfundingSocialLink[];
   // Blockchain transaction data (handled by frontend)
-  contractId: string;
-  escrowAddress: string;
+  escrowId: string;
   transactionHash: string;
-  escrowDetails?: object; // Optional escrow details from frontend
+  validateMilestones?: boolean;
 }
 
 // Step 1: Prepare Project Response
@@ -443,123 +442,167 @@ export interface ConfirmCrowdfundingProjectResponse {
   };
 }
 
-// Legacy response type for backward compatibility
 export interface CreateCrowdfundingProjectResponse {
-  success: boolean;
-  message: string;
-  data: {
-    project: {
-      _id: string;
-      title: string;
-      description: string;
-      category: string;
-      status: string;
-      creator: {
-        profile: {
-          firstName: string;
-          lastName: string;
-          username: string;
-        };
-        _id: string;
-      };
-      owner: {
-        type: string;
-      };
-      vision: string;
-      githubUrl?: string;
-      projectWebsite?: string;
-      demoVideo?: string;
-      socialLinks: Array<{
-        platform: string;
-        url: string;
-        _id: string;
-      }>;
-      contact: {
-        primary: string;
-        backup: string;
-      };
-      funding: {
-        goal: number;
-        raised: number;
-        currency: string;
-        endDate: string;
-        contributors: Array<object>;
-      };
-      voting: {
-        startDate: string;
-        endDate: string;
-        totalVotes: number;
-        positiveVotes: number;
-        negativeVotes: number;
-        voters: Array<object>;
-      };
-      milestones: Array<{
-        title: string;
-        description: string;
-        amount: number;
-        dueDate: string;
-        status: string;
-        _id: string;
-      }>;
-      team: Array<{
-        userId: string;
-        role: string;
-        joinedAt: string;
-        _id: string;
-      }>;
-      media: {
-        banner: string;
-        logo: string;
-        thumbnail: string;
-      };
-      documents: {
-        whitepaper: string;
-        pitchDeck: string;
-      };
-      tags: Array<object>;
-      grant: {
-        isGrant: boolean;
-        totalBudget: number;
-        totalDisbursed: number;
-        proposalsReceived: number;
-        proposalsApproved: number;
-        status: string;
-        applications: Array<object>;
-      };
-      summary: string;
-      type: string;
-      votes: number;
-      stakeholders: {
-        serviceProvider: string;
-        approver: string;
-        releaseSigner: string;
-        disputeResolver: string;
-        receiver: string;
-        platformAddress: string;
-      };
-      trustlessWorkStatus: string;
-      escrowType: string;
-      createdAt: string;
-      updatedAt: string;
-      __v: number;
+  id: string;
+  projectId: string;
+  fundingGoal: number;
+  fundingRaised: number;
+  fundingCurrency: string;
+  fundingEndDate: string;
+  contributors: any[];
+  team: Array<{
+    name: string;
+    role: string;
+    email: string;
+    twitter?: string;
+    linkedin?: string;
+  }>;
+  contact: {
+    backup: string;
+    primary: string;
+  };
+  socialLinks: Array<{
+    url: string;
+    platform: string;
+  }>;
+  milestones: Array<{
+    name: string;
+    amount: number;
+    status: string;
+    endDate: string;
+    startDate: string;
+    description: string;
+  }>;
+  stakeholders: null;
+  trustlessWorkStatus: string;
+  escrowAddress: string;
+  escrowType: string;
+  escrowDetails: null;
+  creationTxHash: null;
+  transactionHash: string;
+  createdAt: string;
+  updatedAt: string;
+  project: {
+    id: string;
+    title: string;
+    tagline: string | null;
+    description: string;
+    summary: string | null;
+    vision: string | null;
+    details: string | null;
+    category: string;
+    status: string;
+    creatorId: string;
+    organizationId: string | null;
+    teamMembers: any[];
+    banner: string | null;
+    logo: string;
+    thumbnail: string | null;
+    githubUrl: string;
+    gitlabUrl: string;
+    bitbucketUrl: string;
+    projectWebsite: string;
+    demoVideo: string;
+    whitepaperUrl: string | null;
+    pitchVideoUrl: string | null;
+    socialLinks: Record<string, string>;
+    contact: {
+      backup: string;
+      primary: string;
     };
-    crowdfund: {
-      projectId: string;
-      thresholdVotes: number;
-      voteDeadline: string;
-      totalVotes: number;
-      status: string;
-      _id: string;
-      createdAt: string;
-      updatedAt: string;
-      __v: number;
-      isVotingActive: boolean;
-      voteProgress: number;
+    whitepaper: string | null;
+    pitchDeck: string | null;
+    votes: number;
+    voting: any;
+    tags: any[];
+    approvedById: string | null;
+    approvedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+    creator: {
       id: string;
-    };
-    escrowResponse: {
-      status: string;
-      unsignedTransaction: string;
+      name: string;
+      email: string;
+      emailVerified: boolean;
+      image: string;
+      createdAt: string;
+      updatedAt: string;
+      lastLoginMethod: string;
+      role: string;
+      banned: boolean;
+      banReason: string | null;
+      banExpires: string | null;
+      username: string;
+      displayUsername: string;
+      metadata: {
+        stats: Record<string, any>;
+        privacy: Record<string, any>;
+        profile: {
+          stats: Record<string, any>;
+          privacy: Record<string, any>;
+          profile: {
+            stats: Record<string, any>;
+            privacy: Record<string, any>;
+            profile: {
+              stats: Record<string, any>;
+              privacy: Record<string, any>;
+              profile: {
+                stats: Record<string, any>;
+                privacy: Record<string, any>;
+                profile: {
+                  preferences: Record<string, any>;
+                };
+                preferences: {
+                  theme: string;
+                  skills: any[];
+                  language: string;
+                  timezone: string;
+                  categories: any[];
+                  pushNotifications: boolean;
+                  emailNotifications: boolean;
+                };
+              };
+              preferences: {
+                theme: string;
+                skills: any[];
+                language: string;
+                timezone: string;
+                categories: any[];
+                pushNotifications: boolean;
+                emailNotifications: boolean;
+              };
+            };
+            preferences: {
+              theme: string;
+              skills: any[];
+              language: string;
+              timezone: string;
+              categories: any[];
+              pushNotifications: boolean;
+              emailNotifications: boolean;
+            };
+          };
+          preferences: {
+            theme: string;
+            skills: any[];
+            language: string;
+            timezone: string;
+            categories: any[];
+            pushNotifications: boolean;
+            emailNotifications: boolean;
+          };
+        };
+        preferences: {
+          theme: string;
+          skills: any[];
+          language: string;
+          timezone: string;
+          categories: any[];
+          pushNotifications: boolean;
+          emailNotifications: boolean;
+        };
+      };
+      twoFactorEnabled: boolean;
     };
   };
 }
@@ -709,16 +752,105 @@ export interface GrantData {
   applications: Array<object>;
 }
 
-export interface GetCrowdfundingProjectsResponse {
-  success: boolean;
-  message: string;
-  data: {
-    projects: CrowdfundingProject[];
-    pagination: {
-      current: number;
-      pages: number;
-      total: number;
+export interface CrowdfundingCampaign {
+  id: string;
+  projectId: string;
+  fundingGoal: number;
+  fundingRaised: number;
+  fundingCurrency: string;
+  fundingEndDate: string;
+  contributors: Array<{
+    date: string;
+    amount: number;
+    userId: string;
+    transactionHash: string;
+  }>;
+  team: Array<{
+    name: string;
+    role: string;
+    email: string;
+    twitter?: string;
+    linkedin?: string;
+  }>;
+  contact: {
+    backup: string;
+    primary: string;
+  };
+  socialLinks: Array<{
+    url: string;
+    platform: string;
+  }>;
+  milestones: Array<{
+    name: string;
+    amount: number;
+    status: string;
+    endDate: string;
+    startDate: string;
+    description: string;
+  }>;
+  stakeholders: null;
+  trustlessWorkStatus: string;
+  escrowAddress: string | null;
+  escrowType: string;
+  escrowDetails: null;
+  creationTxHash: null;
+  transactionHash: string | null;
+  createdAt: string;
+  updatedAt: string;
+  project: {
+    id: string;
+    title: string;
+    tagline: string | null;
+    description: string;
+    summary: string | null;
+    vision: string | null;
+    details: string | null;
+    category: string;
+    status: string;
+    creatorId: string;
+    organizationId: string | null;
+    teamMembers: any[];
+    banner: string | null;
+    logo: string;
+    thumbnail: string | null;
+    githubUrl: string;
+    gitlabUrl: string | null;
+    bitbucketUrl: string | null;
+    projectWebsite: string;
+    demoVideo: string;
+    whitepaperUrl: string | null;
+    pitchVideoUrl: string | null;
+    socialLinks: Record<string, string>;
+    contact: {
+      backup: string;
+      primary: string;
     };
+    whitepaper: string | null;
+    pitchDeck: string | null;
+    votes: number;
+    voting: any;
+    tags: any[];
+    approvedById: string | null;
+    approvedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+    creator: {
+      id: string;
+      name: string;
+      username: string;
+      image: string;
+    };
+    organization: any;
+  };
+}
+
+export interface GetCrowdfundingProjectsResponse {
+  campaigns: CrowdfundingCampaign[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
   };
 }
 
