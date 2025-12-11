@@ -1,4 +1,4 @@
-import { Project } from '@/types/project';
+import { CrowdfundingProject, Crowdfunding } from '@/types/project';
 
 // Backend API Response Structure
 export interface ApiResponse<T = unknown> {
@@ -115,7 +115,7 @@ export type GoogleAuthResponse = AuthTokens;
 // GetMe
 export type GetMeResponse = User & {
   organizations: Organization[];
-  projects: Project[];
+  projects: CrowdfundingProject[];
   following: User[];
   followers: User[];
   stats: {
@@ -607,109 +607,6 @@ export interface CreateCrowdfundingProjectResponse {
   };
 }
 
-// Crowdfunding Project Response Types
-export interface CrowdfundingProject {
-  _id: string;
-  title: string;
-  description: string;
-  category: string;
-  status: string;
-  creator: {
-    profile: {
-      firstName: string;
-      lastName: string;
-      username: string;
-    };
-    _id: string;
-  };
-  owner: {
-    type: string;
-  };
-  vision: string;
-  githubUrl?: string;
-  projectWebsite?: string;
-  demoVideo?: string;
-  socialLinks: Array<{
-    platform: string;
-    url: string;
-    _id: string;
-  }>;
-  contact: {
-    primary: string;
-    backup: string;
-  };
-  funding: {
-    goal: number;
-    raised: number;
-    currency: string;
-    endDate: string;
-    contributors: Array<object>;
-  };
-  voting: {
-    startDate: string;
-    endDate: string;
-    totalVotes: number;
-    positiveVotes: number;
-    negativeVotes: number;
-    voters: Array<object>;
-  };
-  milestones: Array<{
-    title: string;
-    description: string;
-    amount: number;
-    dueDate: string;
-    status: string;
-    _id: string;
-  }>;
-  team: Array<{
-    profile: {
-      firstName: string;
-      lastName: string;
-      username: string;
-    };
-    role: string;
-    joinedAt: string;
-    _id: string;
-  }>;
-  media: {
-    banner: string;
-    logo: string;
-    thumbnail: string;
-  };
-  documents: {
-    whitepaper: string;
-    pitchDeck: string;
-  };
-  tags: Array<object>;
-  grant: {
-    isGrant: boolean;
-    totalBudget: number;
-    totalDisbursed: number;
-    proposalsReceived: number;
-    proposalsApproved: number;
-    status: string;
-    applications: Array<object>;
-  };
-  summary: string;
-  type: string;
-  votes: number;
-  stakeholders: {
-    serviceProvider: string;
-    approver: string;
-    releaseSigner: string;
-    disputeResolver: string;
-    receiver: string;
-    platformAddress: string;
-  };
-  trustlessWorkStatus: string;
-  escrowType: string;
-  contractId?: string; // Escrow contract ID
-  escrowAddress?: string; // Escrow address (same as contractId in Stellar)
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
 export interface CrowdfundData {
   _id: string;
   projectId: string;
@@ -752,97 +649,7 @@ export interface GrantData {
   applications: Array<object>;
 }
 
-export interface CrowdfundingCampaign {
-  id: string;
-  projectId: string;
-  fundingGoal: number;
-  fundingRaised: number;
-  fundingCurrency: string;
-  fundingEndDate: string;
-  contributors: Array<{
-    date: string;
-    amount: number;
-    userId: string;
-    transactionHash: string;
-  }>;
-  team: Array<{
-    name: string;
-    role: string;
-    email: string;
-    twitter?: string;
-    linkedin?: string;
-  }>;
-  contact: {
-    backup: string;
-    primary: string;
-  };
-  socialLinks: Array<{
-    url: string;
-    platform: string;
-  }>;
-  milestones: Array<{
-    name: string;
-    amount: number;
-    status: string;
-    endDate: string;
-    startDate: string;
-    description: string;
-  }>;
-  stakeholders: null;
-  trustlessWorkStatus: string;
-  escrowAddress: string | null;
-  escrowType: string;
-  escrowDetails: null;
-  creationTxHash: null;
-  transactionHash: string | null;
-  createdAt: string;
-  updatedAt: string;
-  project: {
-    id: string;
-    title: string;
-    tagline: string | null;
-    description: string;
-    summary: string | null;
-    vision: string | null;
-    details: string | null;
-    category: string;
-    status: string;
-    creatorId: string;
-    organizationId: string | null;
-    teamMembers: any[];
-    banner: string | null;
-    logo: string;
-    thumbnail: string | null;
-    githubUrl: string;
-    gitlabUrl: string | null;
-    bitbucketUrl: string | null;
-    projectWebsite: string;
-    demoVideo: string;
-    whitepaperUrl: string | null;
-    pitchVideoUrl: string | null;
-    socialLinks: Record<string, string>;
-    contact: {
-      backup: string;
-      primary: string;
-    };
-    whitepaper: string | null;
-    pitchDeck: string | null;
-    votes: number;
-    voting: any;
-    tags: any[];
-    approvedById: string | null;
-    approvedAt: string | null;
-    createdAt: string;
-    updatedAt: string;
-    creator: {
-      id: string;
-      name: string;
-      username: string;
-      image: string;
-    };
-    organization: any;
-  };
-}
+export type CrowdfundingCampaign = Crowdfunding;
 
 export interface GetCrowdfundingProjectsResponse {
   campaigns: CrowdfundingCampaign[];
@@ -897,7 +704,7 @@ export interface DeleteCrowdfundingProjectResponse {
 // Funding Types
 export interface FundCrowdfundingProjectRequest {
   amount: number;
-  transactionHash: string; // Blockchain transaction hash from frontend after signing
+  transactionHash: string;
 }
 
 export interface FundCrowdfundingProjectResponse {

@@ -618,7 +618,8 @@ const CreateProjectModal = ({ open, setOpen }: CreateProjectModalProps) => {
         description: payload.basic?.vision || payload.details?.vision || '',
         platformFee: 4, // 4% platform fee
         trustline: {
-          address: 'CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA', // USDC trustline
+          address: 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+          symbol: 'USDC',
         },
         roles: {
           approver: walletAddress,

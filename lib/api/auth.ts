@@ -1,6 +1,8 @@
 import api from './api';
-import { GetMeResponse, ApiResponse } from '@/lib/api/types';
+import { ApiResponse } from '@/lib/api/types';
 import { authClient } from '@/lib/auth-client';
+import { User } from '@/types/user';
+import { PublicUserProfile } from '@/types/project';
 
 /**
  * Get current user profile from backend API
@@ -9,17 +11,11 @@ import { authClient } from '@/lib/auth-client';
  * For client-side usage, cookies are automatically sent via withCredentials
  * For server-side usage, use getMeServer() from '@/lib/api/auth-server' instead
  */
-export const getMe = async (): Promise<GetMeResponse> => {
+export const getMe = async (): Promise<User> => {
   console.trace('getMe called from:');
 
-  const res = await api.get<{
-    success: boolean;
-    data: GetMeResponse;
-    message?: string;
-    timestamp: string;
-    path?: string;
-  }>('/users/me');
-  return res.data.data;
+  const res = await api.get<User>('/users/me');
+  return res.data;
 };
 
 /**
@@ -30,15 +26,9 @@ export const getMe = async (): Promise<GetMeResponse> => {
  */
 export const getUserProfileByUsername = async (
   username: string
-): Promise<GetMeResponse> => {
-  const res = await api.get<{
-    success: boolean;
-    data: GetMeResponse;
-    message?: string;
-    timestamp: string;
-    path?: string;
-  }>(`/users/profile/${username}`);
-  return res.data.data;
+): Promise<PublicUserProfile> => {
+  const res = await api.get(`/users/${username}`);
+  return res.data as PublicUserProfile;
 };
 
 /**
@@ -64,17 +54,27 @@ export const getAuthHeaders = (): Record<string, string> => {
 };
 
 /**
- * Update user profile request interface
+ * Update user profile request interface - matches API payload specification
  */
 export interface UpdateUserProfileRequest {
-  firstName?: string;
-  lastName?: string;
-  username?: string;
-  avatar?: string;
   bio?: string;
-  location?: string;
   website?: string;
-  socialLinks?: Record<string, string>;
+  location?: string;
+  company?: string;
+  skills?: string[];
+  socialLinks?: {
+    github?: string;
+    twitter?: string;
+    linkedin?: string;
+    discord?: string;
+  };
+  preferences?: {
+    theme?: 'light' | 'dark' | 'auto';
+    language?: string;
+    timezone?: string;
+    emailNotifications?: boolean;
+    pushNotifications?: boolean;
+  };
 }
 
 /**
@@ -82,7 +82,7 @@ export interface UpdateUserProfileRequest {
  */
 export interface UpdateUserProfileResponse {
   success: boolean;
-  data: GetMeResponse;
+  data: User;
   message?: string;
   timestamp?: string;
 }
@@ -93,11 +93,11 @@ export interface UpdateUserProfileResponse {
 export const updateUserProfile = async (
   data: UpdateUserProfileRequest
 ): Promise<UpdateUserProfileResponse> => {
-  const res = await api.put<ApiResponse<GetMeResponse>>('/users/profile', data);
+  const res = await api.put<User>('/users/profile', data);
   return {
-    success: res.data.success ?? true,
-    data: res.data.data ?? (res.data as unknown as GetMeResponse),
-    message: res.data.message,
+    success: true,
+    data: res.data,
+    message: 'Profile updated successfully',
   };
 };
 
@@ -105,33 +105,56 @@ export const updateUserProfile = async (
  * User settings interfaces
  */
 export interface UserNotifications {
-  email?: boolean;
-  push?: boolean;
-  inApp?: boolean;
+  emailNotifications?: boolean;
+  pushNotifications?: boolean;
+}
+
+export interface UpdateUserNotificationsResponse {
+  userId?: string;
+  emailNotifications?: boolean;
+  pushNotifications?: boolean;
+  theme?: 'light' | 'dark' | 'auto';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface UserPrivacy {
-  profileVisibility?: 'PUBLIC' | 'PRIVATE';
-  showWalletAddress?: boolean;
-  showContributions?: boolean;
+  publicProfile?: boolean;
+  emailVisibility?: boolean;
+  locationVisibility?: boolean;
+  companyVisibility?: boolean;
+  websiteVisibility?: boolean;
+  socialLinksVisibility?: boolean;
+}
+
+export interface UserAppearance {
+  theme?: 'light' | 'dark' | 'auto';
 }
 
 export interface UserPreferences {
-  language?: string;
+  language?: string | null;
   timezone?: string;
-  theme?: 'LIGHT' | 'DARK';
+  categories?: string[];
+  skills?: string[];
 }
 
 export interface UserSettings {
   notifications?: UserNotifications;
   privacy?: UserPrivacy;
+  appearance?: UserAppearance;
   preferences?: UserPreferences;
 }
 
 export interface UpdateUserSettingsRequest {
   notifications?: UserNotifications;
   privacy?: UserPrivacy;
+  appearance?: UserAppearance;
   preferences?: UserPreferences;
+}
+
+export interface UpdateUserNotificationsRequest {
+  emailNotifications?: boolean;
+  pushNotifications?: boolean;
 }
 
 export interface UpdateUserSettingsResponse {
@@ -145,10 +168,45 @@ export interface UpdateUserSettingsResponse {
  * Get user settings
  */
 export const getUserSettings = async (): Promise<UserSettings> => {
-  const res = await api.get<ApiResponse<UserSettings>>('/users/settings');
-  return res.data.data ?? {};
+  const res = await api.get<UserSettings>('/users/settings');
+  return res.data;
 };
 
+export const updateAppearanceSettings = async (
+  data: UserAppearance
+): Promise<UserAppearance> => {
+  const res = await api.put<UserAppearance>('/users/settings/appearance', data);
+  return {
+    theme: res.data.theme,
+  };
+};
+
+export const updateNotiticationsSettings = async (
+  data: UserNotifications
+): Promise<UpdateUserNotificationsResponse> => {
+  const res = await api.put<UserNotifications>(
+    '/users/settings/notifications',
+    data
+  );
+  return {
+    emailNotifications: res.data.emailNotifications,
+    pushNotifications: res.data.pushNotifications,
+  };
+};
+
+export const updatePrivacySettings = async (
+  data: UserPrivacy
+): Promise<UserPrivacy> => {
+  const res = await api.put<UserPrivacy>('/users/settings/privacy', data);
+  return {
+    publicProfile: res.data.publicProfile,
+    emailVisibility: res.data.emailVisibility,
+    locationVisibility: res.data.locationVisibility,
+    companyVisibility: res.data.companyVisibility,
+    websiteVisibility: res.data.websiteVisibility,
+    socialLinksVisibility: res.data.socialLinksVisibility,
+  };
+};
 /**
  * Update user settings
  */
@@ -204,9 +262,8 @@ export const updateUserSecurity = async (
  */
 export interface UpdateUserAvatarResponse {
   success: boolean;
-  data: GetMeResponse;
+  avatarUrl: string;
   message?: string;
-  timestamp?: string;
 }
 
 /**
@@ -214,22 +271,21 @@ export interface UpdateUserAvatarResponse {
  * @param file - The image file to upload
  */
 export const updateUserAvatar = async (
-  file: File
+  avatar: File
 ): Promise<UpdateUserAvatarResponse> => {
   const formData = new FormData();
-  formData.append('avatar', file);
+  formData.append('avatar', avatar);
 
   // Use axiosInstance directly for FormData uploads
   // Follow the same pattern as upload service
   const axiosInstance = (await import('./api')).default;
 
-  const axiosRes = await axiosInstance.put<{
+  const axiosRes = await axiosInstance.post<{
     success: boolean;
-    data: GetMeResponse;
+    avatarUrl: string;
     message?: string;
-    timestamp: string;
     path?: string;
-  }>('/users/avatar', formData, {
+  }>('/users/profile/avatar', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -237,8 +293,7 @@ export const updateUserAvatar = async (
 
   return {
     success: axiosRes.data.success ?? true,
-    data: axiosRes.data.data ?? (axiosRes.data as unknown as GetMeResponse),
+    avatarUrl: axiosRes.data.avatarUrl ?? '',
     message: axiosRes.data.message,
-    timestamp: axiosRes.data.timestamp,
   };
 };

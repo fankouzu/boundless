@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { getCrowdfundingProjects } from '@/lib/api/project';
-import type { CrowdfundingCampaign } from '@/lib/api/types';
+import type { Crowdfunding } from '@/types/project';
 
 type SortOption =
   | 'newest'
@@ -26,7 +26,7 @@ interface UseProjectsOptions {
 }
 
 interface UseProjectsReturn {
-  projects: CrowdfundingCampaign[];
+  projects: Crowdfunding[];
   loading: boolean;
   loadingMore: boolean;
   error: string | null;
@@ -43,7 +43,7 @@ export function useProjects(
 ): UseProjectsReturn {
   const { initialPage = 1, pageSize = 9, initialFilters = {} } = options;
 
-  const [projects, setProjects] = React.useState<CrowdfundingCampaign[]>([]);
+  const [projects, setProjects] = React.useState<Crowdfunding[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);

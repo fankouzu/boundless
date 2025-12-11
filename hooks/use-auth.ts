@@ -159,3 +159,22 @@ export function useAuthActions() {
     logout,
   };
 }
+
+export function useRequireAuthEnhanced(redirectTo = '/auth?mode=signin') {
+  const router = useRouter();
+  const { data: session, isPending, error, refetch } = authClient.useSession();
+
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push(redirectTo);
+    }
+  }, [session, isPending, router, redirectTo]);
+
+  return {
+    session,
+    isPending,
+    error,
+    refetch,
+    isAuthenticated: !!session,
+  };
+}

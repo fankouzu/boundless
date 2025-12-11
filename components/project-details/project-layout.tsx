@@ -6,7 +6,6 @@ import { ProjectDetails } from './project-details';
 import { ProjectAbout } from './project-about';
 import { ProjectTeam } from './project-team';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { CrowdfundingProject, CrowdfundData } from '@/lib/api/types';
 import { ChevronLeftCircle, ChevronRightCircle } from 'lucide-react';
 import { ProjectComments } from './comment-section/project-comments';
 import ProjectMilestone from './project-milestone';
@@ -14,38 +13,19 @@ import ProjectVoters from './project-voters';
 import ProjectBackers from './project-backers';
 import { ProjectSidebar } from './project-sidebar';
 import { cn } from '@/lib/utils';
-
-interface ProjectLayoutProps {
-  project: CrowdfundingProject & {
-    // Additional fields that might be added during transformation
-    daysToDeadline?: number;
-    additionalCreator?: {
-      name: string;
-      role: string;
-      avatar: string;
-    };
-    links?: Array<{
-      type: string;
-      url: string;
-      icon: string;
-    }>;
-    // Legacy fields for backward compatibility
-    name?: string;
-    description?: string;
-    logo?: string;
-    validation?: string;
-    date?: string;
-    votes?: number;
-    totalVotes?: number;
-  };
-  crowdfund?: CrowdfundData;
-}
+import { Crowdfunding, CrowdfundingProject } from '@/types/project';
 
 /**
  * Desktop: Two columns with proper spacing - sidebar left (400px), tabs+content right
  * Mobile: Single column - project info, tabs (including About), content
  */
-export function ProjectLayout({ project, crowdfund }: ProjectLayoutProps) {
+export function ProjectLayout({
+  project,
+  crowdfund,
+}: {
+  project: CrowdfundingProject;
+  crowdfund: Crowdfunding;
+}) {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('details'); // Start with about tab on mobile
   const [isLeftScrollable, setIsLeftScrollable] = useState(true);
@@ -193,16 +173,16 @@ export function ProjectLayout({ project, crowdfund }: ProjectLayoutProps) {
                 <ProjectDetails project={project} />
               </TabsContent>
               <TabsContent value='team' className='mt-0'>
-                <ProjectTeam project={project} />
+                <ProjectTeam crowdfund={crowdfund} />
               </TabsContent>
               <TabsContent value='milestones' className='mt-0'>
-                <ProjectMilestone projectId={project._id} project={project} />
+                <ProjectMilestone crowdfund={crowdfund} />
               </TabsContent>
               <TabsContent value='voters' className='mt-0'>
                 <ProjectVoters project={project} />
               </TabsContent>
               <TabsContent value='comments' className='mt-0'>
-                <ProjectComments projectId={project._id} />
+                <ProjectComments projectId={crowdfund.project.id || ''} />
               </TabsContent>
             </Tabs>
           </div>
@@ -267,19 +247,19 @@ export function ProjectLayout({ project, crowdfund }: ProjectLayoutProps) {
                   <ProjectDetails project={project} />
                 </TabsContent>
                 <TabsContent value='team' className='mt-0'>
-                  <ProjectTeam project={project} />
+                  <ProjectTeam crowdfund={crowdfund} />
                 </TabsContent>
                 <TabsContent value='milestones' className='mt-0'>
-                  <ProjectMilestone projectId={project._id} project={project} />
+                  <ProjectMilestone crowdfund={crowdfund} />
                 </TabsContent>
                 <TabsContent value='voters' className='mt-0'>
                   <ProjectVoters project={project} />
                 </TabsContent>
                 <TabsContent value='backers' className='mt-0'>
-                  <ProjectBackers project={project} />
+                  <ProjectBackers crowdfund={crowdfund} />
                 </TabsContent>
                 <TabsContent value='comments' className='mt-0'>
-                  <ProjectComments projectId={project._id} />
+                  <ProjectComments projectId={project.id} />
                 </TabsContent>
               </div>
             </Tabs>

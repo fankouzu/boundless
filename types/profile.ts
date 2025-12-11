@@ -1,9 +1,11 @@
+import { SocialLinks } from './user';
+
 export interface UserProfile {
   username: string;
   displayName: string;
   bio: string;
   avatarUrl: string;
-  socialLinks: Record<string, string>;
+  socialLinks: SocialLinks;
 }
 
 export interface UserStats {

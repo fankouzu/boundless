@@ -1,15 +1,19 @@
+import { NextRequest, NextResponse } from 'next/server';
 import { getSessionCookie } from 'better-auth/cookies';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
 export async function proxy(request: NextRequest) {
-  const cookies = getSessionCookie(request);
-  if (!cookies) {
+  const sessionCookie = getSessionCookie(request, {
+    cookiePrefix: 'boundless_auth',
+  });
+
+  console.log('my session cookie', sessionCookie);
+  if (!sessionCookie) {
     return NextResponse.redirect(new URL('/auth?mode=signin', request.url));
   }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/dashboard'],
+  matcher: ['/me'],
 };

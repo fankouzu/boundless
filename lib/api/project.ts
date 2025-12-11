@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { RecentProjectsProps } from '@/types/project';
-import { mockCampaignDetails } from '../mock';
+import { CrowdfundingProject, Crowdfunding } from '@/types/project';
 import api from './api';
 import {
   ProjectInitRequest,
@@ -10,7 +9,6 @@ import {
   ConfirmCrowdfundingProjectRequest,
   ConfirmCrowdfundingProjectResponse,
   GetCrowdfundingProjectsResponse,
-  CrowdfundingCampaign,
   UpdateCrowdfundingProjectRequest,
   UpdateCrowdfundingProjectResponse,
   DeleteCrowdfundingProjectResponse,
@@ -40,7 +38,7 @@ export const getProjects = async (
     owner?: string;
   }
 ): Promise<{
-  projects: RecentProjectsProps[];
+  projects: CrowdfundingProject[];
   pagination: {
     currentPage: number;
     totalPages: number;
@@ -82,16 +80,6 @@ export const updateProject = async (
 ) => {
   const res = await api.put(`/projects/${_projectId}`, data);
   return res.data.data;
-};
-
-export const getCampaignDetails = async (_projectId: string) => {
-  console.log('getCampaignDetails', _projectId);
-  // Mock implementation for now
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(mockCampaignDetails);
-    }, 1000);
-  });
 };
 
 export const launchCampaign = async (_projectId: string) => {
@@ -228,7 +216,7 @@ export const getCrowdfundingProjects = async (
  */
 export const getCrowdfundingProject = async (
   projectId: string
-): Promise<CrowdfundingCampaign> => {
+): Promise<Crowdfunding> => {
   const res = await api.get(`/crowdfunding/${projectId}`);
   console.log(res);
   return res.data;
@@ -343,5 +331,13 @@ export const removeProjectVote = async (
   projectId: string
 ): Promise<RemoveVoteResponse> => {
   const res = await api.delete(`/projects/${projectId}/vote`);
+  return res.data;
+};
+
+export const contributeToProject = async (
+  projectId: string,
+  data: FundCrowdfundingProjectRequest
+): Promise<FundCrowdfundingProjectResponse> => {
+  const res = await api.post(`/crowdfunding/${projectId}/contribute`, data);
   return res.data;
 };
