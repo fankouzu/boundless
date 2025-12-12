@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:8000';
+const SOCKET_URL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
 
 interface UseSocketOptions {
   namespace?: string; // '/', '/notifications', '/realtime', '/chat'

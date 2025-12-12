@@ -45,7 +45,7 @@ export function useCommentRealtime(
     if (!enabled) return;
 
     const socket = io(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'}/realtime`,
+      `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL || 'http://localhost:8000'}/realtime`,
       {
         transports: ['websocket', 'polling'],
         withCredentials: true,
