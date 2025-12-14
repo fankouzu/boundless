@@ -48,7 +48,7 @@ export default function OrganizationSelector({
     if (isUserSelectionRef.current) {
       // If loading finished and we have the new currentOrganization, verify it matches
       if (!isLoading && currentOrganization) {
-        const currentOrgId = currentOrganization._id;
+        const currentOrgId = currentOrganization.id;
         if (currentOrgId === pendingOrgIdRef.current) {
           // Selection completed successfully, sync with provider
           setSelectedOrg(currentOrganization);
@@ -74,10 +74,10 @@ export default function OrganizationSelector({
       return;
     }
 
-    const currentOrgId = currentOrganization._id;
+    const currentOrgId = currentOrganization.id;
 
     // Update if the currentOrganization ID changed or if we don't have a selectedOrg
-    if (!selectedOrg || selectedOrg._id !== currentOrgId) {
+    if (!selectedOrg || selectedOrg.id !== currentOrgId) {
       setSelectedOrg(currentOrganization);
     }
   }, [currentOrganization, organizations, isLoading, selectedOrg]);
@@ -85,7 +85,7 @@ export default function OrganizationSelector({
   const handleOrganizationSelect = (org: OrganizationSummary) => {
     // Mark that this is a user selection
     isUserSelectionRef.current = true;
-    pendingOrgIdRef.current = org._id;
+    pendingOrgIdRef.current = org.id;
 
     // Update local state immediately for instant UI feedback
     setSelectedOrg(org);
@@ -94,7 +94,7 @@ export default function OrganizationSelector({
 
     // Call the change handler to update the provider
     // This will trigger a fetch and update currentOrganization prop
-    onOrganizationChange?.(org._id);
+    onOrganizationChange?.(org.id);
 
     // Don't navigate if we're on the /organizations/new page
     if (pathname === '/organizations/new') {
@@ -103,7 +103,7 @@ export default function OrganizationSelector({
 
     // Always navigate to the root organization page
     setIsNavigating(true);
-    router.push(`/organizations/${org._id}`);
+    router.push(`/organizations/${org.id}`);
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -170,7 +170,7 @@ export default function OrganizationSelector({
       >
         {organizations.map(org => (
           <DropdownMenuItem
-            key={org._id}
+            key={org.id}
             onClick={() => handleOrganizationSelect(org)}
             className='flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 hover:bg-[#252525] focus:bg-[#252525]'
           >
@@ -190,7 +190,7 @@ export default function OrganizationSelector({
               {org.name}
             </span>
 
-            {selectedOrg && selectedOrg._id === org._id && (
+            {selectedOrg && selectedOrg.id === org.id && (
               <Check className='text-primary h-4 w-4' />
             )}
           </DropdownMenuItem>

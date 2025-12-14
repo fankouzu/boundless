@@ -22,9 +22,7 @@ import { Organization } from '../api/types';
 import { getMe } from '../api/auth';
 import {
   getOrganization,
-  createOrganization,
   updateOrganizationProfile,
-  updateOrganizationLinks,
   updateOrganizationMembers,
   sendOrganizationInvite,
   removeOrganizationMember,
@@ -34,7 +32,6 @@ import {
   archiveOrganization,
   unarchiveOrganization,
   assignOrganizationRole,
-  transferOrganizationOwnership,
   getOrganizationPermissions as fetchOrganizationPermissions,
   updateOrganizationPermissions as updateOrganizationPermissionsAPI,
   resetOrganizationPermissions as resetOrganizationPermissionsAPI,
@@ -43,6 +40,7 @@ import { getProfileCompletionStatus as getOrgProfileCompletionStatus } from '../
 import type {
   GetPermissionsResponse,
   RawOrganizationPermissions,
+  Role,
 } from '../api/organization';
 import { OrganizationPermissions } from '@/types/organization-permission';
 import { authClient } from '../auth-client';
@@ -218,18 +216,24 @@ function organizationReducer(
       };
 
     case 'UPDATE_ORGANIZATION':
+      if (!action.payload || !action.payload.id) {
+        return state;
+      }
       return {
         ...state,
         activeOrg:
-          state.activeOrgId === action.payload._id
+          state.activeOrgId === action.payload.id
             ? action.payload
             : state.activeOrg,
         organizations: state.organizations.map(org =>
-          org._id === action.payload._id
+          org.id === action.payload.id
             ? {
                 ...org,
                 name: action.payload.name,
                 logo: action.payload.logo,
+                tagline: action.payload.tagline,
+                about: action.payload.about,
+                links: action.payload.links,
                 isProfileComplete: action.payload.isProfileComplete,
               }
             : org
@@ -246,7 +250,7 @@ function organizationReducer(
       return {
         ...state,
         organizations: state.organizations.filter(
-          org => org._id !== action.payload
+          org => org.id !== action.payload
         ),
         activeOrg:
           state.activeOrgId === action.payload ? null : state.activeOrg,
@@ -277,20 +281,14 @@ function organizationReducer(
 export function OrganizationProvider({
   children,
   initialOrgId,
-  autoRefresh = true,
-  refreshInterval = 30000,
 }: OrganizationProviderProps) {
   const [state, dispatch] = useReducer(organizationReducer, initialState);
-  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInitializedRef = useRef(false);
   const isFetchingOrganizationsRef = useRef(false);
   const isFetchingActiveOrgRef = useRef(false);
   const fetchOrganizationsTimeoutRef = useRef<ReturnType<
     typeof setTimeout
   > | null>(null);
-  const fetchActiveOrgTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
   const setActiveOrgRef = useRef<((orgId: string) => void) | undefined>(
     undefined
   );
@@ -326,40 +324,40 @@ export function OrganizationProvider({
     loadCachedData();
   }, []);
 
-  useEffect(() => {
-    if (autoRefresh && state.activeOrgId) {
-      const startAutoRefresh = () => {
-        if (refreshTimeoutRef.current) {
-          clearTimeout(refreshTimeoutRef.current);
-        }
+  // useEffect(() => {
+  //   if (autoRefresh && state.activeOrgId) {
+  //     const startAutoRefresh = () => {
+  //       if (refreshTimeoutRef.current) {
+  //         clearTimeout(refreshTimeoutRef.current);
+  //       }
 
-        refreshTimeoutRef.current = setTimeout(() => {
-          refreshOrganizationRef.current?.();
-          startAutoRefresh();
-        }, refreshInterval);
-      };
+  //       refreshTimeoutRef.current = setTimeout(() => {
+  //         refreshOrganizationRef.current?.();
+  //         startAutoRefresh();
+  //       }, refreshInterval);
+  //     };
 
-      startAutoRefresh();
-    }
+  //     // startAutoRefresh();
+  //   }
 
-    // snapshot refs for cleanup to avoid stale ref warnings
-    const refreshTimeoutSnapshot = refreshTimeoutRef.current;
-    const fetchOrganizationsTimeoutSnapshot =
-      fetchOrganizationsTimeoutRef.current;
-    const fetchActiveOrgTimeoutSnapshot = fetchActiveOrgTimeoutRef.current;
+  //   // snapshot refs for cleanup to avoid stale ref warnings
+  //   const refreshTimeoutSnapshot = refreshTimeoutRef.current;
+  //   const fetchOrganizationsTimeoutSnapshot =
+  //     fetchOrganizationsTimeoutRef.current;
+  //   const fetchActiveOrgTimeoutSnapshot = fetchActiveOrgTimeoutRef.current;
 
-    return () => {
-      if (refreshTimeoutSnapshot) {
-        clearTimeout(refreshTimeoutSnapshot);
-      }
-      if (fetchOrganizationsTimeoutSnapshot) {
-        clearTimeout(fetchOrganizationsTimeoutSnapshot);
-      }
-      if (fetchActiveOrgTimeoutSnapshot) {
-        clearTimeout(fetchActiveOrgTimeoutSnapshot);
-      }
-    };
-  }, [autoRefresh, refreshInterval, state.activeOrgId]);
+  //   return () => {
+  //     if (refreshTimeoutSnapshot) {
+  //       clearTimeout(refreshTimeoutSnapshot);
+  //     }
+  //     if (fetchOrganizationsTimeoutSnapshot) {
+  //       clearTimeout(fetchOrganizationsTimeoutSnapshot);
+  //     }
+  //     if (fetchActiveOrgTimeoutSnapshot) {
+  //       clearTimeout(fetchActiveOrgTimeoutSnapshot);
+  //     }
+  //   };
+  // }, [autoRefresh, refreshInterval, state.activeOrgId]);
 
   const fetchOrganizations = useCallback(async () => {
     logger.info({ eventType: 'org.fetchOrganizations.called' });
@@ -408,7 +406,6 @@ export function OrganizationProvider({
 
       type OrgLike = Partial<Organization> & {
         id?: string;
-        _id?: string;
         avatar?: string;
         role?: 'owner' | 'member';
         memberCount?: number;
@@ -417,9 +414,9 @@ export function OrganizationProvider({
       } & Record<string, unknown>;
       const orgs = organizations as unknown as OrgLike[];
       const organizationSummaries: OrganizationSummary[] = orgs
-        .filter(org => org && typeof org === 'object' && (org._id || org.id))
+        .filter(org => org && typeof org === 'object' && org.id)
         .map(org => ({
-          _id: (org._id as string) ?? (org.id as string),
+          id: (org.id as string) ?? (org.id as string),
           name: (org.name as string) || 'Unnamed Organization',
           logo: (org.avatar as string) || (org.logo as string) || '',
           tagline: (org.tagline as string) || '',
@@ -462,7 +459,7 @@ export function OrganizationProvider({
         count: organizationSummaries.length,
         sampleOrg: organizationSummaries[0]
           ? {
-              _id: organizationSummaries[0]._id,
+              id: organizationSummaries[0].id,
               name: organizationSummaries[0].name,
               hackathonCount: organizationSummaries[0].hackathonCount,
               grantCount: organizationSummaries[0].grantCount,
@@ -594,7 +591,7 @@ export function OrganizationProvider({
       });
 
       const response = await getOrganization(orgId);
-      const organization = response.data;
+      const organization = response;
 
       dispatch({
         type: 'SET_ACTIVE_ORG',
@@ -605,7 +602,6 @@ export function OrganizationProvider({
       let errorMessage: string | null =
         error instanceof Error ? error.message : 'Failed to fetch organization';
 
-      // Handle 429 rate limit errors gracefully
       const apiError = error as {
         status?: number;
         message?: string;
@@ -613,7 +609,7 @@ export function OrganizationProvider({
       };
       if (apiError?.status === 429) {
         errorMessage = 'Too many requests. Please wait a moment and try again.';
-        // Try to use cached organization if available
+
         const cachedOrgs = localStorage.getItem(
           STORAGE_KEYS.ORGANIZATIONS_CACHE
         );
@@ -622,15 +618,14 @@ export function OrganizationProvider({
             const parsed = JSON.parse(cachedOrgs);
             if (Array.isArray(parsed)) {
               const cachedOrg = parsed.find(
-                (org: { _id: string }) => org._id === orgId
+                (org: { id: string }) => org.id === orgId
               );
               if (cachedOrg) {
-                // Use cached organization data
                 dispatch({
                   type: 'SET_ACTIVE_ORG',
                   payload: { org: cachedOrg, orgId },
                 });
-                errorMessage = null; // Clear error since we have cached data
+                errorMessage = null;
                 logger.info({
                   eventType:
                     'org.fetchActiveOrganization.rateLimited_using_cache',
@@ -662,7 +657,7 @@ export function OrganizationProvider({
 
   const setActiveOrg = useCallback(
     (orgId: string) => {
-      const organization = state.organizations.find(org => org._id === orgId);
+      const organization = state.organizations.find(org => org.id === orgId);
       if (!organization) {
         logger.info({ eventType: 'org.setActiveOrg.miss_then_fetch', orgId });
 
@@ -723,6 +718,7 @@ export function OrganizationProvider({
   const createOrg = useCallback(
     async (data: {
       name: string;
+      slug: string;
       logo?: string;
       tagline?: string;
       about?: string;
@@ -735,26 +731,27 @@ export function OrganizationProvider({
     }) => {
       try {
         dispatch({ type: 'SET_LOADING', payload: { isLoading: true } });
-        const response = await createOrganization(data);
-        const newOrg = response.data;
+        const { data: newOrg, error } = await authClient.organization.create({
+          name: data.name,
+          slug: data.slug,
+          logo: data.logo,
+          metadata: {
+            tagline: data.tagline,
+            about: data.about,
+            links: {
+              website: data.links?.website,
+              x: data.links?.x,
+              github: data.links?.github,
+              others: data.links?.others,
+            },
+          },
+        });
+        if (error) throw error;
 
-        const orgSummary: OrganizationSummary = {
-          _id: newOrg._id,
-          name: newOrg.name,
-          logo: newOrg.logo,
-          tagline: newOrg.tagline,
-          isProfileComplete: newOrg.isProfileComplete,
-          role: 'owner',
-          memberCount: newOrg.members.length,
-          hackathonCount: newOrg.hackathons.length,
-          grantCount: newOrg.grants.length,
-          createdAt: newOrg.createdAt,
-        };
+        await refreshOrganizations();
 
-        dispatch({ type: 'ADD_ORGANIZATION', payload: orgSummary });
-        dispatch({
-          type: 'SET_ACTIVE_ORG',
-          payload: { org: newOrg, orgId: newOrg._id },
+        await authClient.organization.setActive({
+          organizationId: newOrg.id,
         });
 
         return newOrg;
@@ -769,7 +766,7 @@ export function OrganizationProvider({
         dispatch({ type: 'SET_LOADING', payload: { isLoading: false } });
       }
     },
-    []
+    [refreshOrganizations]
   );
 
   const updateOrg = useCallback(
@@ -778,16 +775,50 @@ export function OrganizationProvider({
       data: Partial<{
         name: string;
         logo?: string;
-        tagline?: string;
-        about?: string;
+        slug?: string;
+        metadata?: {
+          tagline?: string;
+          about?: string;
+          links?: {
+            website?: string;
+            x?: string;
+            github?: string;
+            others?: string;
+          };
+        };
       }>
     ) => {
       try {
         dispatch({ type: 'SET_LOADING', payload: { isLoading: true } });
-        const response = await updateOrganizationProfile(orgId, data);
-        const updatedOrg = response.data;
+        const response = await updateOrganizationProfile(orgId, {
+          organizationId: orgId,
+          data: {
+            name: data.name,
+            logo: data.logo,
+            slug: data.slug,
+            metadata: {
+              tagline: data.metadata?.tagline,
+              about: data.metadata?.about,
+              links: {
+                website: data.metadata?.links?.website || '',
+                x: data.metadata?.links?.x || '',
+                github: data.metadata?.links?.github || '',
+                others: data.metadata?.links?.others || '',
+              },
+            },
+          },
+        });
+        const updatedOrg = response;
 
-        dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        if (updatedOrg && updatedOrg.id) {
+          dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        } else {
+          logger.error({
+            eventType: 'org.update.error',
+            message: 'Failed to update organization: response is invalid',
+            response,
+          });
+        }
 
         return updatedOrg;
       } catch (error) {
@@ -811,10 +842,27 @@ export function OrganizationProvider({
     ) => {
       try {
         dispatch({ type: 'SET_LOADING', payload: { isLoading: true } });
-        const response = await updateOrganizationLinks(orgId, links);
-        const updatedOrg = response.data;
+        const response = await updateOrg(orgId, {
+          metadata: {
+            links: {
+              website: links.website,
+              x: links.x,
+              github: links.github,
+              others: links.others,
+            },
+          },
+        });
+        const updatedOrg = response;
 
-        dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        if (updatedOrg) {
+          dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        } else {
+          logger.error({
+            eventType: 'org.update_links.error',
+            message:
+              'Failed to update organization links: response is undefined',
+          });
+        }
 
         return updatedOrg;
       } catch (error) {
@@ -828,7 +876,7 @@ export function OrganizationProvider({
         dispatch({ type: 'SET_LOADING', payload: { isLoading: false } });
       }
     },
-    []
+    [updateOrg]
   );
 
   const updateOrgMembers = useCallback(
@@ -836,8 +884,17 @@ export function OrganizationProvider({
       try {
         dispatch({ type: 'SET_LOADING', payload: { isLoading: true } });
         const response = await updateOrganizationMembers(orgId, { members });
-        const updatedOrg = response.data;
-        dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        const updatedOrg = response;
+        if (updatedOrg && updatedOrg.id) {
+          dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        } else {
+          logger.error({
+            eventType: 'org.update_members.error',
+            message:
+              'Failed to update organization members: response is invalid',
+            response,
+          });
+        }
         return updatedOrg;
       } catch (error) {
         const errorMessage =
@@ -876,9 +933,17 @@ export function OrganizationProvider({
       try {
         dispatch({ type: 'SET_LOADING', payload: { isLoading: true } });
         const response = await archiveOrganization(orgId);
-        const updatedOrg = response.data;
+        const updatedOrg = response;
 
-        dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        if (updatedOrg && updatedOrg.id) {
+          dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        } else {
+          logger.error({
+            eventType: 'org.archive.error',
+            message: 'Failed to archive organization: response is invalid',
+            response,
+          });
+        }
         await refreshOrganizations();
 
         return updatedOrg;
@@ -901,9 +966,17 @@ export function OrganizationProvider({
       try {
         dispatch({ type: 'SET_LOADING', payload: { isLoading: true } });
         const response = await unarchiveOrganization(orgId);
-        const updatedOrg = response.data;
+        const updatedOrg = response;
 
-        dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        if (updatedOrg && updatedOrg.id) {
+          dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        } else {
+          logger.error({
+            eventType: 'org.unarchive.error',
+            message: 'Failed to unarchive organization: response is invalid',
+            response,
+          });
+        }
         await refreshOrganizations();
 
         return updatedOrg;
@@ -1045,7 +1118,7 @@ export function OrganizationProvider({
 
   const getOrganizationById = useCallback(
     (orgId: string) => {
-      return state.organizations.find(org => org._id === orgId);
+      return state.organizations.find(org => org.id === orgId);
     },
     [state.organizations]
   );
@@ -1154,12 +1227,24 @@ export function OrganizationProvider({
   }, [fetchOrganizations, initialOrgId]);
 
   const assignRole = useCallback(
-    async (orgId: string, email: string, action: 'promote' | 'demote') => {
+    async (orgId: string, email: string, role: Role[]) => {
       try {
         dispatch({ type: 'SET_LOADING', payload: { isLoading: true } });
-        const response = await assignOrganizationRole(orgId, { action, email });
-        const updatedOrg = response.data;
-        dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        const response = await assignOrganizationRole({
+          role,
+          memberId: email,
+          organizationId: orgId,
+        });
+        const updatedOrg = response;
+        if (updatedOrg && updatedOrg.id) {
+          dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        } else {
+          logger.error({
+            eventType: 'org.assign_role.error',
+            message: 'Failed to assign role: response is invalid',
+            response,
+          });
+        }
         return updatedOrg;
       } catch (error) {
         const errorMessage =
@@ -1174,15 +1259,25 @@ export function OrganizationProvider({
   );
 
   const transferOwnership = useCallback(
-    async (orgId: string, newOwnerEmail: string) => {
+    async (orgId: string, newOwnerId: string) => {
       try {
         dispatch({ type: 'SET_LOADING', payload: { isLoading: true } });
-        const response = await transferOrganizationOwnership(
-          orgId,
-          newOwnerEmail
-        );
-        const updatedOrg = response.data;
-        dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+
+        const response = await assignOrganizationRole({
+          role: ['owner'],
+          memberId: newOwnerId,
+          organizationId: orgId,
+        });
+        const updatedOrg = response;
+        if (updatedOrg && updatedOrg.id) {
+          dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        } else {
+          logger.error({
+            eventType: 'org.transfer_ownership.error',
+            message: 'Failed to transfer ownership: response is invalid',
+            response,
+          });
+        }
         return updatedOrg;
       } catch (error) {
         const errorMessage =
@@ -1239,8 +1334,17 @@ export function OrganizationProvider({
           permissions: rawPermissions,
         });
 
-        const updatedOrg = response.data;
-        dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        const updatedOrg = response;
+        if (updatedOrg && updatedOrg.id) {
+          dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        } else {
+          logger.error({
+            eventType: 'org.update_permissions.error',
+            message:
+              'Failed to update organization permissions: response is invalid',
+            response,
+          });
+        }
         return updatedOrg;
       } catch (error) {
         const errorMessage =
@@ -1261,16 +1365,15 @@ export function OrganizationProvider({
       try {
         dispatch({ type: 'SET_LOADING', payload: { isLoading: true } });
         const response = await resetOrganizationPermissionsAPI(orgId);
-        const updatedOrg = response.data;
-        dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        const updatedOrg = response;
+        if (updatedOrg && updatedOrg.id) {
+          dispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrg });
+        }
         return updatedOrg;
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : 'Failed to reset permissions';
+      } catch {
+        const errorMessage = 'Failed to reset permissions';
         dispatch({ type: 'SET_ERROR', payload: { error: errorMessage } });
-        throw error;
+        throw new Error(errorMessage);
       } finally {
         dispatch({ type: 'SET_LOADING', payload: { isLoading: false } });
       }

@@ -15,10 +15,6 @@ import { ProjectSidebar } from './project-sidebar';
 import { cn } from '@/lib/utils';
 import { Crowdfunding, CrowdfundingProject } from '@/types/project';
 
-/**
- * Desktop: Two columns with proper spacing - sidebar left (400px), tabs+content right
- * Mobile: Single column - project info, tabs (including About), content
- */
 export function ProjectLayout({
   project,
   crowdfund,
@@ -214,7 +210,7 @@ export function ProjectLayout({
               className='w-full'
             >
               {/* Enhanced Tab Navigation */}
-              <div className='sticky top-0 z-30 mb-8 border-b border-gray-800/50 bg-[#030303]/80 py-4 backdrop-blur-md'>
+              <div className='sticky top-0 z-30 mb-8 border-b border-gray-800/50 bg-[#030303]/80 py-0 backdrop-blur-md'>
                 <TabsList className='h-auto w-fit justify-start gap-2 rounded-none bg-transparent p-0'>
                   {[
                     { value: 'details', label: 'Details' },
@@ -232,7 +228,8 @@ export function ProjectLayout({
                         'text-gray-400 hover:bg-gray-800/30 hover:text-gray-300',
                         'data-[state=active]:bg-[#a7f950]/10 data-[state=active]:text-[#a7f950]',
                         'data-[state=active]:border data-[state=active]:border-[#a7f950]/30',
-                        'focus-visible:ring-2 focus-visible:ring-[#a7f950]/20'
+                        'focus-visible:ring-2 focus-visible:ring-[#a7f950]/20',
+                        'rounded-t-2xl rounded-b-none'
                       )}
                     >
                       {tab.label}

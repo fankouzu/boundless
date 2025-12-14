@@ -13,22 +13,21 @@ export const useFollow = (
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const checkFollowStatus = useCallback(async () => {
+    try {
+      const response = await followApi.checkFollowStatus(entityType, entityId);
+      setIsFollowing(response.data.isFollowing);
+    } catch {
+      // Silently fail for status check - don't set error state
+    }
+  }, [entityType, entityId]);
+
   // Check follow status on mount if user is authenticated
   useEffect(() => {
     if (user && entityId) {
       checkFollowStatus();
     }
-  }, [user, entityId, entityType]);
-
-  const checkFollowStatus = useCallback(async () => {
-    try {
-      const response = await followApi.checkFollowStatus(entityType, entityId);
-      setIsFollowing(response.data.isFollowing);
-    } catch (err) {
-      // Silently fail for status check - don't set error state
-      console.warn('Failed to check follow status:', err);
-    }
-  }, [entityType, entityId]);
+  }, [user, entityId, checkFollowStatus]);
 
   const follow = useCallback(async () => {
     if (!user) {
@@ -42,8 +41,9 @@ export const useFollow = (
     try {
       await followApi.followEntity(entityType, entityId);
       setIsFollowing(true);
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to follow';
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to follow';
       setError(errorMessage);
       throw err; // Re-throw for component handling
     } finally {
@@ -63,8 +63,9 @@ export const useFollow = (
     try {
       await followApi.unfollowEntity(entityType, entityId);
       setIsFollowing(false);
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to unfollow';
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to unfollow';
       setError(errorMessage);
       throw err; // Re-throw for component handling
     } finally {

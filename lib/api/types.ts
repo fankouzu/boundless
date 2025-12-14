@@ -53,25 +53,31 @@ export interface OrganizationLinks {
 }
 
 export interface Organization {
-  _id: string;
+  id: string;
   name: string;
   logo: string;
-  tagline: string;
-  about: string;
-  links: OrganizationLinks;
-  members: string[]; // Array of user emails
+  slug?: string;
+  tagline?: string;
+  about?: string;
+  metadata?: {
+    tagline?: string;
+    about?: string;
+    links?: OrganizationLinks;
+  };
+  links?: OrganizationLinks;
+  members?: string[]; // Array of user emails
   admins?: string[]; // Array of admin emails
-  owner: string; // Owner email or userId
-  hackathons: string[]; // Array of hackathon IDs
-  grants: string[]; // Array of grant IDs
+  owner?: string; // Owner email or userId
+  hackathons?: string[]; // Array of hackathon IDs
+  grants?: string[]; // Array of grant IDs
   isProfileComplete: boolean;
-  pendingInvites: string[]; // Array of emails invited but not yet accepted
+  pendingInvites?: string[]; // Array of emails invited but not yet accepted
   betterAuthOrgId?: string; // Better Auth organization ID for organizations using Better Auth integration
   isArchived?: boolean;
   archivedBy?: string;
   archivedAt?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Auth tokens
@@ -442,6 +448,33 @@ export interface ConfirmCrowdfundingProjectResponse {
   };
 }
 
+export interface Contributor {
+  id: string;
+  userId: string;
+  amount: number;
+  currency: string;
+  contributedAt: string;
+  anonymous?: boolean;
+}
+
+export interface TeamMember {
+  name: string;
+  role: string;
+  email: string;
+  twitter?: string;
+  linkedin?: string;
+}
+
+export interface UserPreferences {
+  theme: string;
+  skills: string[];
+  language: string;
+  timezone: string;
+  categories: string[];
+  pushNotifications: boolean;
+  emailNotifications: boolean;
+}
+
 export interface CreateCrowdfundingProjectResponse {
   id: string;
   projectId: string;
@@ -449,14 +482,8 @@ export interface CreateCrowdfundingProjectResponse {
   fundingRaised: number;
   fundingCurrency: string;
   fundingEndDate: string;
-  contributors: any[];
-  team: Array<{
-    name: string;
-    role: string;
-    email: string;
-    twitter?: string;
-    linkedin?: string;
-  }>;
+  contributors: Contributor[];
+  team: TeamMember[];
   contact: {
     backup: string;
     primary: string;
@@ -494,7 +521,7 @@ export interface CreateCrowdfundingProjectResponse {
     status: string;
     creatorId: string;
     organizationId: string | null;
-    teamMembers: any[];
+    teamMembers: TeamMember[];
     banner: string | null;
     logo: string;
     thumbnail: string | null;
@@ -513,8 +540,15 @@ export interface CreateCrowdfundingProjectResponse {
     whitepaper: string | null;
     pitchDeck: string | null;
     votes: number;
-    voting: any;
-    tags: any[];
+    voting: {
+      isOpen: boolean;
+      startDate?: string;
+      endDate?: string;
+      totalVotes: number;
+      upvotes: number;
+      downvotes: number;
+    };
+    tags: string[];
     approvedById: string | null;
     approvedAt: string | null;
     createdAt: string;
@@ -535,72 +569,56 @@ export interface CreateCrowdfundingProjectResponse {
       username: string;
       displayUsername: string;
       metadata: {
-        stats: Record<string, any>;
-        privacy: Record<string, any>;
+        stats: Record<string, number | string>;
+        privacy: Record<string, boolean>;
         profile: {
-          stats: Record<string, any>;
-          privacy: Record<string, any>;
+          stats: Record<string, number | string>;
+          privacy: Record<string, boolean>;
           profile: {
-            stats: Record<string, any>;
-            privacy: Record<string, any>;
+            stats: Record<string, number | string>;
+            privacy: Record<string, boolean>;
             profile: {
-              stats: Record<string, any>;
-              privacy: Record<string, any>;
+              stats: Record<string, number | string>;
+              privacy: Record<string, boolean>;
               profile: {
-                stats: Record<string, any>;
-                privacy: Record<string, any>;
+                stats: Record<string, number | string>;
+                privacy: Record<string, boolean>;
                 profile: {
-                  preferences: Record<string, any>;
+                  preferences: Record<string, unknown>;
                 };
                 preferences: {
                   theme: string;
-                  skills: any[];
+                  skills: string[];
                   language: string;
                   timezone: string;
-                  categories: any[];
+                  categories: string[];
                   pushNotifications: boolean;
                   emailNotifications: boolean;
                 };
               };
-              preferences: {
-                theme: string;
-                skills: any[];
-                language: string;
-                timezone: string;
-                categories: any[];
-                pushNotifications: boolean;
-                emailNotifications: boolean;
-              };
+              preferences: UserPreferences;
             };
             preferences: {
               theme: string;
-              skills: any[];
+              skills: string[];
               language: string;
               timezone: string;
-              categories: any[];
+              categories: string[];
               pushNotifications: boolean;
               emailNotifications: boolean;
             };
           };
           preferences: {
             theme: string;
-            skills: any[];
+            skills: string[];
             language: string;
             timezone: string;
-            categories: any[];
+            categories: string[];
             pushNotifications: boolean;
             emailNotifications: boolean;
           };
         };
-        preferences: {
-          theme: string;
-          skills: any[];
-          language: string;
-          timezone: string;
-          categories: any[];
-          pushNotifications: boolean;
-          emailNotifications: boolean;
-        };
+        preferences: UserPreferences;
       };
       twoFactorEnabled: boolean;
     };

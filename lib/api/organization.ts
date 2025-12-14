@@ -10,7 +10,7 @@ export interface OrganizationLinks {
 }
 
 export interface Organization {
-  _id: string;
+  id: string;
   name: string;
   logo: string;
   tagline: string;
@@ -31,9 +31,11 @@ export interface Organization {
   updatedAt: string;
 }
 
+export type Role = 'member' | 'admin' | 'owner';
 export interface AssignRoleRequest {
-  action: 'promote' | 'demote';
-  email: string;
+  role: Role[];
+  memberId: string;
+  organizationId: string;
 }
 
 export interface CreateOrganizationRequest {
@@ -50,7 +52,7 @@ export interface CreateOrganizationResponse extends ApiResponse<Organization> {
   message: string;
 }
 
-export interface GetOrganizationResponse extends ApiResponse<Organization> {
+export interface GetOrganizationResponse extends Organization {
   success: true;
   data: Organization;
   message: string;
@@ -70,10 +72,17 @@ export interface GetOrganizationsResponse extends PaginatedResponse<Organization
 }
 
 export interface UpdateOrganizationProfileRequest {
-  name?: string;
-  logo?: string;
-  tagline?: string;
-  about?: string;
+  organizationId: string;
+  data: {
+    name?: string;
+    logo?: string;
+    slug?: string;
+    metadata?: {
+      tagline?: string;
+      about?: string;
+      links?: OrganizationLinks;
+    };
+  };
 }
 
 export interface UpdateOrganizationLinksRequest {
@@ -238,8 +247,8 @@ export const getOrganization = async (
 export const updateOrganizationProfile = async (
   organizationId: string,
   data: UpdateOrganizationProfileRequest
-): Promise<UpdateOrganizationResponse> => {
-  const res = await api.patch(`/organizations/${organizationId}/profile`, data);
+): Promise<Organization> => {
+  const res = await api.post(`auth/organization/update`, data);
   const logger = new Logger();
   logger.info({
     eventType: 'org.api.update_profile.success',
@@ -254,7 +263,7 @@ export const updateOrganizationProfile = async (
 export const updateOrganizationLinks = async (
   organizationId: string,
   data: UpdateOrganizationLinksRequest
-): Promise<UpdateOrganizationResponse> => {
+): Promise<Organization> => {
   const res = await api.patch(`/organizations/${organizationId}/links`, data);
   return res.data;
 };
@@ -271,7 +280,7 @@ export const updateOrganizationLinks = async (
 export const updateOrganizationMembers = async (
   organizationId: string,
   data: UpdateOrganizationMembersRequest
-): Promise<UpdateOrganizationResponse> => {
+): Promise<Organization> => {
   const res = await api.patch(`/organizations/${organizationId}/members`, data);
   return res.data;
 };
@@ -337,7 +346,7 @@ export const deleteOrganization = async (
  */
 export const archiveOrganization = async (
   organizationId: string
-): Promise<UpdateOrganizationResponse> => {
+): Promise<Organization> => {
   const res = await api.post(`/organizations/${organizationId}/archive`);
   return res.data;
 };
@@ -347,7 +356,7 @@ export const archiveOrganization = async (
  */
 export const unarchiveOrganization = async (
   organizationId: string
-): Promise<UpdateOrganizationResponse> => {
+): Promise<Organization> => {
   const res = await api.post(`/organizations/${organizationId}/unarchive`);
   return res.data;
 };
@@ -394,7 +403,7 @@ export const getPendingInvites = async (): Promise<{
 export const removeOrganizationMember = async (
   organizationId: string,
   memberEmail: string
-): Promise<UpdateOrganizationResponse> => {
+): Promise<Organization> => {
   const res = await api.delete(
     `/organizations/${organizationId}/members/${memberEmail}`
   );
@@ -407,7 +416,7 @@ export const removeOrganizationMember = async (
 export const cancelOrganizationInvite = async (
   organizationId: string,
   email: string
-): Promise<UpdateOrganizationResponse> => {
+): Promise<Organization> => {
   const res = await api.delete(
     `/organizations/${organizationId}/invites/${email}`
   );
@@ -420,7 +429,7 @@ export const cancelOrganizationInvite = async (
 export const transferOrganizationOwnership = async (
   organizationId: string,
   newOwnerEmail: string
-): Promise<UpdateOrganizationResponse> => {
+): Promise<Organization> => {
   const res = await api.patch(
     `/organizations/${organizationId}/transfer-ownership`,
     {
@@ -571,7 +580,7 @@ export const getOrganizationsByGrant = async (
 export const bulkUpdateOrganizationHackathons = async (
   organizationId: string,
   hackathonIds: string[]
-): Promise<UpdateOrganizationResponse> => {
+): Promise<Organization> => {
   const res = await api.patch(
     `/organizations/${organizationId}/hackathons/bulk`,
     {
@@ -587,7 +596,7 @@ export const bulkUpdateOrganizationHackathons = async (
 export const bulkUpdateOrganizationGrants = async (
   organizationId: string,
   grantIds: string[]
-): Promise<UpdateOrganizationResponse> => {
+): Promise<Organization> => {
   const res = await api.patch(`/organizations/${organizationId}/grants/bulk`, {
     grantIds,
   });
@@ -658,7 +667,7 @@ export const getOrganizationPermissions = async (
 export const updateOrganizationPermissions = async (
   organizationId: string,
   data: UpdatePermissionsRequest
-): Promise<UpdateOrganizationResponse> => {
+): Promise<Organization> => {
   const res = await api.patch(
     `/organizations/${organizationId}/permissions`,
     data
@@ -668,7 +677,7 @@ export const updateOrganizationPermissions = async (
 
 export const resetOrganizationPermissions = async (
   organizationId: string
-): Promise<UpdateOrganizationResponse> => {
+): Promise<Organization> => {
   const res = await api.post(
     `/organizations/${organizationId}/permissions/reset`
   );
@@ -685,10 +694,9 @@ export const resetOrganizationPermissions = async (
  * Both accept: { action: 'promote' | 'demote', email: string }
  */
 export const assignOrganizationRole = async (
-  organizationId: string,
   data: AssignRoleRequest
-): Promise<AssignRoleResponse> => {
-  const res = await api.patch(`/organizations/${organizationId}/roles`, data);
+): Promise<Organization> => {
+  const res = await api.post(`auth/organization/update-member-role`, data);
   return res.data;
 };
 
