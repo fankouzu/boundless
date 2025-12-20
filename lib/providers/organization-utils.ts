@@ -14,7 +14,7 @@ export function organizationToSummary(
   userRole: 'owner' | 'member' = 'member'
 ): OrganizationSummary {
   return {
-    id: org.id as string,
+    organizationId: org.id,
     name: org.name,
     logo: org.logo,
     tagline: org.tagline,

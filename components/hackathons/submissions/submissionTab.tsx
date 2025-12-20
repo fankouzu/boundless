@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Search, ChevronDown, Plus, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -319,7 +319,7 @@ const SubmissionTab: React.FC<SubmissionTabProps> = ({
                   }
                 : undefined
             }
-            submissionId={mySubmission?._id}
+            submissionId={mySubmission?.id}
             onSuccess={() => {
               fetchMySubmission();
             }}

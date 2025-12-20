@@ -13,8 +13,8 @@ import {
   Discussion,
   Participant,
   SubmissionCardProps,
-  Hackathon,
 } from '@/types/hackathon';
+import { Hackathon, HackathonResourceItem } from '@/lib/api/hackathons';
 import {
   getHackathons,
   getHackathon,
@@ -51,7 +51,6 @@ interface ResourceItem {
 
 interface HackathonDataContextType {
   hackathons: Hackathon[];
-  featuredHackathons: Hackathon[];
   ongoingHackathons: Hackathon[];
   upcomingHackathons: Hackathon[];
   pastHackathons: Hackathon[];
@@ -180,6 +179,7 @@ export function HackathonDataProvider({
         const response = await getHackathon(slug);
         if (response.success && response.data) {
           setCurrentHackathonState(response.data);
+          console.log({ response });
           return response.data;
         } else {
           throw new Error(response.message || 'Hackathon not found');
@@ -248,23 +248,19 @@ export function HackathonDataProvider({
   // --------------------------------
   // Computed lists
   // --------------------------------
-  const featuredHackathons = React.useMemo(
-    () => hackathons.filter(h => h.featured),
-    [hackathons]
-  );
 
   const ongoingHackathons = React.useMemo(
-    () => hackathons.filter(h => h.status === 'ongoing'),
+    () => hackathons.filter(h => h.status === 'ONGOING'),
     [hackathons]
   );
 
   const upcomingHackathons = React.useMemo(
-    () => hackathons.filter(h => h.status === 'upcoming'),
+    () => hackathons.filter(h => h.status === 'UPCOMING'),
     [hackathons]
   );
 
   const pastHackathons = React.useMemo(
-    () => hackathons.filter(h => h.status === 'ended'),
+    () => hackathons.filter(h => h.status === 'ENDED'),
     [hackathons]
   );
 
@@ -381,7 +377,9 @@ export function HackathonDataProvider({
         },
         {
           event: 'Submission Deadline',
-          date: new Date(currentHackathon.deadline).toLocaleDateString(),
+          date: new Date(
+            currentHackathon.submissionDeadline
+          ).toLocaleDateString(),
         },
         {
           event: 'Winners Announced',
@@ -395,26 +393,28 @@ export function HackathonDataProvider({
         {
           title: 'Grand Prize',
           rank: '1 winner',
-          prize: `${currentHackathon.totalPrizePool} in prizes`,
+          prize: `${currentHackathon.prizeTiers.reduce((acc, prize) => acc + Number(prize.prizeAmount || 0), 0)} in prizes`,
           icon: '⭐',
           details: [
-            `Prize: ${currentHackathon.totalPrizePool}`,
+            `Prize: ${currentHackathon.prizeTiers.reduce((acc, prize) => acc + Number(prize.prizeAmount || 0), 0)}`,
             'Premium Swag Box',
           ],
         },
       ]
     : [];
 
-  const mockResources: ResourceItem[] = currentHackathon?.resources?.resources
-    ? currentHackathon.resources.resources.map((resource, index) => ({
-        id: index + 1,
-        title: resource.description || `Resource ${index + 1}`,
-        type: resource.fileUrl ? 'file' : 'link',
-        size: 'N/A',
-        url: resource.fileUrl || resource.link || '',
-        uploadDate: new Date().toISOString(),
-        description: resource.description || '',
-      }))
+  const mockResources: ResourceItem[] = currentHackathon?.resources
+    ? (currentHackathon.resources.map(
+        (resource: HackathonResourceItem, index: number) => ({
+          id: index,
+          title: resource.description || `Resource ${index + 1}`,
+          type: resource.file?.url ? 'file' : 'link',
+          size: 'N/A',
+          url: resource.file?.url || '',
+          uploadDate: new Date().toISOString(),
+          description: resource.description || '',
+        })
+      ) as ResourceItem[])
     : [];
 
   // --------------------------------
@@ -469,7 +469,6 @@ export function HackathonDataProvider({
 
   const value: HackathonDataContextType = {
     hackathons,
-    featuredHackathons,
     ongoingHackathons,
     upcomingHackathons,
     pastHackathons,

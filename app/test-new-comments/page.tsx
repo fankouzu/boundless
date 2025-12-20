@@ -165,39 +165,6 @@ export default function TestNewCommentsPage() {
                     Based on your backend response, the system expects this
                     structure:
                   </p>
-                  <pre className='max-h-32 overflow-auto rounded bg-black p-2 text-xs text-gray-300'>
-                    {JSON.stringify(
-                      {
-                        comments: [
-                          {
-                            id: 'string',
-                            content: 'string',
-                            authorId: 'string',
-                            entityType: 'CROWDFUNDING_CAMPAIGN',
-                            entityId: 'string',
-                            parentId: 'string | null',
-                            status: 'ACTIVE',
-                            isEdited: false,
-                            reactionCount: 0,
-                            author: {
-                              id: 'string',
-                              name: 'string',
-                              username: 'string',
-                              image: 'string',
-                            },
-                            reactions: [],
-                            reports: [],
-                            _count: { replies: 0, reactions: 0, reports: 0 },
-                          },
-                        ],
-                        total: 7,
-                        limit: 20,
-                        offset: 0,
-                      },
-                      null,
-                      2
-                    )}
-                  </pre>
                 </div>
               </CardContent>
             </Card>
@@ -311,13 +278,6 @@ export default function TestNewCommentsPage() {
                     <h4 className='mb-2 text-sm font-medium text-white'>
                       Raw Comment Data
                     </h4>
-                    <pre className='max-h-40 overflow-auto text-xs text-gray-300'>
-                      {JSON.stringify(
-                        commentSystem.comments.comments[0],
-                        null,
-                        2
-                      )}
-                    </pre>
                   </div>
                 )}
 

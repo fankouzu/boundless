@@ -51,7 +51,7 @@ export interface BetterAuthOrganization {
 }
 
 export interface OrganizationSummary {
-  id: string;
+  organizationId: string;
   name: string;
   logo: string;
   tagline?: string;

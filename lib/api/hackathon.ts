@@ -1,10 +1,10 @@
 import { api } from './api';
 import {
-  Hackathon,
   SubmissionCardProps,
   Discussion,
   ParticipantsResponse,
 } from '@/types/hackathon';
+import { GetHackathonResponse, Hackathon } from '@/lib/api/hackathons';
 
 export interface HackathonListResponse {
   success: boolean;
@@ -49,11 +49,18 @@ export const getHackathons = async (): Promise<HackathonListResponse> => {
 };
 
 // Get single hackathon by slug
+// export const getHackathon = async (
+//   slug: string
+// ): Promise<HackathonResponse> => {
+//   const response = await api.get<HackathonResponse>(`/hackathons/${slug}`);
+//   return response.data;
+// };
 export const getHackathon = async (
   slug: string
-): Promise<HackathonResponse> => {
-  const response = await api.get<HackathonResponse>(`/hackathons/${slug}`);
-  return response.data;
+): Promise<GetHackathonResponse> => {
+  const res = await api.get(`/hackathons/s/${slug}`);
+
+  return res.data as GetHackathonResponse;
 };
 
 // Get featured hackathons

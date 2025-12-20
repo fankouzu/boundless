@@ -27,9 +27,9 @@ interface HackathonStickyCardProps {
   hasSubmitted?: boolean;
   isTeamFormationEnabled?: boolean;
   registrationDeadlinePolicy?:
-    | 'before_start'
-    | 'before_submission_deadline'
-    | 'custom';
+    | 'BEFORE_START'
+    | 'BEFORE_SUBMISSION_DEADLINE'
+    | 'CUSTOM';
   registrationDeadline?: string;
   isLeaving?: boolean;
   onJoinClick?: () => void;
@@ -70,11 +70,11 @@ export function HackathonStickyCard(props: HackathonStickyCardProps) {
     const policy = registrationDeadlinePolicy || 'before_submission_deadline';
 
     switch (policy) {
-      case 'before_start':
+      case 'BEFORE_START':
         return startDate ? now < new Date(startDate) : false;
-      case 'before_submission_deadline':
+      case 'BEFORE_SUBMISSION_DEADLINE':
         return deadline ? now < new Date(deadline) : false;
-      case 'custom':
+      case 'CUSTOM':
         return registrationDeadline
           ? now < new Date(registrationDeadline)
           : false;
@@ -90,11 +90,11 @@ export function HackathonStickyCard(props: HackathonStickyCardProps) {
     const beforeStart = startDate && now < new Date(startDate);
 
     switch (registrationDeadlinePolicy || 'before_submission_deadline') {
-      case 'before_start':
+      case 'BEFORE_START':
         return 'Register';
-      case 'before_submission_deadline':
+      case 'BEFORE_SUBMISSION_DEADLINE':
         return beforeStart ? 'Register' : 'Join';
-      case 'custom':
+      case 'CUSTOM':
         if (registrationDeadline) {
           const custom = new Date(registrationDeadline);
           const beforeCustom = now < custom;

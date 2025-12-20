@@ -155,7 +155,7 @@ export function TeamRecruitmentPostCard({
       post.contactMethod,
       post.contactInfo,
       onTrackContact,
-      post._id
+      post.id
     );
   };
 

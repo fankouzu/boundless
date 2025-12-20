@@ -70,8 +70,15 @@ export function useDiscussions({
 
       if (response.success && response.data) {
         setDiscussions(response.data);
-        if (response.pagination) {
-          setPagination(response.pagination);
+        if (response.meta?.pagination) {
+          setPagination({
+            currentPage: response.meta.pagination.page,
+            totalPages: response.meta.pagination.totalPages,
+            totalItems: response.meta.pagination.total,
+            itemsPerPage: response.meta.pagination.limit,
+            hasNext: false,
+            hasPrev: false,
+          });
         }
       } else {
         throw new Error(response.message || 'Failed to fetch discussions');

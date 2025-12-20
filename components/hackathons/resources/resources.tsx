@@ -35,18 +35,18 @@ export function HackathonResources() {
 
   // Transform resources from hackathon data to component format
   const resources: HackathonResource[] = useMemo(() => {
-    if (!currentHackathon?.resources?.resources) {
+    if (!currentHackathon?.resources) {
       return [];
     }
 
-    return currentHackathon.resources.resources.map((resource, index) => {
-      const url = resource.fileUrl || resource.link || '';
-      const fileName = resource.fileName || '';
+    return currentHackathon.resources.map((resource, index) => {
+      const url = resource.file?.url || resource.link || '';
+      const fileName = resource.file?.name || '';
 
       // Determine resource type based on URL or file extension
       let type: 'pdf' | 'doc' | 'sheet' | 'slide' | 'link' | 'video' = 'link';
 
-      if (resource.fileUrl) {
+      if (resource.file?.url) {
         const extension = fileName.toLowerCase().split('.').pop();
         if (extension === 'pdf') type = 'pdf';
         else if (extension === 'doc' || extension === 'docx') type = 'doc';
@@ -84,7 +84,7 @@ export function HackathonResources() {
       }
 
       return {
-        _id: `resource-${index}`,
+        id: `resource-${index}`,
         title: resource.description || fileName || `Resource ${index + 1}`,
         type,
         url,
@@ -214,7 +214,7 @@ export function HackathonResources() {
 
               return (
                 <div
-                  key={resource._id}
+                  key={resource.id}
                   className='aspect-video overflow-hidden rounded-lg bg-black'
                 >
                   {isEmbed ? (
@@ -232,7 +232,7 @@ export function HackathonResources() {
                         className='h-full w-full object-contain'
                         controls
                       />
-                      <VideoPlayerControlBar className='absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-2'>
+                      <VideoPlayerControlBar className='absolute right-0 bottom-0 left-0 bg-linear-to-t from-black/80 to-transparent p-2'>
                         <VideoPlayerSeekBackwardButton />
                         <VideoPlayerPlayButton />
                         <VideoPlayerSeekForwardButton />
@@ -267,14 +267,14 @@ export function HackathonResources() {
           <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
             {documentResources.map(resource => (
               <Link
-                key={resource._id}
+                key={resource.id}
                 href={resource.url}
                 target={resource.type === 'link' ? '_blank' : '_self'}
                 rel={resource.type === 'link' ? 'noopener noreferrer' : ''}
                 className='border-primary/45 hover:border-primary/80 hover:bg-primary/5 group rounded-md border p-4 text-left transition-all'
               >
                 <div className='flex items-start gap-3'>
-                  <div className='relative flex-shrink-0'>
+                  <div className='relative shrink-0'>
                     <div className='flex h-16 w-20 items-center justify-center bg-gray-800 transition-colors group-hover:bg-gray-700'>
                       {getFileIcon(resource.type)}
                     </div>

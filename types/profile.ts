@@ -17,5 +17,6 @@ export interface UserStats {
 
 export interface Organization {
   name: string;
+  id?: string;
   avatarUrl: string;
 }

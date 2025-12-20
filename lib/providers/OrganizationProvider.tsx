@@ -226,7 +226,7 @@ function organizationReducer(
             ? action.payload
             : state.activeOrg,
         organizations: state.organizations.map(org =>
-          org.id === action.payload.id
+          org.organizationId === action.payload.id
             ? {
                 ...org,
                 name: action.payload.name,
@@ -250,7 +250,7 @@ function organizationReducer(
       return {
         ...state,
         organizations: state.organizations.filter(
-          org => org.id !== action.payload
+          org => org.organizationId !== action.payload
         ),
         activeOrg:
           state.activeOrgId === action.payload ? null : state.activeOrg,
@@ -404,62 +404,68 @@ export function OrganizationProvider({
         return;
       }
 
-      type OrgLike = Partial<Organization> & {
-        id?: string;
-        avatar?: string;
-        role?: 'owner' | 'member';
-        memberCount?: number;
-        hackathonCount?: number;
-        grantCount?: number;
+      type OrgLike = {
+        id: string;
+        organizationId: string;
+        userId: string;
+        role: 'owner' | 'member';
+        createdAt: string;
+        organization: {
+          id: string;
+          name: string;
+          slug: string;
+          logo?: string | null;
+          createdAt: string;
+          _count: {
+            hackathons: number;
+            grants: number;
+            members: number;
+          };
+          metadata?: {
+            tagline?: string;
+            about?: string;
+            links?: Record<string, unknown>;
+          };
+        };
       } & Record<string, unknown>;
+
       const orgs = organizations as unknown as OrgLike[];
+      console.trace('orgs', orgs);
+
       const organizationSummaries: OrganizationSummary[] = orgs
-        .filter(org => org && typeof org === 'object' && org.id)
-        .map(org => ({
-          id: (org.id as string) ?? (org.id as string),
-          name: (org.name as string) || 'Unnamed Organization',
-          logo: (org.avatar as string) || (org.logo as string) || '',
-          tagline: (org.tagline as string) || '',
-          isProfileComplete: Boolean(org.isProfileComplete),
-          role:
-            org.role === 'owner' || org.role === 'member'
-              ? (org.role as 'owner' | 'member')
-              : org.owner === response.email
-                ? 'owner'
+        .filter(
+          org => org && typeof org === 'object' && org.id && org.organization
+        )
+        .map(org => {
+          const orgData = org.organization;
+          return {
+            organizationId: orgData.id,
+            name: orgData.name || 'Unnamed Organization',
+            logo: orgData.logo || '/images/default-org-logo.png',
+            tagline: orgData.metadata?.tagline || '',
+            isProfileComplete: Boolean(
+              orgData.metadata?.about &&
+              orgData.metadata?.tagline &&
+              orgData.logo
+            ),
+            role:
+              org.role === 'owner' || org.role === 'member'
+                ? org.role
                 : 'member',
-          memberCount:
-            typeof org.memberCount === 'number'
-              ? org.memberCount
-              : typeof org.memberCount === 'string'
-                ? parseInt(org.memberCount, 10) || 0
-                : Array.isArray(org.members)
-                  ? org.members.length
-                  : 0,
-          hackathonCount:
-            typeof org.hackathonCount === 'number'
-              ? org.hackathonCount
-              : typeof org.hackathonCount === 'string'
-                ? parseInt(org.hackathonCount, 10) || 0
-                : Array.isArray(org.hackathons)
-                  ? org.hackathons.length
-                  : 0,
-          grantCount:
-            typeof org.grantCount === 'number'
-              ? org.grantCount
-              : typeof org.grantCount === 'string'
-                ? parseInt(org.grantCount, 10) || 0
-                : Array.isArray(org.grants)
-                  ? org.grants.length
-                  : 0,
-          createdAt: (org.createdAt as string) || new Date().toISOString(),
-        }));
+            _count: orgData._count.hackathons,
+            memberCount: orgData._count.members, // Will be calculated separately if needed
+            hackathonCount: orgData._count.hackathons, // Will be calculated separately if needed
+            grantCount: orgData._count.grants, // Will be calculated separately if needed
+            createdAt: orgData.createdAt,
+          };
+        });
 
       logger.info({
         eventType: 'org.fetchOrganizations.transformed',
         count: organizationSummaries.length,
         sampleOrg: organizationSummaries[0]
           ? {
-              id: organizationSummaries[0].id,
+              organizationId: organizationSummaries[0].organizationId,
               name: organizationSummaries[0].name,
               hackathonCount: organizationSummaries[0].hackathonCount,
               grantCount: organizationSummaries[0].grantCount,
@@ -618,7 +624,8 @@ export function OrganizationProvider({
             const parsed = JSON.parse(cachedOrgs);
             if (Array.isArray(parsed)) {
               const cachedOrg = parsed.find(
-                (org: { id: string }) => org.id === orgId
+                (org: { organizationId: string }) =>
+                  org.organizationId === orgId
               );
               if (cachedOrg) {
                 dispatch({
@@ -657,7 +664,9 @@ export function OrganizationProvider({
 
   const setActiveOrg = useCallback(
     (orgId: string) => {
-      const organization = state.organizations.find(org => org.id === orgId);
+      const organization = state.organizations.find(
+        org => org.organizationId === orgId
+      );
       if (!organization) {
         logger.info({ eventType: 'org.setActiveOrg.miss_then_fetch', orgId });
 
@@ -1118,7 +1127,7 @@ export function OrganizationProvider({
 
   const getOrganizationById = useCallback(
     (orgId: string) => {
-      return state.organizations.find(org => org.id === orgId);
+      return state.organizations.find(org => org.organizationId === orgId);
     },
     [state.organizations]
   );

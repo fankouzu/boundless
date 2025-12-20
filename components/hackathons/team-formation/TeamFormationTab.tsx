@@ -141,7 +141,7 @@ export function TeamFormationTab({
   const handleConfirmDelete = async () => {
     if (deletingPost) {
       try {
-        await deletePost(deletingPost._id);
+        await deletePost(deletingPost.id);
         setDeletingPost(null);
       } catch {
         // Error handled in hook
@@ -150,7 +150,7 @@ export function TeamFormationTab({
   };
 
   const handleContactClick = (post: TeamRecruitmentPost) => {
-    trackContact(post._id);
+    trackContact(post.id);
   };
 
   const activePostsCount = posts.filter(p => p.status === 'active').length;
@@ -215,7 +215,7 @@ export function TeamFormationTab({
           <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
             {filteredMyPosts.map(post => (
               <TeamRecruitmentPostCard
-                key={post._id}
+                key={post.id}
                 post={post}
                 isMyPost={true}
                 onContactClick={handleContactClick}
@@ -332,9 +332,9 @@ export function TeamFormationTab({
         <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
           {filteredPosts.map(post => (
             <TeamRecruitmentPostCard
-              key={post._id}
+              key={post.id}
               post={post}
-              isMyPost={myPosts.some(p => p._id === post._id)}
+              isMyPost={myPosts.some(p => p.id === post.id)}
               onContactClick={handleContactClick}
               onEditClick={handleEditClick}
               onDeleteClick={handleDeleteClick}

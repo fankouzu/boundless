@@ -34,12 +34,8 @@ const OrganizationAnalytics = () => {
   const stats = useOrganizationStats();
   const { isComplete, percentage, missingFields } =
     useOrganizationProfileCompletion();
-  const { analytics, isLoading: isLoadingAnalytics } = useOrganizationAnalytics(
-    {
-      organizationId: activeOrg?.id,
-      enabled: !!activeOrg?.id,
-    }
-  );
+  const { analytics, isLoading: isLoadingAnalytics } =
+    useOrganizationAnalytics();
 
   const chartData = useMemo(() => {
     if (!analytics?.timeSeries?.hackathons) return [];
@@ -299,7 +295,7 @@ const OrganizationAnalytics = () => {
                     Create a new event
                   </p>
                 </div>
-                <ArrowRight className='h-5 w-5 flex-shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-zinc-400' />
+                <ArrowRight className='h-5 w-5 shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-zinc-400' />
               </div>
             </Link>
 
@@ -314,7 +310,7 @@ const OrganizationAnalytics = () => {
                     Add or remove members
                   </p>
                 </div>
-                <ArrowRight className='h-5 w-5 flex-shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-zinc-400' />
+                <ArrowRight className='h-5 w-5 shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-zinc-400' />
               </div>
             </Link>
 
@@ -329,7 +325,7 @@ const OrganizationAnalytics = () => {
                     Configure organization
                   </p>
                 </div>
-                <ArrowRight className='h-5 w-5 flex-shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-zinc-400' />
+                <ArrowRight className='h-5 w-5 shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-zinc-400' />
               </div>
             </Link>
           </div>

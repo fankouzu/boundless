@@ -8,11 +8,7 @@ import ProjectCard from './project/ProjectCard';
 import HackathonCard from './hackathon/HackathonCard';
 import Link from 'next/link';
 import { getProjects } from '@/lib/api/project';
-import {
-  getPublicHackathonsList,
-  transformPublicHackathonToHackathon,
-} from '@/lib/api/hackathons';
-import { useHackathonTransform } from '@/hooks/hackathon/use-hackathon-transform';
+import { getPublicHackathonsList } from '@/lib/api/hackathons';
 import type { Hackathon } from '@/lib/api/hackathons';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -154,8 +150,6 @@ export default function Explore() {
   const [hackathonsError, setHackathonsError] = useState<string | null>(null);
   const [hackathonsFetched, setHackathonsFetched] = useState(false);
 
-  const { transformHackathonForCard } = useHackathonTransform();
-
   const fetchProjects = useCallback(async () => {
     if (projectsFetched) return; // Prevent refetching if already fetched
 
@@ -187,13 +181,9 @@ export default function Explore() {
         page: 1,
       });
 
-      // Transform public hackathons to Hackathon type
-      const hackathonsList = response.data.hackathons || [];
-      const transformedHackathons = hackathonsList.map(hackathon =>
-        transformPublicHackathonToHackathon(hackathon)
-      );
-
-      setHackathons(transformedHackathons);
+      // Use hackathons directly (API now returns PublicHackathonsListData)
+      const hackathonsList = response.hackathons || [];
+      setHackathons(hackathonsList);
       setHackathonsFetched(true); // Mark as fetched even if empty
     } catch {
       setHackathonsError('Failed to fetch hackathons');
@@ -345,20 +335,11 @@ export default function Explore() {
               </div>
             ) : (
               hackathons.map(hackathon => {
-                const orgName =
-                  '_organizationName' in hackathon
-                    ? (hackathon as Hackathon & { _organizationName?: string })
-                        ._organizationName
-                    : undefined;
-                const transformed = transformHackathonForCard(
-                  hackathon,
-                  orgName
-                );
                 return (
                   <HackathonCard
-                    key={hackathon._id}
+                    key={hackathon.id}
                     isFullWidth={true}
-                    {...transformed}
+                    {...hackathon}
                   />
                 );
               })

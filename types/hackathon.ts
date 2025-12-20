@@ -1,9 +1,4 @@
-import {
-  HackathonPhase,
-  PrizeTier,
-  RegistrationDeadlinePolicy,
-  SponsorPartner,
-} from '@/lib/api/hackathons';
+import { RegistrationDeadlinePolicy } from '@/lib/api/hackathons';
 
 export interface JudgingCriteria {
   title: string;
@@ -165,72 +160,4 @@ export interface HackathonParticipationSettings {
   registrationDeadline?: string;
   submissionRequirements?: HackathonSubmissionRequirements;
   tabVisibility?: HackathonTabVisibility;
-}
-
-// export interface Hackathon {
-//   id: string;
-//   title: string;
-//   tagline: string;
-//   description: string;
-//   slug?: string;
-//   imageUrl: string;
-//   status: 'upcoming' | 'ongoing' | 'ended';
-//   participants: number;
-//   totalPrizePool: string;
-//   deadline: string;
-//   categories: string[];
-//   startDate: string;
-//   endDate: string;
-//   organizer: string;
-//   featured?: boolean;
-//   resources?: string[];
-//   participantType?: ParticipantType;
-//   tabVisibility?: Pick<HackathonTabVisibility, 'joinATeamTab'>;
-//   participation?: HackathonParticipationSettings;
-// }
-
-export interface Hackathon {
-  id: string;
-  title: string;
-  tagline: string;
-  description: string;
-  slug?: string;
-  imageUrl: string;
-  status: 'upcoming' | 'ongoing' | 'ended';
-  participants: number;
-  totalPrizePool: string;
-  deadline: string;
-  categories: string[];
-  startDate: string;
-  endDate: string;
-  organizer: string;
-  featured?: boolean;
-  resources?: {
-    resources: Array<{
-      link?: string;
-      description?: string;
-      fileUrl?: string;
-      fileName?: string;
-    }>;
-  };
-  participantType?: ParticipantType;
-  tabVisibility?: Pick<HackathonTabVisibility, 'joinATeamTab'>;
-  participation?: HackathonParticipationSettings;
-  orgId?: string;
-  prizeTiers?: PrizeTier[];
-  teamMin?: number;
-  teamMax?: number;
-  registrationDeadlinePolicy: RegistrationDeadlinePolicy;
-  registrationDeadline: string | undefined;
-  venue?: Venue;
-  sponsors?: SponsorPartner[];
-  socialLinks?: string[];
-  contactEmail?: string;
-  telegram?: string;
-  discord?: string;
-  phases?: HackathonPhase[];
-  timezone?: string;
-  judgingDate?: string;
-  winnerAnnouncementDate?: string;
-  criteria?: JudgingCriteria[];
 }

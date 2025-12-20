@@ -14,8 +14,8 @@ import { PublicUserProfile } from '@/types/project';
 export const getMe = async (): Promise<User> => {
   console.trace('getMe called from:');
 
-  const res = await api.get<User>('/users/me');
-  return res.data;
+  const res = await api.get<ApiResponse<User>>('/users/me');
+  return res.data.data as User;
 };
 
 /**
@@ -27,8 +27,10 @@ export const getMe = async (): Promise<User> => {
 export const getUserProfileByUsername = async (
   username: string
 ): Promise<PublicUserProfile> => {
-  const res = await api.get(`/users/${username}`);
-  return res.data as PublicUserProfile;
+  const res = await api.get<ApiResponse<PublicUserProfile>>(
+    `/users/${username}`
+  );
+  return res.data.data as PublicUserProfile;
 };
 
 /**

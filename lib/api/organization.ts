@@ -32,6 +32,28 @@ export interface Organization {
 }
 
 export type Role = 'member' | 'admin' | 'owner';
+
+/**
+ * Organization Analytics Trend Data
+ */
+export interface OrganizationTrend {
+  current: number;
+  previous: number;
+  change: number;
+  changePercentage: number;
+  isPositive: boolean;
+}
+
+/**
+ * Organization Analytics Time Series Data Point
+ */
+export interface OrganizationTimeSeriesPoint {
+  month: string;
+  year: number;
+  count: number;
+  timestamp: string;
+}
+
 export interface AssignRoleRequest {
   role: Role[];
   memberId: string;
@@ -194,8 +216,8 @@ export interface UpdatePermissionsRequest {
 export const createOrganization = async (
   data: CreateOrganizationRequest
 ): Promise<CreateOrganizationResponse> => {
-  const res = await api.post('/organizations', data);
-  return res.data;
+  const res = await api.post<ApiResponse<Organization>>('/organizations', data);
+  return res.data as CreateOrganizationResponse;
 };
 
 /**
@@ -227,8 +249,10 @@ export const getOrganizations = async (
     params.append('owner', filters.owner);
   }
 
-  const res = await api.get(`/organizations?${params.toString()}`);
-  return res.data;
+  const res = await api.get<ApiResponse<GetOrganizationsResponse>>(
+    `/organizations?${params.toString()}`
+  );
+  return res.data.data as GetOrganizationsResponse;
 };
 
 /**
@@ -237,8 +261,10 @@ export const getOrganizations = async (
 export const getOrganization = async (
   organizationId: string
 ): Promise<GetOrganizationResponse> => {
-  const res = await api.get(`/organizations/${organizationId}`);
-  return res.data;
+  const res = await api.get<ApiResponse<GetOrganizationResponse>>(
+    `/organizations/${organizationId}`
+  );
+  return res.data.data as GetOrganizationResponse;
 };
 
 /**
@@ -248,13 +274,16 @@ export const updateOrganizationProfile = async (
   organizationId: string,
   data: UpdateOrganizationProfileRequest
 ): Promise<Organization> => {
-  const res = await api.post(`auth/organization/update`, data);
+  const res = await api.post<ApiResponse<Organization>>(
+    `auth/organization/update`,
+    data
+  );
   const logger = new Logger();
   logger.info({
     eventType: 'org.api.update_profile.success',
     orgId: organizationId,
   });
-  return res.data;
+  return res.data.data as Organization;
 };
 
 /**
@@ -264,8 +293,11 @@ export const updateOrganizationLinks = async (
   organizationId: string,
   data: UpdateOrganizationLinksRequest
 ): Promise<Organization> => {
-  const res = await api.patch(`/organizations/${organizationId}/links`, data);
-  return res.data;
+  const res = await api.patch<ApiResponse<Organization>>(
+    `/organizations/${organizationId}/links`,
+    data
+  );
+  return res.data.data as Organization;
 };
 
 /**
@@ -281,8 +313,11 @@ export const updateOrganizationMembers = async (
   organizationId: string,
   data: UpdateOrganizationMembersRequest
 ): Promise<Organization> => {
-  const res = await api.patch(`/organizations/${organizationId}/members`, data);
-  return res.data;
+  const res = await api.patch<ApiResponse<Organization>>(
+    `/organizations/${organizationId}/members`,
+    data
+  );
+  return res.data.data as Organization;
 };
 
 /**
@@ -292,8 +327,11 @@ export const sendOrganizationInvite = async (
   organizationId: string,
   data: SendInviteRequest
 ): Promise<SendInviteResponse> => {
-  const res = await api.post(`/organizations/${organizationId}/invite`, data);
-  return res.data;
+  const res = await api.post<ApiResponse<SendInviteResponse>>(
+    `/organizations/${organizationId}/invite`,
+    data
+  );
+  return res.data.data as SendInviteResponse;
 };
 
 /**
@@ -302,8 +340,10 @@ export const sendOrganizationInvite = async (
 export const acceptOrganizationInvite = async (
   organizationId: string
 ): Promise<AcceptInviteResponse> => {
-  const res = await api.post(`/organizations/${organizationId}/accept-invite`);
-  return res.data;
+  const res = await api.post<ApiResponse<AcceptInviteResponse>>(
+    `/organizations/${organizationId}/accept-invite`
+  );
+  return res.data.data as AcceptInviteResponse;
 };
 
 /**
@@ -458,50 +498,6 @@ export const getOrganizationStats = async (
   message: string;
 }> => {
   const res = await api.get(`/organizations/${organizationId}/stats`);
-  return res.data;
-};
-
-/**
- * Organization Analytics Trend Data
- */
-export interface OrganizationTrend {
-  current: number;
-  previous: number;
-  change: number;
-  changePercentage: number;
-  isPositive: boolean;
-}
-
-/**
- * Organization Analytics Time Series Data Point
- */
-export interface OrganizationTimeSeriesPoint {
-  month: string;
-  year: number;
-  count: number;
-  timestamp: string;
-}
-
-/**
- * Get organization analytics (trends and time series data)
- */
-export const getOrganizationAnalytics = async (
-  organizationId: string
-): Promise<{
-  success: boolean;
-  data: {
-    trends: {
-      members: OrganizationTrend;
-      hackathons: OrganizationTrend;
-      grants: OrganizationTrend;
-    };
-    timeSeries: {
-      hackathons: OrganizationTimeSeriesPoint[];
-    };
-  };
-  message: string;
-}> => {
-  const res = await api.get(`/organizations/${organizationId}/analytics`);
   return res.data;
 };
 

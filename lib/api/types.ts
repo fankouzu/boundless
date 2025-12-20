@@ -3,29 +3,41 @@ import { CrowdfundingProject, Crowdfunding } from '@/types/project';
 // Backend API Response Structure
 export interface ApiResponse<T = unknown> {
   success: boolean;
+  message: string;
   data?: T;
-  message?: string;
-  error?: string;
-  timestamp: string;
-  path?: string;
+  meta?: {
+    pagination?: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+    timestamp: string;
+    requestId: string;
+  };
+  errors?: ValidationError[];
+}
+
+export interface ValidationError {
+  field: string;
+  message: string;
+  code?: string;
 }
 
 export interface PaginatedResponse<T = unknown> extends ApiResponse<T[]> {
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-    hasNext: boolean;
-    hasPrev: boolean;
+  meta: NonNullable<ApiResponse['meta']> & {
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
   };
 }
 
 export interface ErrorResponse extends ApiResponse {
   success: false;
-  message: string;
-  error?: string;
-  statusCode: number;
+  statusCode?: number;
 }
 
 // User type
@@ -52,6 +64,27 @@ export interface OrganizationLinks {
   others: string;
 }
 
+/**
+ * Organization Analytics Trend Data
+ */
+export interface OrganizationTrend {
+  current: number;
+  previous: number;
+  change: number;
+  changePercentage: number;
+  isPositive: boolean;
+}
+
+/**
+ * Organization Analytics Time Series Data Point
+ */
+export interface OrganizationTimeSeriesPoint {
+  month: string;
+  year: number;
+  count: number;
+  timestamp: string;
+}
+
 export interface Organization {
   id: string;
   name: string;
@@ -68,8 +101,8 @@ export interface Organization {
   members?: string[]; // Array of user emails
   admins?: string[]; // Array of admin emails
   owner?: string; // Owner email or userId
-  hackathons?: string[]; // Array of hackathon IDs
-  grants?: string[]; // Array of grant IDs
+  hackathons?: any[]; // Full hackathon objects instead of just IDs
+  grants?: any[]; // Full grant objects instead of just IDs
   isProfileComplete: boolean;
   pendingInvites?: string[]; // Array of emails invited but not yet accepted
   betterAuthOrgId?: string; // Better Auth organization ID for organizations using Better Auth integration
@@ -78,6 +111,16 @@ export interface Organization {
   archivedAt?: string;
   createdAt?: string;
   updatedAt?: string;
+  analytics?: {
+    trends: {
+      members: OrganizationTrend;
+      hackathons: OrganizationTrend;
+      grants: OrganizationTrend;
+    };
+    timeSeries: {
+      hackathons: OrganizationTimeSeriesPoint[];
+    };
+  };
 }
 
 // Auth tokens

@@ -6,7 +6,6 @@ export async function proxy(request: NextRequest) {
     cookiePrefix: 'boundless_auth',
   });
 
-  console.log('my session cookie', sessionCookie);
   if (!sessionCookie) {
     return NextResponse.redirect(new URL('/auth?mode=signin', request.url));
   }

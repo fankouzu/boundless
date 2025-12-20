@@ -41,6 +41,7 @@ export default function ProfileOverview({
       return {
         name: org.organization.name,
         avatarUrl: org.organization.logo || '/blog1.jpg',
+        id: org.organizationId,
       };
     }) || [];
 
