@@ -18,7 +18,6 @@ import {
   PrepareFundingResponse,
   ConfirmFundingRequest,
   ConfirmFundingResponse,
-  // VoteRequest,
   VoteResponse,
   GetProjectVotesRequest,
   GetProjectVotesResponse,

@@ -181,6 +181,13 @@ export interface HackathonDraft {
   updatedAt: string;
 }
 
+// export interface Participant {
+//   id: string;
+//   name: string;
+//   username: string;
+//   image: string;
+// }
+
 // Published Hackathon Types
 export type Hackathon = {
   id: string;
@@ -302,6 +309,7 @@ export type Hackathon = {
   publishedAt: string;
   createdAt: string;
   updatedAt: string;
+  participants: Participant[];
 
   _count: {
     participants: number;
@@ -525,10 +533,9 @@ export interface Participant {
   user: {
     id: string;
     profile: {
-      firstName: string;
-      lastName: string;
+      name: string;
       username: string;
-      avatar?: string;
+      image?: string;
     };
     email: string;
   };
@@ -910,14 +917,12 @@ export interface AcceptTeamInvitationResponse extends ApiResponse<{
 /**
  * Initialize a new hackathon draft (new API)
  */
-export const initializeDraft = async (
-  organizationId: string
-): Promise<CreateDraftResponse> => {
+export const initializeDraft = async (organizationId: string) => {
   const res = await api.post<ApiResponse<CreateDraftResponse>>(
     `/hackathons/${organizationId}/draft`
   );
 
-  return res.data.data as CreateDraftResponse;
+  return res.data;
 };
 
 /**
@@ -929,7 +934,7 @@ export const updateDraftStep = async (
   step: string,
   data: any,
   autoSave?: boolean
-): Promise<UpdateDraftResponse> => {
+) => {
   const res = await api.patch<ApiResponse<UpdateDraftResponse>>(
     `/hackathons/${organizationId}/draft/${draftId}`,
     {
@@ -939,7 +944,7 @@ export const updateDraftStep = async (
     }
   );
 
-  return res.data.data as UpdateDraftResponse;
+  return res.data;
 };
 
 /**

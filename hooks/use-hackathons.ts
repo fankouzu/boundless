@@ -371,9 +371,13 @@ export function useHackathons(
 
       try {
         const response = await initializeDraft(orgId);
-        setDrafts(prev => [response.data, ...prev]);
-        console.trace('response.data', response.data);
-        return response.data;
+        if (response.data && response.data.data) {
+          setDrafts(prev => [response.data!.data, ...prev]);
+          console.trace('response.data', response.data!.data);
+          return response.data.data;
+        } else {
+          throw new Error('No draft data received');
+        }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : 'Failed to initialize draft';
@@ -409,13 +413,19 @@ export function useHackathons(
           data,
           autoSave
         );
-        setDrafts(prev =>
-          prev.map(draft => (draft.id === draftId ? response.data : draft))
-        );
-        if (currentDraft?.id === draftId) {
-          setCurrentDraft(response.data);
+        if (response.data && response.data.data) {
+          setDrafts(prev =>
+            prev.map(draft =>
+              draft.id === draftId ? response.data!.data : draft
+            )
+          );
+          if (currentDraft?.id === draftId) {
+            setCurrentDraft(response.data.data);
+          }
+          return response.data.data;
+        } else {
+          throw new Error('No draft data received');
         }
-        return response.data;
       } catch (error) {
         const errorMessage =
           error instanceof Error

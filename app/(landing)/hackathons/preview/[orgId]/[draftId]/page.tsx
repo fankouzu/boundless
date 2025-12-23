@@ -211,6 +211,7 @@ export default function DraftPreviewPage({ params }: PreviewPageProps) {
 
             submissions: [],
             followers: [],
+            participants: [],
 
             requireGithub:
               draft.data.participation?.submissionRequirements?.requireGithub ||

@@ -13,6 +13,7 @@ export function ProfileData() {
     const fetchUserData = async () => {
       try {
         const user = await getMe();
+        console.trace(user);
         setUserData(user);
       } catch {
         setUserData(null);

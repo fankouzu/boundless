@@ -9,16 +9,11 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
-import {
-  Discussion,
-  Participant,
-  SubmissionCardProps,
-} from '@/types/hackathon';
+import { Discussion, SubmissionCardProps } from '@/types/hackathon';
 import { Hackathon, HackathonResourceItem } from '@/lib/api/hackathons';
 import {
   getHackathons,
   getHackathon,
-  getHackathonParticipants,
   getHackathonSubmissions,
 } from '@/lib/api/hackathon';
 
@@ -57,7 +52,6 @@ interface HackathonDataContextType {
 
   currentHackathon: Hackathon | null;
   discussions: Discussion[];
-  participants: Participant[];
   submissions: SubmissionCardProps[];
   // content: string;
   timelineEvents: TimelineEvent[];
@@ -112,7 +106,6 @@ export function HackathonDataProvider({
   const [currentHackathonSlug, setCurrentHackathonSlug] = useState<
     string | null
   >(hackathonSlug || null);
-  const [participants, setParticipants] = useState<Participant[]>([]);
   const [submissions, setSubmissions] = useState<SubmissionCardProps[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setErrorState] = useState<string | null>(null);
@@ -179,7 +172,6 @@ export function HackathonDataProvider({
         const response = await getHackathon(slug);
         if (response.success && response.data) {
           setCurrentHackathonState(response.data);
-          console.log({ response });
           return response.data;
         } else {
           throw new Error(response.message || 'Hackathon not found');
@@ -196,40 +188,6 @@ export function HackathonDataProvider({
     },
     [setError]
   );
-
-  // --------------------------------
-  // Fetch participants
-  // --------------------------------
-  const fetchParticipants = useCallback(async (slug: string) => {
-    try {
-      const response = await getHackathonParticipants(slug, { limit: 50 });
-      if (response.success && response.data) {
-        const data = response.data;
-
-        let flattenedParticipants: Participant[] = [];
-
-        // Handle both grouped and flat responses
-        if (data.grouping === 'team' && data.groups) {
-          // Flatten the groups
-          flattenedParticipants = data.groups.flatMap(group =>
-            group.members.map(member => ({
-              ...member,
-              teamId: group.teamId,
-              teamName: group.teamName,
-              isIndividual: group.isIndividual,
-            }))
-          );
-        } else if (data.participants) {
-          // Flat response
-          flattenedParticipants = data.participants;
-        }
-
-        setParticipants(flattenedParticipants);
-      }
-    } catch {
-      setParticipants([]);
-    }
-  }, []);
 
   // --------------------------------
   // Fetch submissions
@@ -280,15 +238,10 @@ export function HackathonDataProvider({
       const data = await fetchHackathonBySlug(slug);
 
       if (data) {
-        await Promise.all([fetchParticipants(slug), fetchSubmissions(slug)]);
+        await Promise.all([fetchSubmissions(slug)]);
       }
     },
-    [
-      currentHackathonSlug,
-      fetchHackathonBySlug,
-      fetchParticipants,
-      fetchSubmissions,
-    ]
+    [currentHackathonSlug, fetchHackathonBySlug, fetchSubmissions]
   );
 
   const refreshHackathons = async () => {
@@ -475,7 +428,6 @@ export function HackathonDataProvider({
 
     currentHackathon,
     discussions: mockDiscussions,
-    participants,
     submissions,
     // content: mockContent,
     timelineEvents: mockTimelineEvents,

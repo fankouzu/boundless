@@ -7,7 +7,6 @@ import type { Hackathon } from '@/lib/api/hackathons';
 interface ExtendedHackathon extends Omit<Hackathon, 'categories'> {
   _organizationName?: string;
   categories?: string[];
-  participants?: number;
   featured?: boolean;
   organizerLogo?: string;
 }
@@ -160,10 +159,7 @@ export function useHackathonTransform() {
               | 'team_or_individual')
           : undefined,
         participants: {
-          current:
-            extendedHackathon.participants ||
-            hackathon._count.participants ||
-            0,
+          current: hackathon._count.participants || 0,
         },
         prizePool:
           prizePoolTotal > 0

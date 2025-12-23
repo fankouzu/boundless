@@ -18,6 +18,7 @@ import { useTimelineEvents } from '@/hooks/hackathon/use-timeline-events';
 import { toast } from 'sonner';
 import type { Participant } from '@/lib/api/hackathons';
 import { HackathonStickyCard } from '@/components/hackathons/hackathonStickyCard';
+import { HackathonParticipants } from '@/components/hackathons/participants/hackathonParticipant';
 
 export default function HackathonPage() {
   const router = useRouter();
@@ -26,7 +27,6 @@ export default function HackathonPage() {
 
   const {
     currentHackathon,
-    participants,
     submissions,
     loading,
     setCurrentHackathon,
@@ -39,8 +39,18 @@ export default function HackathonPage() {
   });
 
   const hackathonTabs = useMemo(() => {
-    const hasParticipants = participants.length > 0;
+    const hasParticipants =
+      Array.isArray(currentHackathon?.participants) &&
+      currentHackathon.participants.length > 0;
+
     const hasResources = currentHackathon?.resources?.[0];
+    const participantType = currentHackathon?.participantType;
+    const isTeamHackathon =
+      participantType === 'TEAM' ||
+      participantType === 'TEAM_OR_INDIVIDUAL' ||
+      participantType === 'INDIVIDUAL';
+    const isTabEnabled =
+      currentHackathon?.enabledTabs?.includes('joinATeamTab') !== false;
 
     const tabs = [
       { id: 'overview', label: 'Overview' },
@@ -49,7 +59,7 @@ export default function HackathonPage() {
             {
               id: 'participants',
               label: 'Participants',
-              badge: participants.length,
+              badge: currentHackathon?.participants.length,
             },
           ]
         : []),
@@ -70,24 +80,17 @@ export default function HackathonPage() {
       { id: 'discussions', label: 'Discussions' },
     ];
 
-    const participantType = currentHackathon?.participantType;
-    const isTeamHackathon =
-      participantType === 'TEAM' ||
-      participantType === 'TEAM_OR_INDIVIDUAL' ||
-      participantType === 'INDIVIDUAL';
-    const isTabEnabled =
-      currentHackathon?.enabledTabs?.includes('joinATeamTab') !== false;
-
     if (isTeamHackathon && isTabEnabled) {
       tabs.push({ id: 'team-formation', label: 'Find Team' });
     }
 
     return tabs;
   }, [
-    participants.length,
-    submissions,
+    currentHackathon?.participants,
+    currentHackathon?.resources,
     currentHackathon?.participantType,
-    currentHackathon?.enabledTabs?.includes('joinATeamTab'),
+    currentHackathon?.enabledTabs,
+    submissions,
   ]);
 
   const hackathonId = params.slug as string;
@@ -102,7 +105,12 @@ export default function HackathonPage() {
   }, [hackathonId, refreshCurrentHackathon]);
 
   // Registration status
-  const { isRegistered, hasSubmitted, setParticipant } = useRegisterHackathon({
+  const {
+    isRegistered,
+    hasSubmitted,
+    setParticipant,
+    register: registerForHackathon,
+  } = useRegisterHackathon({
     hackathon: currentHackathon
       ? {
           id: currentHackathon.id,
@@ -118,6 +126,16 @@ export default function HackathonPage() {
     hackathonSlugOrId: currentHackathon?.id || '',
     organizationId: undefined,
   });
+  const handleRegister = async () => {
+    try {
+      const participantData = await registerForHackathon();
+
+      toast.success('Successfully registered for hackathon!');
+      handleRegisterSuccess(participantData);
+    } catch {
+      // Error handled in hook
+    }
+  };
 
   // Check if hackathon has ended
   // const isEnded = useMemo(() => {
@@ -138,7 +156,7 @@ export default function HackathonPage() {
 
   // Event handlers
   const handleJoinClick = () => {
-    setShowRegisterModal(true);
+    handleRegister();
   };
 
   const handleLeaveClick = async () => {
@@ -295,6 +313,10 @@ export default function HackathonPage() {
             {activeTab === 'resources' &&
               currentHackathon.resources?.length > 0 && ( // Direct array check
                 <HackathonResources />
+              )}
+            {activeTab === 'participants' &&
+              currentHackathon.participants?.length > 0 && ( // Direct array check
+                <HackathonParticipants />
               )}
 
             {activeTab === 'submission' && (

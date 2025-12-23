@@ -197,6 +197,7 @@ export const useHackathonDraft = ({
     } else {
       // Initialize draft if it doesn't exist
       const draft = await initializeDraftAction(organizationId);
+
       setDraftId(draft.id);
       // Then update the step
       await updateDraftStepAction(draft.id, stepKey, data, true);
