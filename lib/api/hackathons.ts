@@ -917,12 +917,12 @@ export interface AcceptTeamInvitationResponse extends ApiResponse<{
 /**
  * Initialize a new hackathon draft (new API)
  */
-export const initializeDraft = async (organizationId: string) => {
-  const res = await api.post<ApiResponse<CreateDraftResponse>>(
-    `/hackathons/${organizationId}/draft`
-  );
+export const initializeDraft = async (
+  organizationId: string
+): Promise<CreateDraftResponse> => {
+  const res = await api.post(`/hackathons/${organizationId}/draft`);
 
-  return res.data;
+  return res.data as CreateDraftResponse;
 };
 
 /**
@@ -1097,11 +1097,9 @@ export const getHackathons = async (
     params.append('organizationId', filters.organizationId);
   }
 
-  const res = await api.get<ApiResponse<HackathonsData>>(
-    `/hackathons?${params.toString()}`
-  );
+  const res = await api.get(`/hackathons?${params.toString()}`);
 
-  return res.data as GetHackathonsResponse;
+  return res.data;
 };
 
 /**

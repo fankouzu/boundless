@@ -45,7 +45,7 @@ export const getComments = async (
   if (query.sortOrder) params.append('sortOrder', query.sortOrder);
 
   const res = await api.get(`/api/comments?${params.toString()}`);
-  return res.data;
+  return res.data.data;
 };
 
 /**

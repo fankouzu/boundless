@@ -713,12 +713,14 @@ export interface GrantData {
 export type CrowdfundingCampaign = Crowdfunding;
 
 export interface GetCrowdfundingProjectsResponse {
-  campaigns: CrowdfundingCampaign[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
+  data: {
+    campaigns: CrowdfundingCampaign[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
   };
 }
 

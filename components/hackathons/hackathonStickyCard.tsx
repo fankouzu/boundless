@@ -133,8 +133,8 @@ export function HackathonStickyCard(props: HackathonStickyCardProps) {
   };
 
   return (
-    <div className='sticky top-6 hidden lg:block'>
-      <Card className='overflow-hidden border border-[#a7f950]/30 bg-gradient-to-br from-[#a7f950]/10 to-transparent p-0'>
+    <div className='sticky top-18 hidden lg:block'>
+      <Card className='overflow-hidden border border-[#a7f950]/30 bg-linear-to-br from-[#a7f950]/10 to-transparent p-0'>
         {/* Image Section - UNCHANGED */}
         {imageUrl && (
           <div className='relative h-60 w-full'>

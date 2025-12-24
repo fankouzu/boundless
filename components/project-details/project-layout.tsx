@@ -27,7 +27,7 @@ export function ProjectLayout({
   const [isLeftScrollable, setIsLeftScrollable] = useState(true);
   const [isRightScrollable, setIsRightScrollable] = useState(true);
   const tabsListRef = useRef<HTMLDivElement>(null);
-
+  console.log('Rendering ProjectLayout with project:', project);
   const handleScroll = () => {
     if (tabsListRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = tabsListRef.current;

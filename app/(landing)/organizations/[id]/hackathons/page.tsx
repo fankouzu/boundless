@@ -93,7 +93,7 @@ export default function HackathonsPage() {
       organizationId,
       autoFetch: true,
     });
-
+  console.log('hackathons', hackathons);
   // Use the separate delete hook
   const { isDeleting, deleteHackathon } = useDeleteHackathon({
     organizationId,

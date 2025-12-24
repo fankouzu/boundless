@@ -33,6 +33,7 @@ export default function ProjectsClient({
 
   // Memoized project cards to prevent unnecessary re-renders
   const projectCards = React.useMemo(() => {
+    // console.log({projects})
     return projects.map(project => (
       <ProjectCard isFullWidth={true} key={project.id} project={project} />
     ));

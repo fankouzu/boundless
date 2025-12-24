@@ -218,7 +218,7 @@ export const getCrowdfundingProject = async (
 ): Promise<Crowdfunding> => {
   const res = await api.get(`/crowdfunding/${projectId}`);
   console.log(res);
-  return res.data;
+  return res.data.data;
 };
 
 /**

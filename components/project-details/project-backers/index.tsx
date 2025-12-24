@@ -7,12 +7,11 @@ const ProjectBackers = ({ crowdfund }: { crowdfund: Crowdfunding }) => {
   const [backers] = useState<Contributor[]>(
     crowdfund.contributors as Contributor[]
   );
-
   const handleBackerClick = (backer: Contributor) => {
     window.open(`/profile/${backer.userId}`, '_blank');
   };
 
-  if (backers.length !== 0) {
+  if (backers.length === 0) {
     return (
       <Empty
         campaignId={crowdfund.id}

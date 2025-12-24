@@ -371,10 +371,9 @@ export function useHackathons(
 
       try {
         const response = await initializeDraft(orgId);
-        if (response.data && response.data.data) {
-          setDrafts(prev => [response.data!.data, ...prev]);
-          console.trace('response.data', response.data!.data);
-          return response.data.data;
+        if (response.data) {
+          setDrafts(prev => [response!.data, ...prev]);
+          return response.data;
         } else {
           throw new Error('No draft data received');
         }

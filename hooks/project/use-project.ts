@@ -105,7 +105,7 @@ export function useProjects(
           ...sortParams,
         });
 
-        const fetchedProjects = response.campaigns;
+        const fetchedProjects = response.data.campaigns;
 
         if (append) {
           setProjects(prev => [...prev, ...fetchedProjects]);
@@ -113,9 +113,11 @@ export function useProjects(
           setProjects(fetchedProjects);
         }
 
-        setHasMore(response.pagination.totalPages > page);
-      } catch {
-        setError('Failed to fetch projects. Please try again.');
+        setHasMore(response.data.pagination.totalPages > page);
+      } catch (err) {
+        setError(
+          'Failed to fetch projects. Please try again.' + (err as Error).message
+        );
       } finally {
         setLoading(false);
         setLoadingMore(false);
