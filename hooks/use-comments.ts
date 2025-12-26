@@ -51,17 +51,18 @@ export const useComments = (options: UseCommentsOptions): UseCommentsReturn => {
       const response = await getCommentsApi(query);
 
       if (query.page === 1) {
-        setComments(response.comments);
+        setComments(response.data.comments);
       } else {
-        setComments(prev => [...prev, ...response.comments]);
+        setComments(prev => [...prev, ...response.data.comments]);
       }
       setPagination({
-        currentPage: Math.floor(response.offset / response.limit) + 1,
-        totalPages: Math.ceil(response.total / response.limit),
-        totalItems: response.total,
-        itemsPerPage: response.limit,
-        hasNext: response.offset + response.limit < response.total,
-        hasPrev: response.offset > 0,
+        currentPage: Math.floor(response.data.offset / response.data.limit) + 1,
+        totalPages: Math.ceil(response.data.total / response.data.limit),
+        totalItems: response.data.total,
+        itemsPerPage: response.data.limit,
+        hasNext:
+          response.data.offset + response.data.limit < response.data.total,
+        hasPrev: response.data.offset > 0,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch comments');
@@ -106,14 +107,16 @@ export const useComments = (options: UseCommentsOptions): UseCommentsReturn => {
 
         const response = await getCommentsApi(query);
 
-        setComments(prev => [...prev, ...response.comments]);
+        setComments(prev => [...prev, ...response.data.comments]);
         setPagination({
-          currentPage: Math.floor(response.offset / response.limit) + 1,
-          totalPages: Math.ceil(response.total / response.limit),
-          totalItems: response.total,
-          itemsPerPage: response.limit,
-          hasNext: response.offset + response.limit < response.total,
-          hasPrev: response.offset > 0,
+          currentPage:
+            Math.floor(response.data.offset / response.data.limit) + 1,
+          totalPages: Math.ceil(response.data.total / response.data.limit),
+          totalItems: response.data.total,
+          itemsPerPage: response.data.limit,
+          hasNext:
+            response.data.offset + response.data.limit < response.data.total,
+          hasPrev: response.data.offset > 0,
         });
       } catch (err) {
         setError(

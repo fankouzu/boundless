@@ -71,6 +71,20 @@ export const REACTION_CONFIGS: Record<ReactionType, ReactionConfig> = {
     color: 'text-purple-500',
     hoverColor: 'hover:text-purple-600',
   },
+  [ReactionType.CELEBRATE]: {
+    type: ReactionType.CELEBRATE,
+    label: 'Celebrate',
+    emoji: '🎉',
+    color: 'text-pink-500',
+    hoverColor: 'hover:text-pink-600',
+  },
+  [ReactionType.INSIGHTFUL]: {
+    type: ReactionType.INSIGHTFUL,
+    label: 'Insightful',
+    emoji: '💡',
+    color: 'text-yellow-500',
+    hoverColor: 'hover:text-yellow-600',
+  },
 };
 
 /**

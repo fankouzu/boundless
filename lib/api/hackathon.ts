@@ -1,9 +1,6 @@
 import { api } from './api';
-import {
-  SubmissionCardProps,
-  Discussion,
-  ParticipantsResponse,
-} from '@/types/hackathon';
+import { SubmissionCardProps, ParticipantsResponse } from '@/types/hackathon';
+// Discussion type removed - using generic Comment type from @/types/comment
 import { GetHackathonResponse, Hackathon } from '@/lib/api/hackathons';
 
 export interface HackathonListResponse {
@@ -36,9 +33,10 @@ export interface SubmissionsResponse {
   message: string;
 }
 
+// @deprecated Use GetCommentsResponse from @/types/comment instead
 export interface DiscussionsResponse {
   success: boolean;
-  data: Discussion[];
+  data: any[]; // Use Comment[] from @/types/comment instead
   message: string;
 }
 

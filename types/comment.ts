@@ -18,8 +18,10 @@ export enum CommentStatus {
 
 export enum ReactionType {
   LIKE = 'LIKE',
-  DISLIKE = 'DISLIKE',
   LOVE = 'LOVE',
+  CELEBRATE = 'CELEBRATE',
+  INSIGHTFUL = 'INSIGHTFUL',
+  DISLIKE = 'DISLIKE',
   LAUGH = 'LAUGH',
   THUMBS_UP = 'THUMBS_UP',
   THUMBS_DOWN = 'THUMBS_DOWN',
@@ -117,16 +119,18 @@ export interface Comment {
 
 // Legacy ProjectComment interface for backward compatibility
 export interface ProjectComment {
-  _id: string;
-  userId: CommentUser;
+  id: string;
+  author: CommentUser;
   projectId: string;
   content: string;
   parentCommentId?: string;
   status: 'active' | 'deleted' | 'flagged' | 'hidden';
-  editHistory: {
-    content: string;
-    editedAt: string;
-  }[];
+  isEdited: boolean;
+  editedAt: string | null;
+  // editHistory: {
+  //   content: string;
+  //   editedAt: string;
+  // }[];
   reactionCounts: {
     LIKE: number;
     DISLIKE: number;
@@ -223,10 +227,18 @@ export interface CreateCommentResponse {
 }
 
 export interface GetCommentsResponse {
-  comments: Comment[];
-  total: number;
-  limit: number;
-  offset: number;
+  success: boolean;
+  message: string;
+  data: {
+    comments: Comment[];
+    total: number;
+    limit: number;
+    offset: number;
+  };
+  meta: {
+    timestamp: string;
+    requestId: string;
+  };
 }
 
 export interface GetSingleCommentResponse {

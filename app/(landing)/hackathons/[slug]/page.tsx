@@ -321,7 +321,7 @@ export default function HackathonPage() {
 
             {activeTab === 'submission' && (
               <SubmissionTab
-                hackathonSlugOrId={hackathonId}
+                organizationId={currentHackathon.organizationId}
                 isRegistered={isRegistered}
               />
             )}

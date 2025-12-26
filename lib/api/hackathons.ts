@@ -1,6 +1,6 @@
 import api from './api';
 import { ApiResponse, ErrorResponse, PaginatedResponse } from './types';
-import { Discussion } from '@/types/hackathon';
+// Discussion type removed - using generic Comment type from @/types/comment
 
 export type RegistrationDeadlinePolicy =
   | 'custom'
@@ -589,13 +589,32 @@ export interface CheckRegistrationStatusResponse extends ApiResponse<Participant
 }
 
 export interface CreateSubmissionRequest {
+  hackathonId: string;
+  organizationId: string;
+  projectId?: string;
+  participationType: 'INDIVIDUAL' | 'TEAM';
+  teamId?: string;
+  teamName?: string;
+  teamMembers?: Array<{
+    userId: string;
+    name: string;
+    username?: string;
+    role: string;
+    avatar?: string;
+  }>;
   projectName: string;
   category: string;
   description: string;
   logo?: string;
   videoUrl?: string;
   introduction?: string;
-  links?: Array<{ type: string; url: string }>;
+  links: Array<{ type: string; url: string }>;
+  socialLinks?: {
+    github?: string;
+    telegram?: string;
+    twitter?: string;
+    email?: string;
+  };
 }
 
 export interface UpdateSubmissionRequest extends CreateSubmissionRequest {
@@ -1368,20 +1387,19 @@ export const checkRegistrationStatus = async (
  */
 export const createSubmission = async (
   hackathonSlugOrId: string,
-  data: CreateSubmissionRequest,
+  data: Omit<CreateSubmissionRequest, 'hackathonId' | 'organizationId'>,
   organizationId?: string
 ): Promise<CreateSubmissionResponse> => {
-  let url: string;
+  // Backend uses /hackathons/submissions with hackathonId in body
+  const submissionData: CreateSubmissionRequest = {
+    ...data,
+    hackathonId: hackathonSlugOrId,
+    organizationId: organizationId || '',
+    participationType: data.participationType || 'INDIVIDUAL',
+    links: data.links || [],
+  };
 
-  // If organizationId is provided, use authenticated endpoint
-  if (organizationId) {
-    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/submissions`;
-  } else {
-    // Otherwise, use public slug-based endpoint
-    url = `/hackathons/${hackathonSlugOrId}/submissions`;
-  }
-
-  const res = await api.post(url, data);
+  const res = await api.post('/hackathons/submissions', submissionData);
   return res.data;
 };
 
@@ -1389,22 +1407,11 @@ export const createSubmission = async (
  * Update a submission for a hackathon
  */
 export const updateSubmission = async (
-  hackathonSlugOrId: string,
   submissionId: string,
-  data: Omit<CreateSubmissionRequest, 'projectName'>,
-  organizationId?: string
+  data: Partial<Omit<CreateSubmissionRequest, 'hackathonId' | 'organizationId'>>
 ): Promise<UpdateSubmissionResponse> => {
-  let url: string;
-
-  // If organizationId is provided, use authenticated endpoint
-  if (organizationId) {
-    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/submissions/${submissionId}`;
-  } else {
-    // Otherwise, use public slug-based endpoint
-    url = `/hackathons/${hackathonSlugOrId}/submissions/${submissionId}`;
-  }
-
-  const res = await api.put(url, data);
+  // Backend uses /hackathons/submissions/:submissionId with PATCH
+  const res = await api.patch(`/hackathons/submissions/${submissionId}`, data);
   return res.data;
 };
 
@@ -1413,20 +1420,10 @@ export const updateSubmission = async (
  * Returns submission if exists, null otherwise
  */
 export const getMySubmission = async (
-  hackathonSlugOrId: string,
-  organizationId?: string
+  hackathonSlugOrId: string
 ): Promise<GetMySubmissionResponse> => {
-  let url: string;
-
-  // If organizationId is provided, use authenticated endpoint
-  if (organizationId) {
-    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/submissions/me`;
-  } else {
-    // Otherwise, use public slug-based endpoint
-    url = `/hackathons/${hackathonSlugOrId}/submissions/me`;
-  }
-
-  const res = await api.get(url);
+  // Backend uses /hackathons/:id/my-submission
+  const res = await api.get(`/hackathons/${hackathonSlugOrId}/my-submission`);
   return res.data;
 };
 
@@ -1435,21 +1432,10 @@ export const getMySubmission = async (
  * Returns full submission with votes and comments
  */
 export const getSubmissionDetails = async (
-  hackathonSlugOrId: string,
-  submissionId: string,
-  organizationId?: string
+  submissionId: string
 ): Promise<GetSubmissionDetailsResponse> => {
-  let url: string;
-
-  // If organizationId is provided, use authenticated endpoint
-  if (organizationId) {
-    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/submissions/${submissionId}`;
-  } else {
-    // Otherwise, use public slug-based endpoint
-    url = `/hackathons/${hackathonSlugOrId}/submissions/${submissionId}`;
-  }
-
-  const res = await api.get(url);
+  // Backend uses /hackathons/submissions/:submissionId
+  const res = await api.get(`/hackathons/submissions/${submissionId}`);
   return res.data;
 };
 
@@ -1611,7 +1597,13 @@ export const isPublishHackathonRequest = (
 };
 
 // ============================================
-// Discussions API Types and Functions
+// ============================================
+// Discussions API Types and Functions (DEPRECATED)
+// ============================================
+// These are deprecated. Use the generic comment system:
+// - Import from @/lib/api/comment instead
+// - Use CommentEntityType.HACKATHON for hackathon discussions
+// - Use Comment type from @/types/comment
 // ============================================
 
 export interface CreateDiscussionRequest {
@@ -1628,34 +1620,40 @@ export interface ReportDiscussionRequest {
   description?: string;
 }
 
-export interface GetHackathonDiscussionsResponse extends PaginatedResponse<Discussion> {
+// @deprecated Use GetCommentsResponse from @/types/comment instead
+export interface GetHackathonDiscussionsResponse extends PaginatedResponse<any> {
   success: true;
 }
 
-export interface CreateDiscussionResponse extends ApiResponse<Discussion> {
+// @deprecated Use CreateCommentResponse from @/types/comment instead
+export interface CreateDiscussionResponse extends ApiResponse<any> {
   success: true;
-  data: Discussion;
+  data: any;
   message: string;
 }
 
-export interface UpdateDiscussionResponse extends ApiResponse<Discussion> {
+// @deprecated Use UpdateCommentResponse from @/types/comment instead
+export interface UpdateDiscussionResponse extends ApiResponse<any> {
   success: true;
-  data: Discussion;
+  data: any;
   message: string;
 }
 
+// @deprecated Use DeleteCommentResponse from @/types/comment instead
 export interface DeleteDiscussionResponse extends ApiResponse<null> {
   success: true;
   data: null;
   message: string;
 }
 
-export interface ReplyToDiscussionResponse extends ApiResponse<Discussion> {
+// @deprecated Use CreateCommentResponse from @/types/comment instead
+export interface ReplyToDiscussionResponse extends ApiResponse<any> {
   success: true;
-  data: Discussion;
+  data: any;
   message: string;
 }
 
+// @deprecated Use ReportCommentResponse from @/types/comment instead
 export interface ReportDiscussionResponse extends ApiResponse<null> {
   success: true;
   data: null;
@@ -1663,6 +1661,7 @@ export interface ReportDiscussionResponse extends ApiResponse<null> {
 }
 
 /**
+ * @deprecated Use getComments from @/lib/api/comment with CommentEntityType.HACKATHON instead
  * Get discussions for a hackathon
  */
 export const getHackathonDiscussions = async (

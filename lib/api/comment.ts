@@ -45,7 +45,7 @@ export const getComments = async (
   if (query.sortOrder) params.append('sortOrder', query.sortOrder);
 
   const res = await api.get(`/api/comments?${params.toString()}`);
-  return res.data.data;
+  return res.data;
 };
 
 /**
@@ -114,7 +114,7 @@ export const addReaction = async (
   commentId: string,
   data: AddReactionRequest
 ): Promise<AddReactionResponse> => {
-  const res = await api.post(`/api/comments/${commentId}/reactions`, data);
+  const res = await api.post(`/api/comments/${commentId}/react`, data);
   return res.data;
 };
 

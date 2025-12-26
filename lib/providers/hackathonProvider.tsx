@@ -9,7 +9,8 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
-import { Discussion, SubmissionCardProps } from '@/types/hackathon';
+import { SubmissionCardProps } from '@/types/hackathon';
+import { Comment } from '@/types/comment';
 import { Hackathon, HackathonResourceItem } from '@/lib/api/hackathons';
 import {
   getHackathons,
@@ -51,7 +52,7 @@ interface HackathonDataContextType {
   pastHackathons: Hackathon[];
 
   currentHackathon: Hackathon | null;
-  discussions: Discussion[];
+  discussions: Comment[]; // Using generic Comment type
   submissions: SubmissionCardProps[];
   // content: string;
   timelineEvents: TimelineEvent[];
@@ -258,60 +259,8 @@ export function HackathonDataProvider({
   // Mock Data
   // --------------------------------
 
-  const mockDiscussions: Discussion[] = [
-    {
-      _id: '1',
-      userId: {
-        _id: 'user1',
-        profile: {
-          firstName: 'Sarah',
-          lastName: 'Chen',
-          username: 'sarahc',
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-        },
-      },
-      projectId: '',
-      content:
-        'Excited to participate in this hackathon! Are there any team formation channels?',
-      status: 'active',
-      createdAt: '2025-01-10T10:30:00Z',
-      updatedAt: '2025-01-10T10:30:00Z',
-      totalReactions: 12,
-      reactionCounts: { LIKE: 12, DISLIKE: 0, HELPFUL: 0 },
-      editHistory: [],
-      replyCount: 1,
-      isSpam: false,
-      reports: [],
-      replies: [
-        {
-          _id: '1-1',
-          userId: {
-            _id: 'user2',
-            profile: {
-              firstName: 'Alex',
-              lastName: 'Rodriguez',
-              username: 'alexr',
-              avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-            },
-          },
-          projectId: '',
-          content:
-            "Yes! Check out the Discord server, there's a #team-formation channel.",
-          status: 'active',
-          createdAt: '2025-01-10T11:00:00Z',
-          updatedAt: '2025-01-10T11:00:00Z',
-          totalReactions: 5,
-          reactionCounts: { LIKE: 5, DISLIKE: 0, HELPFUL: 0 },
-          editHistory: [],
-          replyCount: 0,
-          isSpam: false,
-          reports: [],
-          replies: [],
-          parentCommentId: '1',
-        },
-      ],
-    },
-  ];
+  // Discussions are now fetched directly in components via useCommentSystem
+  const mockDiscussions: Comment[] = [];
 
   // const mockContent = `# ${
   //   currentHackathon?.title || 'Hackathon'

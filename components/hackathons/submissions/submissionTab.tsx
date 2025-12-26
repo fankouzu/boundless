@@ -17,27 +17,23 @@ import { useSubmissions } from '@/hooks/hackathon/use-submissions';
 import { useSubmission } from '@/hooks/hackathon/use-submission';
 import { useHackathonData } from '@/lib/providers/hackathonProvider';
 import { useAuthStatus } from '@/hooks/use-auth';
-import { useParams } from 'next/navigation';
+// import { useParams } from 'next/navigation';
 
 interface SubmissionTabProps {
-  hackathonSlugOrId?: string;
+  // hackathonSlugOrId?: string;
   organizationId?: string;
   isRegistered: boolean;
 }
 
 const SubmissionTab: React.FC<SubmissionTabProps> = ({
-  hackathonSlugOrId,
+  // hackathonSlugOrId,
   organizationId,
   isRegistered,
 }) => {
-  const params = useParams();
+  // const params = useParams();
   const { isAuthenticated } = useAuthStatus();
   const { currentHackathon } = useHackathonData();
-  const hackathonId =
-    hackathonSlugOrId ||
-    (params.slug as string) ||
-    currentHackathon?.slug ||
-    '';
+  const hackathonId = currentHackathon?.id || '';
   const orgId = organizationId || undefined;
 
   const {
