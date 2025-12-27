@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useTransition } from 'react';
 import { BlogPost, GetBlogPostsResponse } from '@/types/blog';
-
+import { useRouter } from 'next/navigation';
 import BlogCard from './BlogCard';
 import { Search, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,8 @@ const StreamingBlogGrid: React.FC<StreamingBlogGridProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   // Extract unique categories from all posts
   const availableCategories = useMemo(() => {
@@ -114,16 +116,21 @@ const StreamingBlogGrid: React.FC<StreamingBlogGridProps> = ({
     setSearchQuery(e.target.value);
   };
 
-  const handleCardClick = useCallback(() => {
-    setIsNavigating(true);
-    setTimeout(() => {
-      setIsNavigating(false);
-    }, 2000);
-  }, []);
+  const handleCardClick = useCallback(
+    (slug: string) => {
+      setIsNavigating(true);
+      startTransition(() => {
+        router.push(`/blog/${slug}`);
+      });
+    },
+    [router]
+  );
 
   return (
     <>
-      {isNavigating && <AuthLoadingState message='Loading article...' />}
+      {(isNavigating || isPending) && (
+        <AuthLoadingState message='Loading article...' />
+      )}{' '}
       <div className='bg-background-main-bg min-h-screen'>
         <div>
           <div className=''>
