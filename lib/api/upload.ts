@@ -104,7 +104,9 @@ class UploadService {
     }
 
     if (options?.tags && options.tags.length > 0) {
-      formData.append('tags', JSON.stringify(options.tags));
+      options.tags.forEach(tag => {
+        formData.append('tags[]', tag);
+      });
     }
 
     const response = await api.post<UploadResponse>(
