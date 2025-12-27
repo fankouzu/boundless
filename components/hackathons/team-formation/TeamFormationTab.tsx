@@ -153,7 +153,7 @@ export function TeamFormationTab({
     trackContact(post.id);
   };
 
-  const activePostsCount = posts.filter(p => p.status === 'open').length;
+  const activePostsCount = posts.filter(p => p.status === 'active').length;
 
   if (isLoading && posts.length === 0) {
     return (

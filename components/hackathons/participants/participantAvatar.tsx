@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProfileCard } from './profileCard';
-import type { ParticipantDisplay } from '@/lib/api/hackathons';
+import type { ParticipantDisplay } from '@/lib/api/hackathons/index';
 import Image from 'next/image';
 
 interface ParticipantAvatarProps {

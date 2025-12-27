@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import type { ParticipantDisplay } from '@/lib/api/hackathons';
+import type { ParticipantDisplay } from '@/lib/api/hackathons/index';
 import Image from 'next/image';
 import { MessageCircle, Users, CheckCircle2 } from 'lucide-react';
 import { useParticipants } from '@/hooks/hackathon/use-participants';
