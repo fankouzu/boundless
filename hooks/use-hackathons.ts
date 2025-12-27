@@ -78,7 +78,10 @@ export interface UseHackathonsReturn {
     data: any,
     autoSave?: boolean
   ) => Promise<HackathonDraft>;
-  publishDraftAction: (draftId: string) => Promise<Hackathon>;
+  publishDraftAction: (
+    draftId: string,
+    organizationId: string
+  ) => Promise<Hackathon>;
   fetchDraft: (draftId: string) => Promise<void>;
   fetchDrafts: (page?: number, limit?: number) => Promise<void>;
 
@@ -441,12 +444,12 @@ export function useHackathons(
 
   // Publish Draft (New API)
   const publishDraftAction = useCallback(
-    async (draftId: string): Promise<Hackathon> => {
+    async (draftId: string, organizationId: string): Promise<Hackathon> => {
       setHackathonsLoading(true);
       setHackathonsError(null);
 
       try {
-        const response = await publishDraft(draftId);
+        const response = await publishDraft(draftId, organizationId);
         setHackathons(prev => [response.data, ...prev]);
         setCurrentHackathon(response.data);
         // Optionally remove from drafts if it was a draft

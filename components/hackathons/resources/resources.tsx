@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useHackathonData } from '@/lib/providers/hackathonProvider';
-import type { HackathonResourceDocument as HackathonResource } from '@/lib/api/hackathons';
 import {
   VideoPlayer,
   VideoPlayerContent,
@@ -25,6 +24,18 @@ import {
   VideoPlayerVolumeRange,
 } from '@/components/ui/video-player';
 
+interface ResourceDisplay {
+  id: string;
+  title: string;
+  type: 'pdf' | 'doc' | 'sheet' | 'slide' | 'link' | 'video';
+  url: string;
+  size: undefined;
+  description: string;
+  uploadDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // interface HackathonResourcesProps {
 //   hackathonSlugOrId?: string;
 //   organizationId?: string;
@@ -34,7 +45,7 @@ export function HackathonResources() {
   const { currentHackathon } = useHackathonData();
 
   // Transform resources from hackathon data to component format
-  const resources: HackathonResource[] = useMemo(() => {
+  const resources: ResourceDisplay[] = useMemo(() => {
     if (!currentHackathon?.resources) {
       return [];
     }

@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import type { Participant } from '@/types/hackathon';
+import type { ParticipantDisplay } from '@/lib/api/hackathons';
 import Image from 'next/image';
 import { MessageCircle, Users, CheckCircle2 } from 'lucide-react';
 import { useParticipants } from '@/hooks/hackathon/use-participants';
@@ -14,7 +14,7 @@ import Link from 'next/link';
 const BRAND_COLOR = '#a7f950';
 
 interface ProfileCardProps {
-  participant: Participant;
+  participant: ParticipantDisplay;
 }
 
 // Simple date formatter

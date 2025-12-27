@@ -41,7 +41,10 @@ interface UseHackathonPublishProps {
   organizationId: string;
   stepData: StepData;
   draftId?: string | null;
-  publishDraftAction: (draftId: string) => Promise<Hackathon>;
+  publishDraftAction: (
+    draftId: string,
+    organizationId: string
+  ) => Promise<Hackathon>;
 }
 
 export const useHackathonPublish = ({
@@ -215,7 +218,7 @@ export const useHackathonPublish = ({
         winnerMilestonesToBeAdded: true,
       };
 
-      const hackathon = await publishDraftAction(draftId!);
+      const hackathon = await publishDraftAction(draftId!, organizationId!);
       toast.success('Hackathon published successfully!');
 
       if (organizationId && hackathon.id) {

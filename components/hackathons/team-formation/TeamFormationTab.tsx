@@ -88,8 +88,8 @@ export function TeamFormationTab({
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
         post =>
-          post.projectName.toLowerCase().includes(searchLower) ||
-          post.projectDescription.toLowerCase().includes(searchLower) ||
+          post.projectName?.toLowerCase().includes(searchLower) ||
+          post.projectDescription?.toLowerCase().includes(searchLower) ||
           post.lookingFor.some(role =>
             role.role.toLowerCase().includes(searchLower)
           )
@@ -117,8 +117,8 @@ export function TeamFormationTab({
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         return (
-          post.projectName.toLowerCase().includes(searchLower) ||
-          post.projectDescription.toLowerCase().includes(searchLower)
+          post.projectName?.toLowerCase().includes(searchLower) ||
+          post.projectDescription?.toLowerCase().includes(searchLower)
         );
       }
       return true;
@@ -153,7 +153,7 @@ export function TeamFormationTab({
     trackContact(post.id);
   };
 
-  const activePostsCount = posts.filter(p => p.status === 'active').length;
+  const activePostsCount = posts.filter(p => p.status === 'open').length;
 
   if (isLoading && posts.length === 0) {
     return (
