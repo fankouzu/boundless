@@ -1,26 +1,20 @@
 import BlogSectionClient from './BlogSectionClient';
+import { getBlogPosts } from '@/lib/api/blog';
 
 const BlogSection = async () => {
-  // Fetch blog posts
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/blog/posts?status=ACTIVE&page=1&limit=6&sortBy=createdAt&sortOrder=desc`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store', // Ensure fresh data on each request
-    }
-  );
+  try {
+    const response = await getBlogPosts({
+      page: 1,
+      limit: 6,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      status: 'ACTIVE',
+    });
 
-  if (!response.ok) {
-    console.error('Failed to fetch blog posts');
-    return null; // Or handle the error as needed
+    return <BlogSectionClient posts={response.data} />;
+  } catch {
+    return <BlogSectionClient posts={[]} />;
   }
-
-  const data = await response.json();
-  const posts = data.data; // Adjusted to match GetBlogPostsResponse interface
-  return <BlogSectionClient posts={posts} />;
 };
 
 export default BlogSection;

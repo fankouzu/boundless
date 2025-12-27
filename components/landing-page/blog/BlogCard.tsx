@@ -4,9 +4,7 @@ import {
   CardFooter,
   CardHeader,
 } from '@/components/ui/card';
-import Link from 'next/link';
 import Image from 'next/image';
-import React from 'react';
 import { BlogPost } from '@/types/blog';
 import { Badge } from '@/components/ui/badge';
 
@@ -51,10 +49,12 @@ const BlogCard = ({ post, onCardClick }: BlogCardProps) => {
       </CardContent>
 
       <CardFooter className='mt-auto px-4 pt-5 pb-4'>
-        <Link
-          href={`/blog/${post.slug}`}
-          className='flex w-full items-center justify-end gap-2 text-right text-base font-medium text-[#A7F950]'
-          onClick={() => onCardClick?.(post.slug)}
+        <button
+          onClick={e => {
+            e.preventDefault();
+            onCardClick?.(post.slug);
+          }}
+          className='flex w-full cursor-pointer items-center justify-end gap-2 border-none bg-transparent text-right text-base font-medium text-[#A7F950]'
         >
           Continue reading
           <Image
@@ -64,7 +64,7 @@ const BlogCard = ({ post, onCardClick }: BlogCardProps) => {
             height={40}
             className='inline-block w-4 pt-1'
           />
-        </Link>
+        </button>
       </CardFooter>
     </Card>
   );
