@@ -135,6 +135,24 @@ const CreateProjectModal = ({ open, setOpen }: CreateProjectModalProps) => {
     return () => {};
   }, [currentStep]);
 
+  // Auto-trigger transaction signing when we reach the signing state
+  useEffect(() => {
+    if (
+      flowStep === 'signing' &&
+      unsignedTransaction &&
+      !isSigningTransaction &&
+      submitErrors.length === 0
+    ) {
+      // Automatically trigger signing without requiring manual button click
+      handleSignTransaction();
+    }
+  }, [
+    flowStep,
+    unsignedTransaction,
+    isSigningTransaction,
+    submitErrors.length,
+  ]);
+
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
@@ -851,27 +869,24 @@ const CreateProjectModal = ({ open, setOpen }: CreateProjectModalProps) => {
     if (flowStep === 'success' || showSuccess) {
       return <SuccessScreen onContinue={handleReset} />;
     }
+    // Show loading screen during signing and confirming states
     if (
-      flowStep === 'signing' &&
-      unsignedTransaction &&
-      !isSigningTransaction
+      flowStep === 'signing' ||
+      flowStep === 'confirming' ||
+      isSigningTransaction
     ) {
       return (
         <TransactionSigningScreen
           onSign={handleSignTransaction}
-          flowStep='signing'
+          isSigning={true}
+          flowStep={
+            flowStep === 'signing' || flowStep === 'confirming'
+              ? flowStep
+              : 'confirming'
+          }
           onRetry={handleRetry}
           hasError={submitErrors.length > 0}
           errorMessage={submitErrors[0]}
-        />
-      );
-    }
-    if (flowStep === 'confirming' || isSigningTransaction) {
-      return (
-        <TransactionSigningScreen
-          onSign={handleSignTransaction}
-          isSigning={true}
-          flowStep='confirming'
         />
       );
     }

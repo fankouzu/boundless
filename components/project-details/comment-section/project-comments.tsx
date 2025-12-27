@@ -34,6 +34,8 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
     enabled: true,
   });
 
+  console.log('commentSystem comments:', commentSystem.comments.comments);
+
   // Real-time updates
   useCommentRealtime(
     {
@@ -164,6 +166,10 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
 
     return topLevelComments;
   };
+  console.log(
+    'Rendering ProjectComments component',
+    nestComments(commentSystem.comments.comments)
+  );
 
   if (
     commentSystem.comments.loading &&
@@ -215,7 +221,7 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
 
       <div className='space-y-6 px-4 pb-6 md:px-6'>
         {nestComments(commentSystem.comments.comments).map(comment => (
-          <CommentItemAdapter
+          <CommentItem
             key={comment.id}
             comment={comment}
             onAddReply={handleAddReply}
@@ -252,101 +258,5 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
         </div>
       )}
     </div>
-  );
-}
-
-// Adapter component to convert new Comment type to old ProjectComment interface
-interface CommentItemAdapterProps {
-  comment: Comment;
-  onAddReply: (commentId: string, content: string) => void;
-  onUpdate?: (commentId: string, content: string) => void;
-  onDelete?: (commentId: string) => void;
-  onReport?: (commentId: string, reason: string, description?: string) => void;
-  currentUserId?: string;
-  isRegistered?: boolean;
-}
-
-function CommentItemAdapter({
-  comment,
-  onAddReply,
-  onUpdate,
-  onDelete,
-  onReport,
-  currentUserId,
-  isRegistered = false,
-}: CommentItemAdapterProps) {
-  // Recursively convert replies to old format
-  const convertReplies = (replies: Comment[]): any[] => {
-    return replies.map(reply => ({
-      _id: reply.id,
-      userId: {
-        _id: reply.authorId,
-        profile: {
-          firstName: reply.author.name.split(' ')[0] || '',
-          lastName: reply.author.name.split(' ').slice(1).join(' ') || '',
-          username: reply.author.username || '',
-          avatar: reply.author.image,
-        },
-      },
-      projectId: reply.entityId,
-      content: reply.content,
-      parentCommentId: reply.parentId,
-      status: reply.status.toLowerCase(),
-      editHistory: [],
-      reactionCounts: {
-        LIKE: reply.reactionCount,
-        DISLIKE: 0,
-        HELPFUL: 0,
-      },
-      totalReactions: reply.reactionCount,
-      replyCount: reply._count.replies,
-      replies: convertReplies(reply.replies || []),
-      createdAt: reply.createdAt,
-      updatedAt: reply.updatedAt,
-      isSpam: false,
-      reports: reply.reports,
-    }));
-  };
-
-  const adaptedComment: any = {
-    _id: comment.id,
-    userId: {
-      _id: comment.authorId,
-      profile: {
-        firstName: comment.author.name.split(' ')[0] || '',
-        lastName: comment.author.name.split(' ').slice(1).join(' ') || '',
-        username: comment.author.username || '',
-        avatar: comment.author.image,
-      },
-    },
-    projectId: comment.entityId,
-    content: comment.content,
-    parentCommentId: comment.parentId,
-    status: comment.status.toLowerCase(),
-    editHistory: [],
-    reactionCounts: {
-      LIKE: comment.reactionCount,
-      DISLIKE: 0,
-      HELPFUL: 0,
-    },
-    totalReactions: comment.reactionCount,
-    replyCount: comment._count.replies,
-    replies: convertReplies(comment.replies || []),
-    createdAt: comment.createdAt,
-    updatedAt: comment.updatedAt,
-    isSpam: false,
-    reports: comment.reports,
-  };
-
-  return (
-    <CommentItem
-      comment={adaptedComment}
-      onAddReply={onAddReply}
-      onUpdate={onUpdate}
-      onDelete={onDelete}
-      onReport={onReport}
-      currentUserId={currentUserId}
-      isRegistered={isRegistered}
-    />
   );
 }

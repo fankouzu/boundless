@@ -6,12 +6,7 @@ import { CommentItem } from '@/components/project-details/comment-section/commen
 import { CommentInput } from '@/components/project-details/comment-section/comment-input';
 import { CommentsEmptyState } from '@/components/project-details/comment-section/comments-empty-state';
 import { useCommentSystem } from '@/hooks/use-comment-system';
-import {
-  CommentEntityType,
-  Comment,
-  ProjectComment,
-  ReportReason,
-} from '@/types/comment';
+import { CommentEntityType, Comment, ReportReason } from '@/types/comment';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 
@@ -22,49 +17,10 @@ interface HackathonDiscussionsProps {
 }
 
 // Adapter function to convert Comment to ProjectComment for CommentItem
-const commentToProjectComment = (comment: Comment): ProjectComment => {
+const commentToProjectComment = (comment: Comment): Comment => {
   return {
-    id: comment.id,
-    author: comment.author,
-    projectId: comment.entityId,
-    content: comment.content,
-    parentCommentId: comment.parentId || undefined,
-    status:
-      comment.status === 'ACTIVE'
-        ? 'active'
-        : comment.status === 'HIDDEN'
-          ? 'hidden'
-          : comment.status === 'DELETED'
-            ? 'deleted'
-            : 'hidden',
-    isEdited: comment.isEdited,
-    editedAt: comment.editedAt || null,
-    reactionCounts: {
-      LIKE:
-        comment.reactions?.filter(r => r.reactionType === 'LIKE').length || 0,
-      DISLIKE:
-        comment.reactions?.filter(r => r.reactionType === 'DISLIKE').length ||
-        0,
-      HELPFUL: 0,
-    },
-    totalReactions: comment.reactionCount || 0,
-    replyCount: comment._count?.replies || 0,
+    ...comment,
     replies: comment.replies?.map(commentToProjectComment),
-    createdAt: comment.createdAt,
-    updatedAt: comment.updatedAt,
-    isSpam: false,
-    reports:
-      comment.reports?.map(r => ({
-        userId: r.reportedBy,
-        reason: r.reason.toLowerCase() as
-          | 'spam'
-          | 'inappropriate'
-          | 'harassment'
-          | 'misinformation'
-          | 'other',
-        description: r.description,
-        createdAt: r.createdAt,
-      })) || [],
   };
 };
 

@@ -13,10 +13,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { CommentInput } from './comment-input';
-import { ProjectComment } from '@/types/comment';
+import { Comment } from '@/types/comment';
 
 interface CommentItemProps {
-  comment: ProjectComment;
+  comment: Comment;
   isReply?: boolean;
   onAddReply: (commentId: string, content: string) => void;
   onUpdate?: (commentId: string, content: string) => void;
@@ -46,9 +46,10 @@ export function CommentItem({
   const [reportDescription, setReportDescription] = useState<string>('');
 
   const hasReplies =
-    (comment.replies && comment.replies.length > 0) || comment.replyCount > 0;
-  const isOwner = currentUserId === comment.author.id;
-  const canEdit = isOwner && comment.status === 'active';
+    (comment.replies && comment.replies.length > 0) ||
+    comment._count?.replies > 0;
+  const isOwner = currentUserId === comment.authorId;
+  const canEdit = isOwner && comment.status.toLowerCase() === 'active';
   const canDelete = isOwner;
 
   const handleReplySubmit = (content: string) => {
@@ -105,7 +106,7 @@ export function CommentItem({
               <span className='text-xs text-zinc-400'>
                 {new Date(comment.createdAt).toLocaleDateString()}
               </span>
-              {comment.status === 'flagged' && (
+              {comment.status.toLowerCase() === 'flagged' && (
                 <span className='inline-flex items-center rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800'>
                   Under Review
                 </span>
@@ -217,7 +218,7 @@ export function CommentItem({
               )}
             />
             <span className='text-xs text-zinc-400 group-hover:text-white md:text-sm'>
-              {comment.totalReactions}
+              {comment.reactionCount}
             </span>
           </button>
         </div>
@@ -288,7 +289,7 @@ export function CommentItem({
               <div className='h-px w-8 bg-zinc-700 md:w-12' />
               <span>
                 {showReplies ? 'Hide' : 'Show'} replies (
-                {comment.replies?.length || comment.replyCount})
+                {comment.replies?.length || comment._count?.replies || 0})
               </span>
               {showReplies ? (
                 <ChevronUp className='size-3.5' />

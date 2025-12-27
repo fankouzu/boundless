@@ -23,7 +23,6 @@ const BlogsPage = () => {
           sortOrder: 'desc',
           status: 'ACTIVE',
         });
-        console.log('Fetched blog posts:', response);
         setBlogData(response);
       } catch {
         setError('Failed to load blog posts. Please try again.');
