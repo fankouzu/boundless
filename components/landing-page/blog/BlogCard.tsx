@@ -8,6 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import React from 'react';
 import { BlogPost } from '@/types/blog';
+import { Badge } from '@/components/ui/badge';
 
 interface BlogCardProps {
   post: BlogPost;
@@ -18,12 +19,12 @@ const BlogCard = ({ post, onCardClick }: BlogCardProps) => {
   return (
     <Card
       key={post.id}
-      className='flex h-full w-full max-w-none flex-col gap-0 overflow-hidden rounded-[8px] border-[#1B1B1B] bg-[#101010] p-0 transition-colors duration-300 hover:border-[#2A2A2A]'
+      className='bg-background-card flex h-full w-full max-w-none flex-col gap-0 overflow-hidden rounded-xl border-[#1B1B1B] p-0 transition-colors duration-300 hover:border-[#2A2A2A]'
     >
-      <CardHeader className='relative p-0 !pb-0'>
+      <CardHeader className='relative p-0 pb-0!'>
         <div className='h-[141px] w-full'>
           <Image
-            src={post.image}
+            src={post.coverImage}
             alt={post.title}
             width={500}
             height={250}
@@ -33,9 +34,11 @@ const BlogCard = ({ post, onCardClick }: BlogCardProps) => {
       </CardHeader>
 
       <CardContent className='flex-1 border-b border-[#2B2B2B] px-4 pt-4 pb-5'>
-        <div className='mb-4 flex items-center justify-between text-sm leading-[145%] text-[#b5b5b5]'>
-          <span className='inline-block rounded-[8px] bg-[#A7F95014] px-3 py-1.5 text-sm font-medium text-[#A7F950]'>
-            {post.category}
+        <div className='mb-4 flex items-center justify-between text-sm leading-[145%] text-gray-500'>
+          <span className='inline-flex gap-1.5 rounded-xl bg-[#A7F95014] px-1.5 py-1.5 text-sm font-medium text-[#A7F950]'>
+            {post.categories.map(category => (
+              <Badge key={category}>{category}</Badge>
+            ))}
           </span>
           <span className='font-normal'>{post.date}</span>
         </div>

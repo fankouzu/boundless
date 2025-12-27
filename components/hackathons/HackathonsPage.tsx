@@ -40,7 +40,6 @@ export default function HackathonsPage({
   } = useHackathonsList({ initialFilters: filters });
 
   const { transformHackathonForCard } = useHackathonTransform();
-  console.log({ hackathons });
   const hackathonCards = React.useMemo(() => {
     return hackathons.map(hackathon => {
       return (
@@ -53,7 +52,6 @@ export default function HackathonsPage({
     });
   }, [hackathons, transformHackathonForCard]);
 
-  console.log({ hackathons });
   return (
     <div className={className} id='explore-hackathons'>
       <HackathonsFiltersHeader

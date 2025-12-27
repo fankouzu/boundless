@@ -1,17 +1,12 @@
 import api from './api';
-import {
-  getRelatedPosts as getRelatedPostsData,
-  BlogPost as DataBlogPost,
-} from '@/lib/data/blog';
+// import {
+//   getRelatedPosts as getRelatedPostsData,
+//   BlogPost as DataBlogPost,
+// } from '@/lib/data/blog';
 import {
   BlogPost,
-  BlogCategory,
-  BlogTag,
   GetBlogPostsRequest,
   GetBlogPostsResponse,
-  GetRelatedPostsRequest,
-  GetCategoriesResponse,
-  GetTagsResponse,
   SearchBlogPostsRequest,
   SearchBlogPostsResponse,
   BlogApiError,
@@ -28,11 +23,6 @@ interface ApiResponse<T> {
 /**
  * Convert data layer BlogPost to API layer BlogPost
  */
-const convertDataBlogPost = (dataPost: DataBlogPost): BlogPost => ({
-  ...dataPost,
-  id: dataPost.id.toString(),
-  publishedAt: dataPost.date, // Map date to publishedAt
-});
 
 /**
  * Get paginated blog posts with filtering and sorting
@@ -42,34 +32,53 @@ export const getBlogPosts = async (
 ): Promise<GetBlogPostsResponse> => {
   try {
     const {
-      page = 1,
-      limit = 12,
-      category,
+      authorId,
+      organizationId,
+      status,
       search,
-      sort = 'latest',
       tags,
+      categories,
+      includePrivate = false,
+      page = 1,
+      limit = 20,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
     } = params;
 
     const queryParams = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      sort,
+      sortBy,
+      sortOrder,
+      includePrivate: includePrivate.toString(),
     });
 
-    if (category) {
-      queryParams.append('category', category);
+    if (authorId) {
+      queryParams.append('authorId', authorId);
+    }
+
+    if (organizationId) {
+      queryParams.append('organizationId', organizationId);
+    }
+
+    if (status) {
+      queryParams.append('status', status);
     }
 
     if (search) {
       queryParams.append('search', search);
     }
 
-    if (tags && tags.length > 0) {
-      queryParams.append('tags', tags.join(','));
+    if (tags) {
+      queryParams.append('tags', tags);
+    }
+
+    if (categories) {
+      queryParams.append('categories', categories);
     }
 
     const response = await api.get<ApiResponse<GetBlogPostsResponse>>(
-      `/blog/posts?${queryParams.toString()}`
+      `/blogs?${queryParams.toString()}`
     );
 
     return response.data.data;
@@ -88,72 +97,16 @@ export const getBlogPosts = async (
 export const getBlogPost = async (slug: string): Promise<BlogPost> => {
   try {
     const response = await api.get<ApiResponse<BlogPost>>(
-      `/blog/posts/${slug}`
+      `/blogs/slug/${slug}`
     );
     return response.data.data;
   } catch (error) {
+    console.error('Error in getBlogPost:', error);
     if (error instanceof Error && error.message.includes('404')) {
       throw new Error(`Blog post with slug "${slug}" not found`);
     }
     throw new Error(
       `Failed to fetch blog post: ${
-        error instanceof Error ? error.message : 'Unknown error'
-      }`
-    );
-  }
-};
-
-/**
- * Get related blog posts for a specific post
- */
-export const getRelatedPosts = async (
-  slug: string,
-  params: GetRelatedPostsRequest = {}
-): Promise<BlogPost[]> => {
-  try {
-    const { limit = 3 } = params;
-
-    // Use the data layer function instead of making an HTTP request
-    const dataPosts = await getRelatedPostsData(slug, limit);
-    return dataPosts.map(convertDataBlogPost);
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch related posts: ${
-        error instanceof Error ? error.message : 'Unknown error'
-      }`
-    );
-  }
-};
-
-/**
- * Get all blog categories with post counts
- */
-export const getBlogCategories = async (): Promise<BlogCategory[]> => {
-  try {
-    const response =
-      await api.get<ApiResponse<GetCategoriesResponse>>('/blog/categories');
-
-    return response.data.data.categories;
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch blog categories: ${
-        error instanceof Error ? error.message : 'Unknown error'
-      }`
-    );
-  }
-};
-
-/**
- * Get all blog tags with post counts
- */
-export const getBlogTags = async (): Promise<BlogTag[]> => {
-  try {
-    const response = await api.get<ApiResponse<GetTagsResponse>>('/blog/tags');
-
-    return response.data.data.tags;
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch blog tags: ${
         error instanceof Error ? error.message : 'Unknown error'
       }`
     );
@@ -167,7 +120,16 @@ export const searchBlogPosts = async (
   params: SearchBlogPostsRequest
 ): Promise<SearchBlogPostsResponse> => {
   try {
-    const { q, page = 1, limit = 12, category, tags } = params;
+    const {
+      q,
+      page = 1,
+      limit = 20,
+      categories,
+      tags,
+      authorId,
+      organizationId,
+      status,
+    } = params;
 
     if (!q || q.trim().length === 0) {
       throw new Error('Search query is required');
@@ -179,12 +141,24 @@ export const searchBlogPosts = async (
       limit: limit.toString(),
     });
 
-    if (category) {
-      queryParams.append('category', category);
+    if (categories) {
+      queryParams.append('categories', categories);
     }
 
-    if (tags && tags.length > 0) {
-      queryParams.append('tags', tags.join(','));
+    if (tags) {
+      queryParams.append('tags', tags);
+    }
+
+    if (authorId) {
+      queryParams.append('authorId', authorId);
+    }
+
+    if (organizationId) {
+      queryParams.append('organizationId', organizationId);
+    }
+
+    if (status) {
+      queryParams.append('status', status);
     }
 
     const response = await api.get<ApiResponse<SearchBlogPostsResponse>>(

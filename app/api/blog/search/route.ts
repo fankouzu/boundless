@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllBlogPosts } from '@/lib/data/blog';
+import { getBlogPosts } from '@/lib/api/blog';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const tags = searchParams.get('tags')?.split(',').filter(Boolean);
 
-    const allPosts = await getAllBlogPosts();
+    const { data: allPosts } = await getBlogPosts({ limit: 1000 });
 
     let filteredPosts = allPosts;
 

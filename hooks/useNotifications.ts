@@ -34,20 +34,15 @@ export function useNotifications(userId?: string) {
   // Set up event listeners
   useEffect(() => {
     if (!socket) {
-      console.log('Socket not available yet');
       return;
     }
 
-    console.log('Setting up notification listeners');
-
     // Listen for new notifications
     const handleNotification = (notification: Notification) => {
-      console.log('New notification received:', notification);
       setNotifications(prev => {
         // Avoid duplicates
         const exists = prev.some(n => n.id === notification.id);
         if (exists) {
-          console.log('Notification already exists, skipping');
           return prev;
         }
         return [notification, ...prev];
@@ -57,13 +52,11 @@ export function useNotifications(userId?: string) {
 
     // Listen for unread count updates
     const handleUnreadCount = (data: { count: number }) => {
-      console.log('Unread count received:', data.count);
       setUnreadCount(data.count);
     };
 
     // Listen for notification updates
     const handleNotificationUpdated = (data: any) => {
-      console.log('Notification updated:', data);
       // Update notification if it exists
       if (data.notificationId) {
         setNotifications(prev =>
@@ -76,7 +69,6 @@ export function useNotifications(userId?: string) {
 
     // Listen for all notifications read
     const handleAllRead = () => {
-      console.log('All notifications marked as read');
       setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
       setUnreadCount(0);
     };
@@ -94,7 +86,6 @@ export function useNotifications(userId?: string) {
     socket.on('error', handleError);
 
     return () => {
-      console.log('Cleaning up notification listeners');
       socket.off('notification', handleNotification);
       socket.off('unread-count', handleUnreadCount);
       socket.off('notification-updated', handleNotificationUpdated);

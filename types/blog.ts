@@ -2,10 +2,11 @@ export interface BlogPost {
   id: string;
   title: string;
   excerpt: string;
-  content: string;
-  image: string;
+  description: string;
+  coverImage: string;
   date: string;
   slug: string;
+  categories: string[];
   category: string;
   author: {
     name: string;
@@ -14,7 +15,7 @@ export interface BlogPost {
   };
   tags: string[];
   readTime: number;
-  publishedAt: string;
+  createdAt: string;
   updatedAt?: string;
   seo: {
     metaTitle?: string;
@@ -43,12 +44,17 @@ export interface BlogTag {
 }
 
 export interface GetBlogPostsRequest {
+  authorId?: string;
+  organizationId?: string;
+  status?: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+  search?: string;
+  tags?: string;
+  categories?: string;
+  includePrivate?: boolean;
   page?: number;
   limit?: number;
-  category?: string;
-  search?: string;
-  sort?: 'latest' | 'oldest' | 'popular';
-  tags?: string[];
+  sortBy?: 'createdAt' | 'updatedAt' | 'title';
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface GetRelatedPostsRequest {
@@ -59,12 +65,15 @@ export interface SearchBlogPostsRequest {
   q: string;
   page?: number;
   limit?: number;
-  category?: string;
-  tags?: string[];
+  categories?: string;
+  tags?: string;
+  authorId?: string;
+  organizationId?: string;
+  status?: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
 }
 
 export interface GetBlogPostsResponse {
-  posts: BlogPost[];
+  data: BlogPost[];
   hasMore: boolean;
   total: number;
   currentPage: number;

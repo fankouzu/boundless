@@ -430,7 +430,6 @@ export function OrganizationProvider({
       } & Record<string, unknown>;
 
       const orgs = organizations as unknown as OrgLike[];
-      console.trace('orgs', orgs);
 
       const organizationSummaries: OrganizationSummary[] = orgs
         .filter(

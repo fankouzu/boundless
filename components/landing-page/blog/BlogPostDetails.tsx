@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Tag, BookOpen, Check } from 'lucide-react';
 import { BlogPost } from '@/types/blog';
-import { getRelatedPosts } from '@/lib/api/blog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useMarkdown } from '@/hooks/use-markdown';
@@ -16,7 +15,7 @@ interface BlogPostDetailsProps {
 }
 
 const BlogPostDetails: React.FC<BlogPostDetailsProps> = ({ post }) => {
-  const { loading, error, styledContent } = useMarkdown(post.content, {
+  const { loading, error, styledContent } = useMarkdown(post.description, {
     breaks: true,
     gfm: true,
     pedantic: true,
@@ -36,8 +35,8 @@ const BlogPostDetails: React.FC<BlogPostDetailsProps> = ({ post }) => {
       try {
         setIsLoadingRelated(true);
         setRelatedPostsError(null);
-        const related = await getRelatedPosts(post.slug, { limit: 3 });
-        setRelatedPosts(related || []);
+        // const related = await getRelatedPosts(post.slug, { limit: 3 });
+        setRelatedPosts([]);
       } catch {
         setRelatedPostsError('Failed to load related posts');
         setRelatedPosts([]);
@@ -139,7 +138,7 @@ const BlogPostDetails: React.FC<BlogPostDetailsProps> = ({ post }) => {
                       </span>
                     </div>
                     <span className='text-sm text-[#DFDFDF] sm:text-base'>
-                      {formatDate(post.publishedAt)}
+                      {formatDate(post.createdAt)}
                     </span>
                   </div>
 
@@ -157,7 +156,7 @@ const BlogPostDetails: React.FC<BlogPostDetailsProps> = ({ post }) => {
             <div className='max-w-4xl'>
               <div className='relative h-[250px] w-full overflow-hidden rounded-lg border border-white/20 sm:h-[300px] md:h-[400px] lg:h-[500px]'>
                 <Image
-                  src={post.image}
+                  src={post.coverImage}
                   alt={post.title}
                   fill
                   className='rounded-lg object-cover'

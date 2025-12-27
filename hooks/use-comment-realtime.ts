@@ -57,7 +57,6 @@ export function useCommentRealtime(
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      console.log('Real-time socket connected:', socket.id);
       isConnectedRef.current = true;
 
       // Subscribe to entity updates
@@ -68,7 +67,6 @@ export function useCommentRealtime(
     });
 
     socket.on('disconnect', () => {
-      console.log('Real-time socket disconnected');
       isConnectedRef.current = false;
     });
 

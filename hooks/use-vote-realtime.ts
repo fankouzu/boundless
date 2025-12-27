@@ -66,7 +66,6 @@ export function useVoteRealtime(
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      console.log('Vote real-time socket connected:', socket.id);
       isConnectedRef.current = true;
 
       // Subscribe to entity updates
@@ -77,7 +76,6 @@ export function useVoteRealtime(
     });
 
     socket.on('disconnect', () => {
-      console.log('Vote real-time socket disconnected');
       isConnectedRef.current = false;
     });
 

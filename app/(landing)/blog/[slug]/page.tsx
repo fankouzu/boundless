@@ -9,9 +9,9 @@ export async function generateStaticParams() {
   try {
     // For static generation, we'll need to fetch all posts
     // This might need to be adjusted based on your backend implementation
-    const { posts } = await getBlogPosts({ page: 1, limit: 50 });
+    const { data } = await getBlogPosts({ page: 1, limit: 50 });
 
-    return posts.map(post => ({
+    return data.map(post => ({
       slug: post.slug,
     }));
   } catch {

@@ -49,7 +49,6 @@ export const useHackathonDraft = ({
     organizationId,
     autoFetch: false,
   });
-  console.log('currentDraft', currentDraft);
   useEffect(() => {
     const loadDraft = async () => {
       if (!initialDraftId || !organizationId) return;
@@ -77,12 +76,9 @@ export const useHackathonDraft = ({
       currentDraft.id === initialDraftId &&
       draftInitializedRef.current !== currentDraft.id
     ) {
-      console.log('🎯 Initializing draft:', currentDraft.id); // Debug
       const formData = transformFromApiFormat(currentDraft);
-      console.log('📝 Form data:', formData.information.name); // Debug
       setStepData(formData);
       draftInitializedRef.current = currentDraft.id;
-      console.log('✅ Draft initialized'); // Debug
 
       if (onDraftLoaded) {
         onDraftLoaded(formData, 'information' as StepKey);

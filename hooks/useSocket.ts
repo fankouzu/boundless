@@ -31,12 +31,10 @@ export function useSocket(options: UseSocketOptions = {}) {
 
     // Connection event handlers
     socketInstance.on('connect', () => {
-      console.log('WebSocket connected:', socketInstance.id);
       setIsConnected(true);
     });
 
     socketInstance.on('disconnect', () => {
-      console.log('WebSocket disconnected');
       setIsConnected(false);
     });
 

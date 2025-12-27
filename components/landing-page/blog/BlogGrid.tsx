@@ -69,8 +69,8 @@ const BlogGrid: React.FC<BlogGridProps> = ({
     // Sort posts
     if (sortOrder) {
       filtered = [...filtered].sort((a, b) => {
-        const dateA = new Date(a.publishedAt).getTime();
-        const dateB = new Date(b.publishedAt).getTime();
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
         return sortOrder === 'Latest' ? dateB - dateA : dateA - dateB;
       });
     }

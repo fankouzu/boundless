@@ -4,8 +4,8 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import AuthLoadingState from '@/components/auth/AuthLoadingState';
-import { BlogPost } from '@/lib/data/blog';
 import BlogCard from './BlogCard';
+import { BlogPost } from '@/types/blog';
 
 interface BlogSectionClientProps {
   posts: BlogPost[];
@@ -65,7 +65,7 @@ const BlogSectionClient = ({ posts }: BlogSectionClientProps) => {
           role='list'
           aria-label='Blog posts grid'
         >
-          {posts.slice(0, 6).map((blog: BlogPost) => (
+          {posts.slice(0, 6).map(blog => (
             <div key={blog.id} role='listitem'>
               <BlogCard post={blog} onCardClick={handleCardClick} />
             </div>

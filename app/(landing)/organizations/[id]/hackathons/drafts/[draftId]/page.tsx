@@ -10,7 +10,6 @@ interface DraftPageProps {
 
 const DraftPage = async ({ params }: DraftPageProps) => {
   const { id, draftId } = await params;
-  console.log('DraftPage params:', { id, draftId });
 
   return (
     <div>
