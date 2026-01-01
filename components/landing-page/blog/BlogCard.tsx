@@ -31,7 +31,7 @@ const BlogCard = ({ post, onCardClick }: BlogCardProps) => {
             sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
           />
           {/* Gradient Overlay */}
-          <div className='absolute inset-0 top-0 bottom-[-10] bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
+          <div className='absolute inset-0 top-0 bottom-[-10] bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
         </div>
       </CardHeader>
 
