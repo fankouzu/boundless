@@ -369,7 +369,7 @@ export default function HackathonSidebar({
         </div>
 
         {/* Decorative bottom gradient */}
-        <div className='pointer-events-none absolute right-0 bottom-0 left-0 h-24 bg-linear-to-t from-black via-black/50 to-transparent'></div>
+        <div className='pointer-events-none absolute right-0 bottom-0 left-0 h-24 bg-gradient-to-t from-black via-black/50 to-transparent'></div>
       </nav>
     </aside>
   );
