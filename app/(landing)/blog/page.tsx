@@ -21,7 +21,7 @@ const BlogsPage = () => {
           limit: 12,
           sortBy: 'createdAt',
           sortOrder: 'desc',
-          status: 'ACTIVE',
+          status: 'PUBLISHED',
         });
         setBlogData(response);
       } catch {
@@ -42,7 +42,7 @@ const BlogsPage = () => {
       limit: 12,
       sortBy: 'createdAt',
       sortOrder: 'desc',
-      status: 'ACTIVE',
+      status: 'PUBLISHED',
     });
     return response;
   };

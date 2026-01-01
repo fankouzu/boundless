@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { BlogPost } from '@/types/blog';
 
 export interface PageMetadata {
   title: string;
@@ -373,36 +374,13 @@ export function generateBlogMetadata(
 }
 
 // Generate metadata for individual blog posts with enhanced options
-export function generateBlogPostMetadata(post: {
-  title: string;
-  excerpt: string;
-  coverImage: string;
-  author: {
-    name: string;
-    image?: string;
-    twitter?: string;
-  };
-  createdAt: string;
-  updatedAt?: string;
-  tags: string[];
-  category: string;
-  slug?: string;
-  seo?: {
-    metaTitle?: string;
-    metaDescription?: string;
-    keywords?: string[];
-    noIndex?: boolean;
-    canonicalUrl?: string;
-  };
-}): Metadata {
-  const slug = post.slug || generateSlug(post.title);
+export function generateBlogPostMetadata(post: BlogPost): Metadata {
+  const slug = post.slug;
   const blogUrl = `${baseMetadata.siteUrl}/blog/${slug}`;
 
-  const title = post.seo?.metaTitle || `${post.title} | Boundless Blog`;
-  const description = truncateDescription(
-    post.seo?.metaDescription || post.excerpt
-  );
-  const keywords = post.seo?.keywords || post.tags;
+  const title = post.seoTitle || `${post.title} | Boundless Blog`;
+  const description = truncateDescription(post.seoDescription || post.excerpt);
+  const keywords = post.seoKeywords || post.tags.map(t => t.tag.name);
 
   const coverImageUrl = getAbsoluteImageUrl(post.coverImage);
 
@@ -418,11 +396,11 @@ export function generateBlogPostMetadata(post: {
 
     // Robots configuration
     robots: {
-      index: !post.seo?.noIndex,
-      follow: !post.seo?.noIndex,
+      index: true,
+      follow: true,
       googleBot: {
-        index: !post.seo?.noIndex,
-        follow: !post.seo?.noIndex,
+        index: true,
+        follow: true,
         'max-image-preview': 'large',
         'max-snippet': -1,
         'max-video-preview': -1,
@@ -449,15 +427,15 @@ export function generateBlogPostMetadata(post: {
       publishedTime: post.createdAt,
       modifiedTime: post.updatedAt || post.createdAt,
       authors: [post.author.name],
-      tags: post.tags,
-      section: post.category,
+      tags: post.tags.map(t => t.tag.name),
+      section: post.categories?.[0] || 'Blog',
     },
 
     // Twitter Card
     twitter: {
       card: 'summary_large_image',
       site: baseMetadata.twitterHandle,
-      creator: post.author.twitter || baseMetadata.twitterHandle,
+      creator: baseMetadata.twitterHandle,
       title,
       description,
       images: [coverImageUrl],
@@ -465,22 +443,22 @@ export function generateBlogPostMetadata(post: {
 
     // Canonical and alternates
     alternates: {
-      canonical: post.seo?.canonicalUrl || blogUrl,
+      canonical: blogUrl,
       languages: {
         'en-US': blogUrl,
       },
     },
 
     // Category
-    category: post.category,
+    category: post.categories?.[0] || 'Blog',
 
     // Additional metadata
     other: {
       'article:published_time': post.createdAt,
       'article:modified_time': post.updatedAt || post.createdAt,
       'article:author': post.author.name,
-      'article:section': post.category,
-      'article:tag': post.tags.join(','),
+      'article:section': post.categories?.[0] || 'Blog',
+      'article:tag': post.tags.map(t => t.tag.name).join(','),
     },
   };
 }

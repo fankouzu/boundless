@@ -8,7 +8,7 @@ const BlogSection = async () => {
       limit: 6,
       sortBy: 'createdAt',
       sortOrder: 'desc',
-      status: 'ACTIVE',
+      status: 'PUBLISHED',
     });
 
     return <BlogSectionClient posts={response.data} />;

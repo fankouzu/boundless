@@ -50,8 +50,10 @@ const BlogGrid: React.FC<BlogGridProps> = ({
 
     // Filter by categories
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter(post =>
-        selectedCategories.includes(post.category)
+      filtered = filtered.filter(
+        post =>
+          post.categories &&
+          post.categories.some(cat => selectedCategories.includes(cat))
       );
     }
 
@@ -62,7 +64,8 @@ const BlogGrid: React.FC<BlogGridProps> = ({
         post =>
           post.title.toLowerCase().includes(query) ||
           post.excerpt.toLowerCase().includes(query) ||
-          post.tags.some(tag => tag.toLowerCase().includes(query))
+          (post.tags &&
+            post.tags.some(tag => tag.tag.name.toLowerCase().includes(query)))
       );
     }
 

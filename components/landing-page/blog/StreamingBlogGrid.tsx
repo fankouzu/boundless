@@ -44,7 +44,9 @@ const StreamingBlogGrid: React.FC<StreamingBlogGridProps> = ({
 
   // Extract unique categories from all posts
   const availableCategories = useMemo(() => {
-    const categories = new Set(allPosts.map(post => post.categories).flat());
+    const categories = new Set(
+      allPosts.map(post => post.categories || []).flat()
+    );
     return Array.from(categories).sort();
   }, [allPosts]);
 
@@ -53,7 +55,7 @@ const StreamingBlogGrid: React.FC<StreamingBlogGridProps> = ({
 
     if (selectedCategories.length > 0) {
       filtered = filtered.filter(post =>
-        post.categories.some(category => selectedCategories.includes(category))
+        post.categories?.some(category => selectedCategories.includes(category))
       );
     }
 
@@ -63,7 +65,8 @@ const StreamingBlogGrid: React.FC<StreamingBlogGridProps> = ({
         post =>
           post.title.toLowerCase().includes(query) ||
           post.excerpt.toLowerCase().includes(query) ||
-          post.tags.some(tag => tag.toLowerCase().includes(query))
+          (post.tags &&
+            post.tags.some(tag => tag.tag.name.toLowerCase().includes(query)))
       );
     }
 
