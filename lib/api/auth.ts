@@ -183,7 +183,7 @@ export const updateAppearanceSettings = async (
   };
 };
 
-export const updateNotiticationsSettings = async (
+export const updateNotificationsSettings = async (
   data: UserNotifications
 ): Promise<UpdateUserNotificationsResponse> => {
   const res = await api.put<UserNotifications>(

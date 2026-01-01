@@ -146,7 +146,7 @@ const Settings = () => {
   const onSubmitNotifications = async (data: UserNotifications) => {
     setIsSaving(true);
     try {
-      await updateNotiticationsSettings(data);
+      await updateNotificationsSettings(data);
       toast.success('Notifications updated successfully');
     } catch {
       toast.error('Failed to update notifications');
