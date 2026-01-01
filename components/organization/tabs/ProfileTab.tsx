@@ -362,11 +362,6 @@ export default function ProfileTab({
       return;
     }
 
-    // if (!formData.logo.trim()) {
-    //   toast.error('Logo is required');
-    //   return;
-    // }
-
     if (!formData.metadata.tagline.trim()) {
       toast.error('Tagline is required');
       return;
