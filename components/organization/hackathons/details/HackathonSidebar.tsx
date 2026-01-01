@@ -325,7 +325,7 @@ export default function HackathonSidebar({
                 className={cn(
                   'group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all',
                   isActive
-                    ? 'from-primary/10 text-primary shadow-primary/5 bg-linear-to-r to-transparent shadow-lg'
+                    ? 'from-primary/10 text-primary shadow-primary/5 bg-gradient-to-r to-transparent shadow-lg'
                     : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-white'
                 )}
               >
