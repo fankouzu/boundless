@@ -210,7 +210,6 @@ export default function NewHackathonTab({
       // Error is handled in the hook
     }
   };
-  console.log('stepData', stepData);
 
   if (isLoadingDraft) {
     return (
