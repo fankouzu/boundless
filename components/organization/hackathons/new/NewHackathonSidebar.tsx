@@ -43,7 +43,6 @@ export default function NewHackathonSidebar({
       organizationId: derivedOrgId,
       autoFetch: true,
     });
-  console.log('drafts', hackathons);
   const normalizedPath =
     pathname?.endsWith('/') && pathname !== '/'
       ? pathname.slice(0, -1)
