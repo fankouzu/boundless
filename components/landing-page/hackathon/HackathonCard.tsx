@@ -399,7 +399,7 @@ function HackathonCard({
           className='object-cover transition-transform duration-300 group-hover:scale-105'
           unoptimized
         />
-        <div className='absolute inset-0 bg-linear-to-t from-black/90 via-black/50 to-transparent' />
+        <div className='absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent' />
 
         <div className='absolute top-3 right-3 left-3 flex items-center justify-between'>
           <CategoriesDisplay categoriesList={categories} />
