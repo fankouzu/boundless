@@ -13,7 +13,7 @@ import {
 import {
   getUserSettings,
   updateAppearanceSettings,
-  updateNotiticationsSettings,
+  updateNotificationsSettings,
   updatePrivacySettings,
   updateUserSettings,
   UserAppearance,
