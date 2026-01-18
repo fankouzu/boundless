@@ -15,10 +15,6 @@ export const getMe = async (): Promise<User> => {
   const res = await api.get<ApiResponse<User>>('/users/me');
   return res.data.data as User;
 };
-export const getMeWithStats = async (): Promise<User> => {
-  const res = await api.get<ApiResponse<User>>('/users/me');
-  return res.data.data as User;
-};
 
 /**
  * Get user profile by username from backend API
