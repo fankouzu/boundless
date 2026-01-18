@@ -12,8 +12,10 @@ import { PublicUserProfile } from '@/types/project';
  * For server-side usage, use getMeServer() from '@/lib/api/auth-server' instead
  */
 export const getMe = async (): Promise<User> => {
-  console.trace('getMe called from:');
-
+  const res = await api.get<ApiResponse<User>>('/users/me');
+  return res.data.data as User;
+};
+export const getMeWithStats = async (): Promise<User> => {
   const res = await api.get<ApiResponse<User>>('/users/me');
   return res.data.data as User;
 };

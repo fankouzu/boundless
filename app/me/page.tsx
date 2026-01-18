@@ -1,5 +1,10 @@
+import { Metadata } from 'next';
 import { AuthGuard } from '@/components/auth';
-import { ProfileData } from './profile-data';
+
+export const metadata: Metadata = {
+  title: 'My Profile | Boundless',
+  description: 'View and manage your profile on Boundless',
+};
 
 export default async function MePage() {
   return (
@@ -7,9 +12,7 @@ export default async function MePage() {
       redirectTo='/auth?mode=signin'
       fallback={<div className='p-8 text-center'>Authenticating...</div>}
     >
-      <section className=''>
-        <ProfileData />
-      </section>
+      <section className=''></section>
     </AuthGuard>
   );
 }

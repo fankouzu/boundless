@@ -229,13 +229,13 @@ body {
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
+  --sidebar: #030303;
   --stepper-foreground: oklch(0.2046 0 0);
   --stepper-border: oklch(0.2264 0 0);
   --stepper-border-active: oklch(0.3501 0.0381 190.35);
   --stepper-text-inactive: oklch(0.7731 0 0);
   --placeholder: oklch(0.6567 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-foreground: #fff;
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
