@@ -19,6 +19,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
   }
 
   const { name = '', email = '', profile, image: userImage = '' } = user || {};
+
   const userData = {
     name: name || '',
     email,
@@ -35,7 +36,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
       }
     >
       <AppSidebar user={userData} variant='inset' />
-      <SidebarInset className='bg-white'>
+      <SidebarInset className='bg-[#0e0c0c]'>
         <SiteHeader />
         <div className='flex flex-1 flex-col'>{children}</div>
       </SidebarInset>

@@ -49,13 +49,74 @@ export interface UserProfile {
 }
 
 export interface User {
-  _id: string;
+  id: string;
+  name: string;
   email: string;
-  profile: UserProfile;
-  isVerified: boolean;
-  roles: string[];
-  lastLogin?: string;
-  [key: string]: unknown;
+  emailVerified: boolean;
+  image?: string;
+  createdAt: string;
+  updatedAt: string;
+  lastLoginMethod?: string;
+  role: string;
+  banned: boolean;
+  banReason?: string | null;
+  banExpires?: string | null;
+  username: string;
+  displayUsername: string;
+  metadata?: any;
+  twoFactorEnabled: boolean;
+  members?: Array<{
+    id: string;
+    organizationId: string;
+    userId: string;
+    role: string;
+    createdAt: string;
+    organization: {
+      id: string;
+      name: string;
+      slug: string;
+      logo: string;
+      createdAt: string;
+      _count: {
+        hackathons: number;
+        members: number;
+      };
+    };
+  }>;
+  projects?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    status: string;
+    banner?: string | null;
+    logo?: string | null;
+    createdAt: string;
+  }>;
+  activities?: Array<{
+    id: string;
+    type: string;
+    userId: string;
+    projectId?: string | null;
+    organizationId?: string | null;
+    metadata?: any;
+    createdAt: string;
+    updatedAt: string;
+    project?: any;
+  }>;
+  userBadges?: any[];
+  grantApplicationsAsApplicant?: any[];
+  hackathonSubmissionsAsParticipant?: Array<{
+    id: string;
+    status: string;
+    rank?: number | null;
+    submittedAt: string;
+  }>;
+  profile?: any;
+  stats?: {
+    followers: number;
+    following: number;
+  };
 }
 export interface OrganizationLinks {
   website: string;
@@ -162,29 +223,36 @@ export interface GoogleAuthRequest {
 export type GoogleAuthResponse = AuthTokens;
 
 // GetMe
-export type GetMeResponse = User & {
-  organizations: Organization[];
-  projects: CrowdfundingProject[];
-  following: User[];
-  followers: User[];
+export interface GetMeResponse {
+  user: User;
   stats: {
-    votes: number;
-    grants: number;
-    hackathons: number;
-    donations: number;
     projectsCreated: number;
     projectsFunded: number;
     totalContributed: number;
-    reputation: number;
-    communityScore: number;
     commentsPosted: number;
-    organizations: number;
+    votes: number;
+    grants: number;
+    hackathons: number;
     followers: number;
     following: number;
+    reputation: number;
+    communityScore: number;
   };
-  activities: unknown[];
-  contributedProjects: unknown[];
-};
+  chart: Array<{ date: string; count: number }>;
+  activitiesGraph: Array<{ date: string; count: number }>;
+  recentActivities: Array<{
+    id: string;
+    type: string;
+    userId: string;
+    projectId?: string | null;
+    organizationId?: string | null;
+    metadata?: any;
+    createdAt: string;
+    updatedAt: string;
+    project?: any;
+    organization?: any;
+  }>;
+}
 
 // Logout
 export interface LogoutResponse {
