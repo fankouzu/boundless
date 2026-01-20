@@ -2,11 +2,11 @@
 import ProfileDataClient from '@/components/profile/ProfileDataClient';
 import { UserPageSkeleton } from '@/components/skeleton/UserPageSkeleton';
 import { useEffect, useState } from 'react';
-import { User } from '@/types/user';
 import { getMe } from '@/lib/api/auth';
+import { GetMeResponse } from '@/lib/api/types';
 
 export function ProfileData() {
-  const [userData, setUserData] = useState<User | null>(null);
+  const [userData, setUserData] = useState<GetMeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

@@ -18,6 +18,7 @@ import {
   PrepareFundingResponse,
   ConfirmFundingRequest,
   ConfirmFundingResponse,
+  CrowdfundingCampaign,
   VoteResponse,
   GetProjectVotesRequest,
   GetProjectVotesResponse,
@@ -211,6 +212,91 @@ export const getCrowdfundingProjects = async (
 };
 
 /**
+ * Get authenticated user's crowdfunding campaigns
+ * Get a paginated list of crowdfunding campaigns created by the authenticated user
+ *
+ * @param page - Page number for pagination (default: 1)
+ * @param limit - Number of items per page (default: 10)
+ * @param filters - Optional filters for the campaigns
+ * @param filters.category - Category of the campaign
+ * @param filters.status - Status of the campaign
+ * @param filters.minFundingGoal - Minimum funding goal of the campaign
+ * @param filters.maxFundingGoal - Maximum funding goal of the campaign
+ * @param filters.sortBy - Sort by field
+ * @param filters.sortOrder - Sort order ('asc' | 'desc')
+ * @param filters.search - Search term for campaigns
+ * @returns Promise<GetCrowdfundingProjectsResponse>
+ */
+export const getMyCrowdfundingProjects = async (
+  page = 1,
+  limit = 3,
+  filters?: {
+    category?: string;
+    status?: string;
+    minFundingGoal?: number;
+    maxFundingGoal?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    search?: string;
+  }
+): Promise<{
+  success: boolean;
+  message: string;
+  data: {
+    data: CrowdfundingCampaign[];
+  };
+  meta: {
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+}> => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
+
+  if (filters?.category) {
+    params.append('category', filters.category);
+  }
+
+  if (filters?.status) {
+    params.append('status', filters.status);
+  }
+
+  if (filters?.minFundingGoal !== undefined) {
+    params.append('minFundingGoal', filters.minFundingGoal.toString());
+  }
+
+  if (filters?.maxFundingGoal !== undefined) {
+    params.append('maxFundingGoal', filters.maxFundingGoal.toString());
+  }
+
+  if (filters?.sortBy) {
+    params.append('sortBy', filters.sortBy);
+  }
+
+  if (filters?.sortOrder) {
+    params.append('sortOrder', filters.sortOrder);
+  }
+
+  if (filters?.search) {
+    params.append('search', filters.search);
+  }
+
+  const queryString = params.toString();
+  const url = queryString
+    ? `/crowdfunding/me?${queryString}`
+    : '/crowdfunding/me';
+
+  const res = await api.get(url);
+  return res.data;
+};
+
+/**
  * Get a single crowdfunding project by ID
  */
 export const getCrowdfundingProject = async (
@@ -238,7 +324,7 @@ export const updateCrowdfundingProject = async (
 export const deleteCrowdfundingProject = async (
   projectId: string
 ): Promise<DeleteCrowdfundingProjectResponse> => {
-  const res = await api.delete(`/crowdfunding/projects/${projectId}`);
+  const res = await api.delete(`/crowdfunding/${projectId}`);
   return res.data;
 };
 

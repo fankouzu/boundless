@@ -5,6 +5,7 @@ import { getMe } from '@/lib/api/auth';
 import { GetMeResponse } from '@/lib/api/types';
 import { SectionCards } from '@/components/section-cards';
 import { ChartAreaInteractive } from '@/components/chart-area-interactive';
+import { RecentProjects } from '@/components/recent-projects';
 import { useAuthStatus } from '@/hooks/use-auth';
 
 export function MeDashboard() {
@@ -17,8 +18,8 @@ export function MeDashboard() {
       try {
         const data = await getMe();
         setMeData(data);
-      } catch (error) {
-        console.error('Failed to fetch user data:', error);
+      } catch {
+        // console.error('Failed to fetch user data:', error);
       } finally {
         setLoading(false);
       }
@@ -47,6 +48,11 @@ export function MeDashboard() {
       <div className='flex flex-col gap-4 py-4 md:gap-6 md:py-6'>
         <SectionCards stats={meData.stats} />
         <div className='px-4 lg:px-6'>
+          {' '}
+          <RecentProjects projects={meData.user.projects || []} />
+        </div>
+        <div className='px-4 lg:px-6'>
+          {' '}
           <ChartAreaInteractive
             chartData={chartData}
             title='Activity Overview'

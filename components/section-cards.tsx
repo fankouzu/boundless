@@ -100,7 +100,7 @@ function DashCard({
   description,
 }: DashCardProps) {
   return (
-    <Card className='bg-background border-border/10 hover:border-primary/30 hover:shadow-primary/10 @container/card border transition-all duration-300 hover:shadow-lg'>
+    <Card className='bg-background border-border/10 hover:border-primary/30 shadow-primary/10 hover:shadow-primary/10 @container/card border transition-all duration-300 hover:shadow-lg'>
       <CardHeader>
         <CardDescription className='flex items-center justify-between text-white/80'>
           {description || title}

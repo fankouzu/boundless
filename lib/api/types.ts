@@ -958,3 +958,6 @@ export interface RemoveVoteResponse {
   };
   message: string;
 }
+
+// Alias for backward compatibility
+// export type CrowdfundingCampaign = CreateCrowdfundingProjectResponse;

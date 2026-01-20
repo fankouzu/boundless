@@ -4,10 +4,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEffect, useState } from 'react';
 import { User } from '@/types/user';
 import { getMe } from '@/lib/api/auth';
+import { GetMeResponse } from '@/lib/api/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import Settings from '@/components/profile/update/Settings';
 const SettingsContent = () => {
-  const [userData, setUserData] = useState<User | null>(null);
+  const [userData, setUserData] = useState<GetMeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const fetchUserData = async () => {
@@ -88,7 +89,7 @@ const SettingsContent = () => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value='profile'>
-            <Profile user={userData as User} />
+            <Profile user={userData?.user as User} />
           </TabsContent>
           <TabsContent value='settings'>
             <Settings />

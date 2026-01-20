@@ -66,6 +66,13 @@ const navigationData = {
       icon: IconUsers,
     },
   ],
+  crowdfunding: [
+    {
+      title: 'Campaigns',
+      url: '/me/crowdfunding',
+      icon: IconShieldCheck,
+    },
+  ],
   account: [
     {
       title: 'Profile',
@@ -137,11 +144,12 @@ export function AppSidebar({
       <SidebarContent className='gap-4 px-2 py-4'>
         <NavMain items={navigationData.main} />
         <NavMain items={navigationData.projects} label='Projects' />
+        <NavMain items={navigationData.crowdfunding} label='Crowdfunding' />
         <NavMain items={navigationData.hackathons} label='Hackathons' />
         <NavMain items={navigationData.account} label='Account' />
       </SidebarContent>
       {/* Footer with User */}
-      <SidebarFooter className='border-sidebar-border/50 border-t p-2'>
+      <SidebarFooter className='border-sidebar-border/50 border-t p-2 backdrop-blur-sm'>
         <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>

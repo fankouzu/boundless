@@ -6,10 +6,10 @@ import { Project } from '@/types/user';
 import { useWindowSize } from '@/hooks/use-window-size';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
-import { User } from '@/types/user';
+import { GetMeResponse } from '@/lib/api/types';
 
 interface ProjectsTabProps {
-  user: User;
+  user: GetMeResponse;
 }
 
 export default function ProjectsTab({ user }: ProjectsTabProps) {
@@ -62,7 +62,7 @@ export default function ProjectsTab({ user }: ProjectsTabProps) {
       const endIndex = startIndex + itemsPerPage;
 
       // Use real projects data from API
-      const allProjects = user.projects || [];
+      const allProjects = user.user.projects || [];
       const newProjects = allProjects.slice(startIndex, endIndex);
 
       if (pageNum === 1) {
@@ -73,7 +73,7 @@ export default function ProjectsTab({ user }: ProjectsTabProps) {
 
       setHasMore(endIndex < allProjects.length);
     },
-    [user.projects]
+    [user.user.projects]
   );
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function ProjectsTab({ user }: ProjectsTabProps) {
       <div className='flex items-center justify-between'>
         <h3 className='text-lg font-medium text-gray-300'>Your Projects</h3>
         <span className='text-sm text-gray-500'>
-          {user.projects?.length || 0} projects
+          {user.user.projects?.length || 0} projects
         </span>
       </div>
 
@@ -129,7 +129,7 @@ export default function ProjectsTab({ user }: ProjectsTabProps) {
                 newTab={true}
                 projectId={project.id}
                 creatorName={``}
-                creatorLogo={user.image || '/avatar.png'}
+                creatorLogo={user.user.image || '/avatar.png'}
                 projectImage={project.logo || '/bitmed.png'}
                 projectTitle={project.title}
                 projectDescription={project.description}

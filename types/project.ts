@@ -160,6 +160,7 @@ export interface CrowdfundingProject {
 export interface Crowdfunding {
   id: string;
   projectId: string;
+  slug: string;
   fundingGoal: number;
   fundingRaised: number;
   fundingCurrency: string;
