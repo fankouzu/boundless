@@ -12,8 +12,8 @@ import {
 import { ProjectSidebarActionsProps } from './types';
 import { BoundlessButton } from '@/components/buttons';
 import { SharePopup } from './SharePopup';
-import { useProtectedAction } from '@/hooks/use-protected-action';
 import { FollowButton } from '@/components/follow';
+import { FundingModal } from '@/components/project-details/funding-modal';
 
 export function ProjectSidebarActions({
   project,
@@ -21,12 +21,9 @@ export function ProjectSidebarActions({
   isVoting,
   userVote,
   onVote,
+  crowdfund,
 }: ProjectSidebarActionsProps) {
   const [isSharePopupOpen, setIsSharePopupOpen] = useState(false);
-
-  const { executeProtectedAction } = useProtectedAction({
-    actionName: 'fund project',
-  });
 
   const handleShareClick = () => {
     setIsSharePopupOpen(true);
@@ -34,10 +31,6 @@ export function ProjectSidebarActions({
 
   const handleCloseSharePopup = () => {
     setIsSharePopupOpen(false);
-  };
-
-  const handleFundClick = async () => {
-    await executeProtectedAction(() => {});
   };
 
   return (
@@ -77,14 +70,21 @@ export function ProjectSidebarActions({
       )}
 
       {projectStatus === 'IDEA' && (
-        <BoundlessButton
-          onClick={handleFundClick}
-          className='flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#A7F950] text-base font-semibold text-black shadow-lg transition-all duration-200 hover:bg-[#A7F950] hover:shadow-xl'
-          icon={<HandCoins className='h-5 w-5' />}
-          iconPosition='left'
+        <FundingModal
+          campaignId={crowdfund?.id || ''}
+          projectTitle={project.title}
+          currentRaised={crowdfund?.fundingRaised || 0}
+          fundingGoal={crowdfund?.fundingGoal || 0}
+          escrowAddress={crowdfund?.escrowAddress || ''}
         >
-          <span className=''>Back Project</span>
-        </BoundlessButton>
+          <BoundlessButton
+            className='flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#A7F950] text-base font-semibold text-black shadow-lg transition-all duration-200 hover:bg-[#A7F950] hover:shadow-xl'
+            icon={<HandCoins className='h-5 w-5' />}
+            iconPosition='left'
+          >
+            <span className=''>Back Project</span>
+          </BoundlessButton>
+        </FundingModal>
       )}
 
       {projectStatus === 'Completed' && (
@@ -134,31 +134,6 @@ export function ProjectSidebarActions({
           projectUrl={typeof window !== 'undefined' ? window.location.href : ''}
         />
       </div>
-
-      {/* Fund Project Modal
-      <FundProject
-        open={isFundModalOpen}
-        setOpen={setIsFundModalOpen}
-        project={{
-          _id: project._id,
-          title: project.title,
-          logo: project.logo || project.media?.logo,
-          contractId: project.contractId || project.escrowAddress, // Get contractId from project
-          funding: project.funding
-            ? {
-                goal: project.funding.goal,
-                raised: project.funding.raised,
-              }
-            : undefined,
-        }}
-      />
-
-      <WalletRequiredModal
-        open={showWalletModal}
-        onOpenChange={closeWalletModal}
-        actionName='fund project'
-        onWalletConnected={handleWalletConnected}
-      /> */}
     </div>
   );
 }
