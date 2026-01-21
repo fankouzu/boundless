@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface TimelineItem {
   id: string;
   title: string;
@@ -28,12 +30,12 @@ export interface TimelineProps {
   showConnector?: boolean;
   orientation?: 'vertical' | 'horizontal';
   variant?: 'default' | 'compact' | 'detailed';
-  projectId?: string;
+  projectSlug?: string;
 }
 
 export interface TimelineItemProps {
   item: TimelineItem;
   isLast: boolean;
   showConnector: boolean;
-  projectId?: string;
+  projectSlug?: string;
 }

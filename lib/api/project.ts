@@ -5,19 +5,12 @@ import {
   ProjectInitRequest,
   CreateCrowdfundingProjectRequest,
   CreateCrowdfundingProjectResponse,
-  PrepareCrowdfundingProjectResponse,
-  ConfirmCrowdfundingProjectRequest,
-  ConfirmCrowdfundingProjectResponse,
   GetCrowdfundingProjectsResponse,
   UpdateCrowdfundingProjectRequest,
   UpdateCrowdfundingProjectResponse,
   DeleteCrowdfundingProjectResponse,
   FundCrowdfundingProjectRequest,
   FundCrowdfundingProjectResponse,
-  PrepareFundingRequest,
-  PrepareFundingResponse,
-  ConfirmFundingRequest,
-  ConfirmFundingResponse,
   CrowdfundingCampaign,
   VoteResponse,
   GetProjectVotesRequest,
@@ -82,23 +75,6 @@ export const updateProject = async (
   return res.data.data;
 };
 
-export const launchCampaign = async (_projectId: string) => {
-  console.log('launchCampaign', _projectId);
-  // Mock implementation for now
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({
-        success: true,
-        message: 'Campaign launched successfully',
-        data: {
-          campaignId: 'launched-campaign-123',
-          shareLink: 'https://boundlessfi.xyz/campaigns/launched-campaign-123',
-        },
-      });
-    }, 2000);
-  });
-};
-
 export const generateCampaignLink = async (_projectId: string) => {
   // Mock implementation for now
   return new Promise(resolve => {
@@ -123,34 +99,6 @@ export const createCrowdfundingProject = async (
 ): Promise<CreateCrowdfundingProjectResponse> => {
   const res = await api.post('/crowdfunding', data);
   return res.data;
-};
-
-/**
- * @deprecated This endpoint no longer exists in the backend.
- * All blockchain transactions are now handled in the frontend.
- * Use createCrowdfundingProject directly with contractId, escrowAddress, and transactionHash.
- */
-export const prepareCrowdfundingProject = async (
-  data: CreateCrowdfundingProjectRequest
-): Promise<PrepareCrowdfundingProjectResponse> => {
-  console.log('prepareCrowdfundingProject', data);
-  throw new Error(
-    'prepareCrowdfundingProject is deprecated. All blockchain transactions should be handled in the frontend. Use createCrowdfundingProject with contractId, escrowAddress, and transactionHash.'
-  );
-};
-
-/**
- * @deprecated This endpoint no longer exists in the backend.
- * All blockchain transactions are now handled in the frontend.
- * Use createCrowdfundingProject directly with contractId, escrowAddress, and transactionHash.
- */
-export const confirmCrowdfundingProject = async (
-  data: ConfirmCrowdfundingProjectRequest
-): Promise<ConfirmCrowdfundingProjectResponse> => {
-  console.log('confirmCrowdfundingProject', data);
-  throw new Error(
-    'confirmCrowdfundingProject is deprecated. All blockchain transactions should be handled in the frontend. Use createCrowdfundingProject with contractId, escrowAddress, and transactionHash.'
-  );
 };
 
 // Crowdfunding Project API Functions
@@ -303,8 +251,92 @@ export const getCrowdfundingProject = async (
   projectId: string
 ): Promise<Crowdfunding> => {
   const res = await api.get(`/crowdfunding/${projectId}`);
-  console.log(res);
   return res.data.data;
+};
+
+/**
+ * Get detailed information about a specific milestone
+ * @param projectId - Campaign ID or slug
+ * @param milestoneIndex - Milestone index (0-based)
+ * @returns Promise with milestone details
+ */
+export const getCrowdfundingMilestone = async (
+  projectId: string,
+  milestoneIndex: number
+): Promise<any> => {
+  const res = await api.get(
+    `/crowdfunding/${projectId}/milestones/${milestoneIndex}`
+  );
+  return res.data.data;
+};
+
+/**
+ * Validate milestone submission data before blockchain interaction
+ * Strictly validates milestone submission data (status, evidence, documents) without performing any side effects.
+ * Use this before blockchain interaction to ensure data integrity.
+ *
+ * @param campaignIdOrSlug - Campaign ID or slug
+ * @param milestoneIndex - Milestone index (0-based)
+ * @param data - Submission data to validate
+ * @param data.evidence - Evidence of milestone completion (min 10 characters, at least 3 words)
+ * @param data.status - Milestone status (completed | in_review | submitted)
+ * @param data.documents - Optional array of document URLs as supporting evidence
+ * @returns Promise with validation result
+ */
+export const validateMilestoneSubmission = async (
+  campaignIdOrSlug: string,
+  milestoneIndex: number,
+  data: {
+    evidence: string;
+    status: 'completed' | 'in_review' | 'submitted';
+    documents?: string[];
+  }
+): Promise<{
+  validated: boolean;
+  data?: {
+    status: string;
+    evidence: string;
+    documents?: string[];
+  };
+  error?: string;
+}> => {
+  const res = await api.post(
+    `/crowdfunding/${campaignIdOrSlug}/milestones/${milestoneIndex}/validate-submission`,
+    data
+  );
+  return res.data.data;
+};
+
+/**
+ * Update milestone status with optional evidence and documents
+ * When submitting milestone completion, evidence is required and will be strictly validated.
+ *
+ * @param campaignIdOrSlug - Campaign ID or slug
+ * @param milestoneIndex - Milestone index (0-based)
+ * @param data - Update data
+ * @param data.status - Milestone status (pending | in_progress | completed | cancelled)
+ * @param data.evidence - Evidence of milestone completion (required for submission, min 10 characters)
+ * @param data.documents - Array of document URLs as evidence
+ * @param data.completedAt - Date when milestone was completed
+ * @param data.releaseTransactionHash - Transaction hash for fund release
+ * @returns Promise with updated milestone data
+ */
+export const updateMilestone = async (
+  campaignIdOrSlug: string,
+  milestoneIndex: number,
+  data: {
+    status?: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+    evidence?: string;
+    documents?: string[];
+    completedAt?: string;
+    releaseTransactionHash?: string;
+  }
+): Promise<any> => {
+  const res = await api.put(
+    `/crowdfunding/${campaignIdOrSlug}/milestones/${milestoneIndex}`,
+    data
+  );
+  return res.data;
 };
 
 /**
@@ -342,35 +374,6 @@ export const fundCrowdfundingProject = async (
   return res.data;
 };
 
-/**
- * @deprecated This endpoint no longer exists in the backend.
- * All blockchain transactions are now handled in the frontend.
- * Use fundCrowdfundingProject directly with amount and transactionHash.
- */
-export const prepareProjectFunding = async (
-  projectId: string,
-  data: PrepareFundingRequest
-): Promise<PrepareFundingResponse> => {
-  console.log('prepareProjectFunding', projectId, data);
-  throw new Error(
-    'prepareProjectFunding is deprecated. All blockchain transactions should be handled in the frontend. Use fundCrowdfundingProject with amount and transactionHash.'
-  );
-};
-
-/**
- * @deprecated This endpoint no longer exists in the backend.
- * All blockchain transactions are now handled in the frontend.
- * Use fundCrowdfundingProject directly with amount and transactionHash.
- */
-export const confirmProjectFunding = async (
-  projectId: string,
-  data: ConfirmFundingRequest
-): Promise<ConfirmFundingResponse> => {
-  console.log('confirmProjectFunding', projectId, data);
-  throw new Error(
-    'confirmProjectFunding is deprecated. All blockchain transactions should be handled in the frontend. Use fundCrowdfundingProject with amount and transactionHash.'
-  );
-};
 export const voteProject = async (
   projectId: string,
   value: 1 | -1 = 1

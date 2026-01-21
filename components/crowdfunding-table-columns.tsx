@@ -283,7 +283,7 @@ export const getCrowdfundingTableColumns = (
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem
-              asChild
+              // asChild
               className='text-error-400 hover:bg-error-400/10'
             >
               <DeleteCampaignAlert
@@ -291,8 +291,8 @@ export const getCrowdfundingTableColumns = (
                 campaignTitle={campaign.project.title}
                 onSuccess={onDeleteSuccess}
               >
-                <div className='flex cursor-pointer items-center'>
-                  <Trash2 className='mr-2 h-4 w-4' />
+                <div className='text-reds-500 tsext-sm psx-2 flex cursor-pointer items-center'>
+                  <Trash2 className='text-red-4s00 mr-2 h-4 w-4' />
                   Delete Campaign
                 </div>
               </DeleteCampaignAlert>

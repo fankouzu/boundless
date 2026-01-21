@@ -62,7 +62,7 @@ const TimelineStepper: React.FC<TimelineStepperProps> = () => {
           <div className='flex flex-col items-center'>
             <div
               className={cn(
-                'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full',
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
                 item.completed
                   ? 'border border-[#1C1C1C] bg-[#1C1C1C] text-[#B5B5B5]'
                   : item.current
@@ -86,9 +86,7 @@ const TimelineStepper: React.FC<TimelineStepperProps> = () => {
             <h4
               className={cn(
                 'mb-1 font-medium',
-                item.id === 'public-voting'
-                  ? 'text-[#F5F5F5]'
-                  : 'text-[#919191]'
+                item.id === 'public-voting' ? 'text-[#F5F5F5]' : 'text-gray-600'
               )}
             >
               {item.label}
@@ -96,9 +94,7 @@ const TimelineStepper: React.FC<TimelineStepperProps> = () => {
             <span
               className={cn(
                 'text-sm',
-                item.id === 'public-voting'
-                  ? 'text-[#B5B5B5]'
-                  : 'text-[#919191]'
+                item.id === 'public-voting' ? 'text-[#B5B5B5]' : 'text-gray-600'
               )}
             >
               {item.date}

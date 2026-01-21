@@ -51,8 +51,8 @@ export function BasicInfoSection({ data, onChange }: BasicInfoSectionProps) {
     try {
       const result = await uploadService.uploadSingle(file);
       onChange('logo', result.data.url);
-    } catch (error) {
-      console.error('Upload failed:', error);
+    } catch {
+      // Error handled silently
     } finally {
       setUploading(false);
     }
@@ -78,8 +78,8 @@ export function BasicInfoSection({ data, onChange }: BasicInfoSectionProps) {
     try {
       const result = await uploadService.uploadSingle(file);
       onChange('logo', result.data.url);
-    } catch (error) {
-      console.error('Upload failed:', error);
+    } catch {
+      // Error handled silently
     } finally {
       setUploading(false);
     }

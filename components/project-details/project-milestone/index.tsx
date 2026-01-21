@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Status } from './milestone-card';
 import EmptyState from '@/components/EmptyState';
 import { Crowdfunding } from '@/types/project';
+import Link from 'next/link';
 
 const filterOptions = [
   { value: 'all', label: 'All Milestones', count: 0 },
@@ -41,7 +42,7 @@ const ProjectMilestone = ({ crowdfund }: ProjectMilestoneProps) => {
       0
     );
 
-    return crowdfund.milestones.map(milestone => {
+    return crowdfund.milestones.map((milestone, index) => {
       const percentage =
         totalAmount > 0
           ? Math.round((milestone.amount / totalAmount) * 100)
@@ -92,7 +93,7 @@ const ProjectMilestone = ({ crowdfund }: ProjectMilestoneProps) => {
       const mappedStatus = mapStatus(milestone.status);
 
       return {
-        id: milestone.name,
+        id: index.toString(),
         title: milestone.name,
         description: milestone.description,
         dueDate,
@@ -169,6 +170,11 @@ const ProjectMilestone = ({ crowdfund }: ProjectMilestoneProps) => {
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+        <Link href={`/projects/${crowdfund.slug}/milestones`}>
+          <Button variant='ghost' className='text-white underline'>
+            View All Milestones
+          </Button>
+        </Link>
       </div>
 
       <Timeline
@@ -176,7 +182,7 @@ const ProjectMilestone = ({ crowdfund }: ProjectMilestoneProps) => {
         showConnector={true}
         variant='default'
         className='w-full'
-        projectId={crowdfund.project.id}
+        projectSlug={crowdfund.slug}
       />
 
       {filteredMilestones.length === 0 && (

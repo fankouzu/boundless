@@ -17,6 +17,7 @@ import {
   ProjectLinks,
   TagsSection,
 } from './components';
+import { CampaignStats } from '@/components/crowdfunding/campaign-stats';
 
 interface PageProps {
   params: Promise<{
@@ -47,16 +48,18 @@ export default function CampaignViewPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className='container mx-auto max-w-6xl px-4 py-8'>
-        <div className='text-center'>Loading...</div>
+      <div className='container mx-auto max-w-7xl px-4 py-12'>
+        <div className='text-muted-foreground text-center'>Loading...</div>
       </div>
     );
   }
 
   if (error || !campaign) {
     return (
-      <div className='container mx-auto max-w-6xl px-4 py-8'>
-        <div className='text-center'>Campaign not found</div>
+      <div className='container mx-auto max-w-7xl px-4 py-12'>
+        <div className='text-muted-foreground text-center'>
+          Campaign not found
+        </div>
       </div>
     );
   }
@@ -64,38 +67,54 @@ export default function CampaignViewPage({ params }: PageProps) {
   const project = campaign.project;
 
   return (
-    <div className='container mx-auto max-w-6xl px-4 py-8'>
+    <div className='container mx-auto max-w-7xl space-y-8 px-4 py-8'>
       {/* Header */}
-      <div className='mb-8 flex items-center justify-between'>
-        <div className='flex items-center gap-4'>
-          <Button variant='outline' size='sm' asChild>
-            <Link href='/me/crowdfunding'>
-              <ArrowLeft className='h-4 w-4' />
-            </Link>
-          </Button>
-          <div>
-            <h1 className='text-3xl font-bold text-white'>{project.title}</h1>
-            <p className='mt-1 text-white/70'>
-              {project.vision ? project.vision.slice(0, 100) : ''}...
-            </p>
+      <div className='flex items-start justify-between'>
+        <div className='flex-1'>
+          <div className='mb-4 flex items-center gap-3'>
+            <Button variant='ghost' size='sm' asChild className='h-8 w-8 p-0'>
+              <Link href='/me/crowdfunding'>
+                <ArrowLeft className='h-4 w-4' />
+              </Link>
+            </Button>
+            <div>
+              <h1 className='text-3xl font-bold tracking-tight'>
+                {project.title}
+              </h1>
+              <p className='text-muted-foreground mt-1 text-sm'>
+                {project.vision ? project.vision.slice(0, 80) : 'Campaign'}
+              </p>
+            </div>
           </div>
         </div>
-        <Button asChild>
-          <Link href={`/me/crowdfunding/${campaign.slug}/edit`}>
-            <Edit className='mr-2 h-4 w-4' />
-            Edit Campaign
-          </Link>
-        </Button>
+        <div className='flex items-center gap-2'>
+          <Button variant='outline' size='sm' asChild>
+            <Link href={`/me/crowdfunding/${campaign.slug}/contributions`}>
+              Contributions
+            </Link>
+          </Button>
+          <Button size='sm' asChild>
+            <Link href={`/me/crowdfunding/${campaign.slug}/edit`}>
+              <Edit className='mr-2 h-4 w-4' />
+              Edit
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
-        <div className='space-y-6 lg:col-span-2'>
+      {/* Campaign Stats */}
+      <CampaignStats campaign={campaign} />
+
+      {/* Main Content Grid */}
+      <div className='grid grid-cols-1 gap-8 lg:grid-cols-4'>
+        {/* Left Column - Main Content */}
+        <div className='space-y-6 lg:col-span-3'>
           <CampaignBanner project={project} />
           <ProjectDetails campaign={campaign} project={project} />
           <CampaignTabs campaign={campaign} />
         </div>
 
-        {/* Sidebar */}
+        {/* Right Sidebar */}
         <div className='space-y-6'>
           <FundingProgress campaign={campaign} />
           <ProjectLinks project={project} />

@@ -36,15 +36,14 @@ export default function MyCrowdfundingPage() {
       if (response.meta?.pagination) {
         setPagination(response.meta.pagination);
       }
-    } catch (error) {
-      console.error('Failed to fetch campaigns:', error);
+    } catch {
+      // Error handled by UI state
     } finally {
       setLoading(false);
     }
   }, []);
 
   React.useEffect(() => {
-    console.log(user);
     if (user) {
       fetchCampaigns();
     }

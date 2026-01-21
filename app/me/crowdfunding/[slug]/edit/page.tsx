@@ -161,8 +161,7 @@ export default function CampaignEditPage({ params }: PageProps) {
 
       // Redirect back to campaign view
       router.push(`/me/crowdfunding/${campaign.id}`);
-    } catch (error) {
-      console.error('Update failed:', error);
+    } catch {
       toast.error('Failed to update campaign');
     } finally {
       setSaving(false);

@@ -51,8 +51,8 @@ function ProjectCard({
 
   const isNewFormat =
     !!project && typeof project === 'object' && 'fundingGoal' in project;
-  const currentProjectId =
-    (isNewFormat && project ? project.id : projectId) || '';
+  const currentProjectSlug =
+    (isNewFormat && project ? project.slug : projectId) || '';
   const currentCreatorName =
     (isNewFormat && project ? project.project.creator.name : creatorName) ||
     'Unknown Creator';
@@ -98,7 +98,7 @@ function ProjectCard({
   const deadlineInDays = getDeadlineInDays();
 
   const handleClick = () => {
-    router.push(`/projects/${currentProjectId}`);
+    router.push(`/projects/${currentProjectSlug}`);
   };
 
   const getStatusStyles = () => {

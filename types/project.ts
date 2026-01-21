@@ -7,6 +7,7 @@ export interface Contributor {
   username: string;
   name: string;
   image: string;
+  message?: string;
 }
 
 export interface TeamMember {

@@ -27,7 +27,6 @@ export function ProjectLayout({
   const [isLeftScrollable, setIsLeftScrollable] = useState(true);
   const [isRightScrollable, setIsRightScrollable] = useState(true);
   const tabsListRef = useRef<HTMLDivElement>(null);
-  console.log('Rendering ProjectLayout with project:', project);
   const handleScroll = () => {
     if (tabsListRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = tabsListRef.current;
@@ -90,10 +89,10 @@ export function ProjectLayout({
 
   if (isMobile) {
     return (
-      <div className='min-h-screen overflow-x-hidden bg-gradient-to-b from-[#030303] via-[#0a0a0a] to-[#030303]'>
+      <div className='from-background-main-bg to-background-main-bg min-h-screen overflow-x-hidden bg-linear-to-b via-[#0a0a0a]'>
         <div className='w-full'>
           {/* Mobile Header with Sidebar */}
-          <div className='border-b border-gray-800/50 bg-gradient-to-b from-[#030303] to-[#0a0a0a] px-4 py-6 backdrop-blur-sm'>
+          <div className='from-background-main-bg border-b border-gray-800/50 bg-linear-to-b to-[#0a0a0a] px-4 py-6 backdrop-blur-sm'>
             <ProjectSidebar
               project={project}
               crowdfund={crowdfund}
@@ -102,7 +101,7 @@ export function ProjectLayout({
           </div>
 
           {/* Enhanced Tab Navigation */}
-          <div className='sticky top-0 z-40 w-full border-b border-gray-800/50 bg-[#030303]/80 backdrop-blur-md'>
+          <div className='bg-background-main-bg/80 sticky top-0 z-40 w-full border-b border-gray-800/50 backdrop-blur-md'>
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
@@ -188,12 +187,12 @@ export function ProjectLayout({
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-b from-[#030303] via-[#0a0a0a] to-[#030303]'>
+    <div className='min-h-screen bg-linear-to-b'>
       <div className='mx-auto max-w-7xl'>
         <div className='flex gap-8 lg:gap-12'>
           {/* Sidebar - Sticky */}
           <div className='sticky top-8 h-fit w-full max-w-[420px] shrink-0'>
-            <div className='rounded-2xl border border-gray-800/50 bg-gradient-to-b from-gray-900/50 to-gray-950/50 p-6 shadow-xl backdrop-blur-sm'>
+            <div className='rounded-2xl border border-gray-800/50 bg-linear-to-b from-gray-900/50 to-gray-950/50 p-6 shadow-xl backdrop-blur-sm'>
               <ProjectSidebar
                 project={project}
                 crowdfund={crowdfund}
@@ -210,7 +209,7 @@ export function ProjectLayout({
               className='w-full'
             >
               {/* Enhanced Tab Navigation */}
-              <div className='sticky top-0 z-30 mb-8 border-b border-gray-800/50 bg-[#030303]/80 py-0 backdrop-blur-md'>
+              <div className='bg-background-main-bg/80 sticky top-0 z-30 mb-8 border-b border-gray-800/50 py-0 backdrop-blur-md'>
                 <TabsList className='h-auto w-fit justify-start gap-2 rounded-none bg-transparent p-0'>
                   {[
                     { value: 'details', label: 'Details' },
