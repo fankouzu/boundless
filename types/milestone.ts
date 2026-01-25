@@ -19,7 +19,7 @@ export interface Milestone {
   endDate: string;
   budget: number;
   currency: string;
-  deliverables: string[]; // Legacy field, kept for backward compatibility
+  deliverables?: string[]; // Legacy field, kept for backward compatibility
   tasks?: Task[]; // New structured task list
   demoVideo?: string;
   attachments?: Array<{
