@@ -31,14 +31,12 @@ const MilestonePage = async ({ params }: MilestonePageProps) => {
 
     // Transform milestone to match component expectations
     milestone = foundMilestone
-      ? {
+      ? ({
+          ...foundMilestone,
           _id: foundMilestone.id || foundMilestone.name,
           title: foundMilestone.name,
-          description: foundMilestone.description,
-          status: foundMilestone.status,
           dueDate: foundMilestone.endDate,
-          amount: foundMilestone.amount,
-        }
+        } as any)
       : null;
   } catch {
     // Handle error silently
