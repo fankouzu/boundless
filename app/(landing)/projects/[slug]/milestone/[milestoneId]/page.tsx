@@ -2,14 +2,14 @@ import React from 'react';
 import MilstoneOverview from '@/components/project-details/project-milestone/milestone-details/MilstoneOverview';
 import MilestoneDetails from '@/components/project-details/project-milestone/milestone-details/MilestoneDetails';
 import MilestoneLinks from '@/components/project-details/project-milestone/milestone-details/MilestoneLinks';
-import { MilestoneStatusCard } from './components/MilestoneStatusCard';
-import { MilestoneEvidence } from './components/MilestoneEvidence';
+import { MilestoneStatusCard } from '@/features/projects/components/Milestone/MilestoneStatusCard';
+import { MilestoneEvidence } from '@/features/projects/components/Milestone/MilestoneEvidence';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   getCrowdfundingProject,
   getCrowdfundingMilestone,
-} from '@/lib/api/project';
-import { Crowdfunding } from '@/types/project';
+} from '@/features/projects/api';
+import { Crowdfunding } from '@/features/projects/types';
 
 interface MilestonePageProps {
   params: Promise<{
@@ -20,7 +20,6 @@ interface MilestonePageProps {
 
 const MilestonePage = async ({ params }: MilestonePageProps) => {
   const { slug, milestoneId } = await params;
-  const milestoneIndex = parseInt(milestoneId, 10);
 
   // Fetch project data and specific milestone
   let project: Crowdfunding | null = null;
@@ -30,7 +29,7 @@ const MilestonePage = async ({ params }: MilestonePageProps) => {
     // Fetch both project and milestone data
     const [crowdfundingProject, milestoneData] = await Promise.all([
       getCrowdfundingProject(slug),
-      getCrowdfundingMilestone(slug, milestoneIndex),
+      getCrowdfundingMilestone(slug, milestoneId),
     ]);
 
     project = crowdfundingProject;

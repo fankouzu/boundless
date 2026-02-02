@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useMarkdown } from '@/hooks/use-markdown';
-import { Crowdfunding } from '@/types/project';
+import { Crowdfunding } from '@/features/projects/types';
 import Image from 'next/image';
 
 interface ProjectDetailsProps {

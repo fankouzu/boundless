@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { getMyCrowdfundingProjects } from '@/lib/api/project';
+import { getMyCrowdfundingProjects } from '@/features/projects/api';
 import { CrowdfundingCampaign } from '@/lib/api/types';
 import { useAuthStatus } from '@/hooks/use-auth';
 import { CrowdfundingDataTable } from '@/components/crowdfunding-data-table';

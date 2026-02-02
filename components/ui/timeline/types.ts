@@ -22,6 +22,7 @@ export interface TimelineItem {
   deadline?: string;
   feedbackDays?: number;
   isUnlocked?: boolean;
+  campaignId?: string;
 }
 
 export interface TimelineProps {

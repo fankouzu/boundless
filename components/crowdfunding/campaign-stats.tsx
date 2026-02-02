@@ -8,7 +8,7 @@ import {
   DollarSign,
   ArrowUpRight,
 } from 'lucide-react';
-import { Crowdfunding } from '@/types/project';
+import { Crowdfunding } from '@/features/projects/types';
 import Link from 'next/link';
 
 interface CampaignStatsProps {

@@ -1,7 +1,7 @@
 'use client';
 
 import { MetricCard } from '@/components/ui/metric-card';
-import { Contributor } from '@/types/project';
+import { Contributor } from '@/features/projects/types';
 import { DollarSign, TrendingUp, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

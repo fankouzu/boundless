@@ -6,7 +6,7 @@ import { ProjectSidebarProgress } from './ProjectSidebarProgress';
 import { ProjectSidebarActions } from './ProjectSidebarActions';
 import { ProjectSidebarCreator } from './ProjectSidebarCreator';
 import { ProjectSidebarLinks } from './ProjectSidebarLinks';
-import { voteProject } from '@/lib/api/project';
+import { voteProject } from '@/features/projects/api';
 import { getProjectStatus } from './utils';
 import { ProjectSidebarProps } from './types';
 

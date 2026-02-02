@@ -1,4 +1,4 @@
-import { Crowdfunding, CrowdfundingProject } from '@/types/project';
+import { Crowdfunding, CrowdfundingProject } from '@/features/projects/types';
 import { ProjectStatus } from './types';
 
 /**

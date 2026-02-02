@@ -11,8 +11,8 @@ import { toast } from 'sonner';
 import {
   getCrowdfundingProject,
   updateCrowdfundingProject,
-} from '@/lib/api/project';
-import { Crowdfunding } from '@/types/project';
+} from '@/features/projects/api';
+import { Crowdfunding } from '@/features/projects/types';
 
 import {
   BasicInfoSection,

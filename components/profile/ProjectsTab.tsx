@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import ProjectCard from '../landing-page/project/ProjectCard';
+// import ProjectCard from '../landing-page/project/ProjectCard';
 import { Project } from '@/types/user';
 import { useWindowSize } from '@/hooks/use-window-size';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 import { GetMeResponse } from '@/lib/api/types';
+import { mapProjectToCardData } from '@/features/projects/utils/card-mappers';
+import ProjectCard from '@/features/projects/components/ProjectCard';
 
 interface ProjectsTabProps {
   user: GetMeResponse;
@@ -18,26 +20,6 @@ export default function ProjectsTab({ user }: ProjectsTabProps) {
   const [page, setPage] = useState(1);
   const { height: windowHeight } = useWindowSize();
   const itemsPerPage = 6;
-
-  // Map project status to ProjectCard expected status
-  const getProjectStatus = (
-    status: string
-  ): 'Validation' | 'Funding' | 'Funded' | 'Completed' => {
-    switch (status) {
-      case 'under_review':
-        return 'Validation';
-      case 'funding':
-        return 'Funding';
-      case 'funded':
-        return 'Funded';
-      case 'completed':
-        return 'Completed';
-      case 'in_progress':
-        return 'Funding';
-      default:
-        return 'Validation';
-    }
-  };
 
   const calculateScrollHeight = () => {
     if (!windowHeight) return '400px';
@@ -127,20 +109,12 @@ export default function ProjectsTab({ user }: ProjectsTabProps) {
             >
               <ProjectCard
                 newTab={true}
-                projectId={project.id}
-                creatorName={``}
-                creatorLogo={user.user.image || '/avatar.png'}
-                projectImage={project.logo || '/bitmed.png'}
-                projectTitle={project.title}
-                projectDescription={project.description}
-                status={getProjectStatus(project.status)}
-                deadlineInDays={30}
                 isFullWidth={true}
-                funding={{
-                  current: 0,
-                  goal: 10000,
-                  currency: 'USDC',
-                }}
+                data={mapProjectToCardData(project, {
+                  // Yes, `ProjectsTab` is for "Your Projects", so creator is the user.
+                  name: user.user.name || 'User',
+                  image: user.user.image || '/avatar.png',
+                })}
               />
             </Link>
           ))}

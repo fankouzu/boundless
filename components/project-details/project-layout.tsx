@@ -13,7 +13,7 @@ import ProjectVoters from './project-voters';
 import ProjectBackers from './project-backers';
 import { ProjectSidebar } from './project-sidebar';
 import { cn } from '@/lib/utils';
-import { Crowdfunding, CrowdfundingProject } from '@/types/project';
+import { Crowdfunding, CrowdfundingProject } from '@/features/projects/types';
 
 export function ProjectLayout({
   project,

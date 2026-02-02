@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { deleteCrowdfundingProject } from '@/lib/api/project';
+import { deleteCrowdfundingProject } from '@/features/projects/api';
 
 interface DeleteCampaignAlertProps {
   campaignId: string;

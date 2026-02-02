@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Milestone } from '@/types/project';
+import { Milestone } from '@/features/projects/types';
 
 interface MilestoneDetailHeaderProps {
   title: string;
@@ -15,7 +15,7 @@ interface MilestoneDetailHeaderProps {
 }
 
 const getStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
+  switch (status?.toLowerCase()) {
     case 'completed':
     case 'approved':
       return 'bg-green-500/10 text-green-500 border-green-500/20';
@@ -57,8 +57,11 @@ export function MilestoneDetailHeader({
 
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-3'>
-          <Badge className={getStatusColor(milestone.status)} variant='outline'>
-            {milestone.status}
+          <Badge
+            className={getStatusColor(milestone.reviewStatus)}
+            variant='outline'
+          >
+            {milestone.reviewStatus}
           </Badge>
           <p className='text-muted-foreground text-sm'>{title}</p>
         </div>

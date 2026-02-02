@@ -8,10 +8,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Package, ArrowLeft } from 'lucide-react';
 import { useAuthStatus } from '@/hooks/use-auth';
-import ProjectCard from '@/components/landing-page/project/ProjectCard';
+import { mapProjectToCardData } from '@/features/projects/utils/card-mappers';
+import ProjectCard from '@/features/projects/components/ProjectCard';
+
+// ... (existing imports)
 
 export default function MyProjectsPage() {
-  const { user, isLoading } = useAuthStatus();
+  const { user: authUser, isLoading } = useAuthStatus();
   const [meData, setMeData] = useState<GetMeResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,12 +30,13 @@ export default function MyProjectsPage() {
       }
     };
 
-    if (user) {
+    if (authUser) {
       fetchData();
     }
-  }, [user]);
+  }, [authUser]);
 
   if (isLoading || loading) {
+    // ... (rendering loading)
     return (
       <div className='container mx-auto px-4 py-8'>
         <div className='text-center'>Loading...</div>
@@ -41,6 +45,7 @@ export default function MyProjectsPage() {
   }
 
   if (!meData) {
+    // ... (rendering error)
     return (
       <div className='container mx-auto px-4 py-8'>
         <div className='text-center'>Failed to load data</div>
@@ -55,26 +60,10 @@ export default function MyProjectsPage() {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  // Map project status to ProjectCard status
-  const mapProjectStatus = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'active':
-      case 'published':
-        return 'Funding';
-      case 'draft':
-        return 'Validation';
-      case 'completed':
-        return 'Completed';
-      case 'funded':
-        return 'Funded';
-      default:
-        return 'Funding';
-    }
-  };
-
   return (
     <div className='container mx-auto px-4 py-8'>
       <div className='mb-6'>
+        {/* ... (header) ... */}
         <Button asChild variant='ghost' className='mb-4'>
           <Link href='/me' className='flex items-center gap-2'>
             <ArrowLeft className='h-4 w-4' />
@@ -117,18 +106,10 @@ export default function MyProjectsPage() {
             <ProjectCard
               isFullWidth
               key={project.id}
-              projectId={project.id}
-              creatorName={user?.name || 'You'}
-              creatorLogo={user?.image || '/user.png'}
-              projectImage={
-                project.logo ||
-                project.banner ||
-                '/landing/explore/project-placeholder-1.png'
-              }
-              projectTitle={project.title}
-              projectDescription={project.description}
-              status={mapProjectStatus(project.status)}
-              deadlineInDays={0}
+              data={mapProjectToCardData(project, {
+                name: authUser?.name || 'You',
+                image: authUser?.image || '/user.png',
+              })}
             />
           ))}
         </div>

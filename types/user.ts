@@ -70,7 +70,7 @@ export interface UserMetadata {
 export interface Project {
   id: string;
   title: string;
-  description: string;
+  vision: string;
   category: string;
   status: string; // Changed from ProjectStatus to string
   banner?: string | null;
@@ -187,7 +187,7 @@ export interface User {
   projects?: Array<{
     id: string;
     title: string;
-    description: string;
+    vision: string;
     category: string;
     status: string;
     banner?: string | null;

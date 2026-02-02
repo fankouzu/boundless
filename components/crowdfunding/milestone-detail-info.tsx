@@ -2,7 +2,7 @@
 
 import { Calendar, Target } from 'lucide-react';
 import { format } from 'date-fns';
-import { Milestone, Crowdfunding } from '@/types/project';
+import { Milestone, Crowdfunding } from '@/features/projects/types';
 
 interface MilestoneDetailInfoProps {
   milestone: Milestone;
@@ -14,10 +14,12 @@ export function MilestoneDetailInfo({
   campaign,
 }: MilestoneDetailInfoProps) {
   const totalMilestoneAmount =
-    campaign.milestones?.reduce((sum, m) => sum + m.amount, 0) || 0;
+    campaign.milestones?.reduce((sum, m) => sum + (m.amount || 0), 0) || 0;
+
+  const amount = milestone.amount || 0;
   const milestonePercentage =
     totalMilestoneAmount > 0
-      ? ((milestone.amount / totalMilestoneAmount) * 100).toFixed(1)
+      ? ((amount / totalMilestoneAmount) * 100).toFixed(1)
       : '0';
 
   return (
@@ -30,7 +32,7 @@ export function MilestoneDetailInfo({
         </div>
         <div className='flex items-baseline gap-2'>
           <span className='text-2xl font-semibold'>
-            {campaign.fundingCurrency} {milestone.amount.toLocaleString()}
+            {campaign.fundingCurrency} {amount.toLocaleString()}
           </span>
           <span className='text-muted-foreground text-sm'>
             ({milestonePercentage}% of total)
@@ -45,7 +47,9 @@ export function MilestoneDetailInfo({
           <span>Start Date</span>
         </div>
         <time className='text-lg font-semibold'>
-          {format(new Date(milestone.startDate), 'MMM d, yyyy')}
+          {milestone.startDate
+            ? format(new Date(milestone.startDate), 'MMM d, yyyy')
+            : 'TBD'}
         </time>
       </div>
 
@@ -56,7 +60,9 @@ export function MilestoneDetailInfo({
           <span>Due Date</span>
         </div>
         <time className='text-lg font-semibold'>
-          {format(new Date(milestone.endDate), 'MMM d, yyyy')}
+          {milestone.endDate
+            ? format(new Date(milestone.endDate), 'MMM d, yyyy')
+            : 'TBD'}
         </time>
       </div>
     </div>

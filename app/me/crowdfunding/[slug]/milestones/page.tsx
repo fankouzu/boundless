@@ -6,8 +6,8 @@ import { ArrowLeft } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
-import { getCrowdfundingProject } from '@/lib/api/project';
-import { Crowdfunding } from '@/types/project';
+import { getCrowdfundingProject } from '@/features/projects/api';
+import { Crowdfunding } from '@/features/projects/types';
 
 import { MilestoneCard } from '@/components/crowdfunding/milestone-card';
 import { MilestonesMetrics } from '@/components/crowdfunding/milestones-metrics';

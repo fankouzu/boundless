@@ -2,7 +2,7 @@ import api from './api';
 import { ApiResponse } from '@/lib/api/types';
 import { authClient } from '@/lib/auth-client';
 import { User } from '@/types/user';
-import { PublicUserProfile } from '@/types/project';
+import { PublicUserProfile } from '@/features/projects/types';
 import { GetMeResponse } from '@/lib/api/types';
 
 /**

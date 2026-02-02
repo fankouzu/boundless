@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, X, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Milestone } from '@/types/project';
+import { Milestone } from '@/features/projects/types';
 import {
   DndContext,
   closestCenter,
@@ -260,9 +260,11 @@ export function MilestonesSection({
       name: '',
       description: '',
       amount: 0,
-      status: 'pending',
+      fundingPercentage: 0,
+      reviewStatus: 'pending',
       startDate: '',
       endDate: '',
+      title: '',
     };
     onChange([...milestones, newMilestone]);
   };

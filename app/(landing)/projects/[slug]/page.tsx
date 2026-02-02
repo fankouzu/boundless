@@ -2,8 +2,8 @@
 import { ProjectLayout } from '@/components/project-details/project-layout';
 import { ProjectLoading } from '@/components/project-details/project-loading';
 import { notFound } from 'next/navigation';
-import { getCrowdfundingProject } from '@/lib/api/project';
-import type { Crowdfunding } from '@/types/project';
+import { getCrowdfundingProject } from '@/features/projects/api';
+import type { Crowdfunding } from '@/features/projects/types';
 import { use, useEffect, useState } from 'react';
 
 interface ProjectPageProps {

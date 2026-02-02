@@ -10,7 +10,7 @@ interface Milestone {
   name: string;
   description: string;
   amount: number;
-  status: string;
+  reviewStatus: string;
   endDate: string;
   progress?: number;
 }
@@ -27,7 +27,7 @@ export function CampaignMilestonesTab({
   fundingCurrency,
 }: CampaignMilestonesTabProps) {
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'completed':
         return 'bg-green-500/20 text-green-400 border-green-500/30';
       case 'active':
@@ -43,7 +43,7 @@ export function CampaignMilestonesTab({
   };
 
   const getMilestoneProgress = (milestone: Milestone) => {
-    if (milestone.status.toLowerCase() === 'completed') return 100;
+    if (milestone.reviewStatus?.toLowerCase() === 'completed') return 100;
     if (fundingRaised >= milestone.amount) return 100;
     return Math.min((fundingRaised / milestone.amount) * 100, 100);
   };
@@ -76,9 +76,12 @@ export function CampaignMilestonesTab({
         <div className='space-y-6'>
           {milestones.map((milestone, index) => {
             const progress = getMilestoneProgress(milestone);
-            const isCompleted = milestone.status.toLowerCase() === 'completed';
+            const isCompleted =
+              milestone.reviewStatus?.toLowerCase() === 'completed';
             const isOverdue =
-              new Date(milestone.endDate) < new Date() && !isCompleted;
+              milestone.endDate &&
+              new Date(milestone.endDate) < new Date() &&
+              !isCompleted;
 
             return (
               <div
@@ -96,9 +99,9 @@ export function CampaignMilestonesTab({
                   </div>
                   <Badge
                     variant='outline'
-                    className={getStatusColor(milestone.status)}
+                    className={getStatusColor(milestone.reviewStatus)}
                   >
-                    {milestone.status}
+                    {milestone.reviewStatus || 'Pending'}
                   </Badge>
                 </div>
 
@@ -130,7 +133,9 @@ export function CampaignMilestonesTab({
                     <div className='flex items-center gap-1 text-white/60'>
                       <Calendar className='h-4 w-4' />
                       <span>
-                        {format(new Date(milestone.endDate), 'MMM dd, yyyy')}
+                        {milestone.endDate
+                          ? format(new Date(milestone.endDate), 'MMM dd, yyyy')
+                          : 'TBD'}
                         {isOverdue && (
                           <span className='ml-2 text-red-400'>(Overdue)</span>
                         )}

@@ -41,7 +41,8 @@ interface SubmitEvidenceModalProps {
   isSubmitting?: boolean;
   onSubmit?: (data: {
     status: string;
-    evidence: string;
+    submissionNotes: string;
+    proofOfWorkLinks: string[];
     documents?: File[];
   }) => Promise<void>;
 }
@@ -54,7 +55,9 @@ export function SubmitEvidenceModal({
   onSubmit,
 }: SubmitEvidenceModalProps) {
   const [status, setStatus] = useState('');
-  const [evidence, setEvidence] = useState('');
+  const [submissionNotes, setSubmissionNotes] = useState('');
+  const [proofOfWorkLinks, setProofOfWorkLinks] = useState<string[]>([]);
+  const [newLink, setNewLink] = useState('');
   const [documents, setDocuments] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -118,6 +121,22 @@ export function SubmitEvidenceModal({
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
+  const addLink = () => {
+    if (!newLink) return;
+    try {
+      new URL(newLink);
+      setProofOfWorkLinks([...proofOfWorkLinks, newLink]);
+      setNewLink('');
+      setError('');
+    } catch {
+      setError('Please enter a valid URL');
+    }
+  };
+
+  const removeLink = (index: number) => {
+    setProofOfWorkLinks(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -127,18 +146,18 @@ export function SubmitEvidenceModal({
       return;
     }
 
-    if (!evidence.trim()) {
-      setError('Please provide evidence details');
+    if (!submissionNotes.trim()) {
+      setError('Please provide submission notes');
       return;
     }
 
-    if (evidence.trim().length < 100) {
-      setError('Evidence description must be at least 100 characters');
+    if (submissionNotes.trim().length < 10) {
+      setError('Submission notes must be at least 10 characters');
       return;
     }
 
-    if (evidence.trim().length > 2000) {
-      setError('Evidence description must not exceed 2000 characters');
+    if (proofOfWorkLinks.length === 0 && documents.length === 0) {
+      setError('At least one proof of work (file or link) is required');
       return;
     }
 
@@ -147,17 +166,16 @@ export function SubmitEvidenceModal({
       if (onSubmit) {
         await onSubmit({
           status,
-          evidence,
+          submissionNotes,
+          proofOfWorkLinks,
           documents: documents.length > 0 ? documents : undefined,
         });
       }
 
-      // TODO: Log milestone ID for API call
-      // API call would be: submitEvidence(milestoneId, { status, evidence, documents })
-
       // Reset form
       setStatus('');
-      setEvidence('');
+      setSubmissionNotes('');
+      setProofOfWorkLinks([]);
       setDocuments([]);
       onOpenChange(false);
     } catch (err) {
@@ -171,7 +189,8 @@ export function SubmitEvidenceModal({
 
   const handleCancel = () => {
     setStatus('');
-    setEvidence('');
+    setSubmissionNotes('');
+    setProofOfWorkLinks([]);
     setDocuments([]);
     setError('');
     onOpenChange(false);
@@ -225,36 +244,78 @@ export function SubmitEvidenceModal({
             </Select>
           </div>
 
-          {/* Evidence Textarea */}
+          {/* Submission Notes */}
           <div className='space-y-2'>
-            <Label htmlFor='evidence' className='text-sm'>
-              Evidence / Proof of Work *
+            <Label htmlFor='submissionNotes' className='text-sm'>
+              Submission Notes *
             </Label>
             <Textarea
-              id='evidence'
-              value={evidence}
-              onChange={e => setEvidence(e.target.value)}
-              placeholder='Describe work completed, achievements, and relevant links...'
-              className='min-h-[160px] resize-none text-sm'
+              id='submissionNotes'
+              value={submissionNotes}
+              onChange={e => setSubmissionNotes(e.target.value)}
+              placeholder='Describe work completed, achievements, and other notes...'
+              className='min-h-[100px] resize-none text-sm'
               disabled={submitting}
               maxLength={2000}
             />
             <div className='flex items-center justify-between text-xs'>
               <p className='text-muted-foreground'>
-                Min 100 • Max 2000 characters
+                Min 10 • Max 2000 characters
               </p>
               <p
                 className={`font-mono tabular-nums ${
-                  evidence.length < 100
+                  submissionNotes.length < 10
                     ? 'text-amber-500'
-                    : evidence.length > 1800
+                    : submissionNotes.length > 1800
                       ? 'text-red-500'
                       : 'text-muted-foreground'
                 }`}
               >
-                {evidence.length}/2000
+                {submissionNotes.length}/2000
               </p>
             </div>
+          </div>
+
+          {/* Proof of Work Links */}
+          <div className='space-y-3'>
+            <Label htmlFor='links'>Proof of Work Links</Label>
+            <div className='flex gap-2'>
+              <Input
+                id='links'
+                value={newLink}
+                onChange={e => setNewLink(e.target.value)}
+                placeholder='https://github.com/...'
+                className='text-sm'
+                disabled={submitting}
+              />
+              <Button
+                type='button'
+                onClick={addLink}
+                disabled={submitting}
+                variant='secondary'
+              >
+                Add
+              </Button>
+            </div>
+            {proofOfWorkLinks.length > 0 && (
+              <ul className='space-y-2'>
+                {proofOfWorkLinks.map((link, index) => (
+                  <li
+                    key={index}
+                    className='bg-muted/20 flex items-center justify-between rounded px-3 py-2 text-sm'
+                  >
+                    <span className='truncate text-white/80'>{link}</span>
+                    <button
+                      type='button'
+                      onClick={() => removeLink(index)}
+                      className='text-gray-400 hover:text-red-400'
+                    >
+                      <X className='h-4 w-4' />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Document Upload (Optional) */}

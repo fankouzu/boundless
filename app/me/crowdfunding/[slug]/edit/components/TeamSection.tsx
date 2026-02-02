@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Plus, X, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { TeamMember } from '@/types/project';
+import { TeamMember } from '@/features/projects/types';
 
 interface TeamSectionProps {
   team: TeamMember[];

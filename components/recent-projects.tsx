@@ -36,7 +36,7 @@ import Image from 'next/image';
 interface Project {
   id: string;
   title: string;
-  description: string;
+  vision: string;
   category: string;
   status: string;
   banner?: string | null;

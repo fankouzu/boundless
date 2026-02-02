@@ -21,7 +21,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { DataTablePagination } from '@/components/ui/data-table-pagination';
-import { Contributor } from '@/types/project';
+import { Contributor } from '@/features/projects/types';
 import { contributionsTableColumns } from './contributions-table-columns';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';

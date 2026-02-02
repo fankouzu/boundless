@@ -1,8 +1,8 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { getCrowdfundingProject } from '@/lib/api/project';
-import type { Crowdfunding } from '@/types/project';
+import { getCrowdfundingProject } from '@/features/projects/api';
+import type { Crowdfunding } from '@/features/projects/types';
 import { ContributionsDataTable } from './contributions-data-table';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';

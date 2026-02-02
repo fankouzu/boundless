@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { contributeToProject } from '@/lib/api/project';
+import { contributeToProject } from '@/features/projects/api';
 import { useWalletInfo } from '@/hooks/use-wallet';
 import { Loader2, DollarSign, MessageSquare, EyeOff } from 'lucide-react';
 import {

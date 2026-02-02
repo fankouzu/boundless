@@ -4,7 +4,7 @@ import React from 'react';
 
 import Link from 'next/link';
 import { Github, Globe, Linkedin, Mail, Send } from 'lucide-react';
-import { Crowdfunding } from '@/types/project';
+import { Crowdfunding } from '@/features/projects/types';
 
 interface MilestoneDetailLinksProps {
   campaign: Crowdfunding;

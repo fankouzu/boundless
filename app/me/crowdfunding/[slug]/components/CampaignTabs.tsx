@@ -4,7 +4,7 @@ import { CampaignTeamTab } from '@/components/crowdfunding/campaign-team-tab';
 import { CampaignMilestonesTab } from '@/components/crowdfunding/campaign-milestones-tab';
 import { CampaignCommentsTab } from '@/components/crowdfunding/campaign-comments-tab';
 import { CampaignFundingTab } from '@/components/crowdfunding/campaign-funding-tab';
-import { Crowdfunding } from '@/types/project';
+import { Crowdfunding } from '@/features/projects/types';
 
 interface CampaignTabsProps {
   campaign: Crowdfunding;

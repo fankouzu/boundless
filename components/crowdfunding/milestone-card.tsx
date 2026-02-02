@@ -1,6 +1,6 @@
 'use client';
 
-import { Milestone } from '@/types/project';
+import { Milestone } from '@/features/projects/types';
 import { Badge } from '@/components/ui/badge';
 import { MetricCard } from '@/components/ui/metric-card';
 import { Progress } from '@/components/ui/progress';
@@ -24,7 +24,7 @@ interface MilestoneCardProps {
 }
 
 const getStatusIcon = (status: string) => {
-  switch (status.toLowerCase()) {
+  switch (status?.toLowerCase()) {
     case 'completed':
       return <CheckCircle2 className='h-5 w-5 text-emerald-500' />;
     case 'in progress':
@@ -40,7 +40,7 @@ const getStatusIcon = (status: string) => {
 };
 
 const getStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
+  switch (status?.toLowerCase()) {
     case 'completed':
       return 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20';
     case 'in progress':
@@ -61,7 +61,8 @@ export function MilestoneCard({
   totalAmount,
   campaignSlug,
 }: MilestoneCardProps) {
-  const percentOfTotal = (milestone.amount / totalAmount) * 100;
+  const amount = milestone.amount || 0;
+  const percentOfTotal = totalAmount > 0 ? (amount / totalAmount) * 100 : 0;
   const daysUntilEnd = milestone.endDate
     ? Math.ceil(
         (new Date(milestone.endDate).getTime() - new Date().getTime()) /
@@ -70,7 +71,7 @@ export function MilestoneCard({
     : 0;
 
   return (
-    <Link href={`${campaignSlug}/milestones/${index}`}>
+    <Link href={`${campaignSlug}/milestones/${milestone.id}`}>
       <MetricCard
         className='group relative cursor-pointer overflow-hidden transition-all duration-300 hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/10'
         contentClassName='p-4'
@@ -99,11 +100,11 @@ export function MilestoneCard({
             <div className='ml-4 flex-shrink-0'>
               <Badge
                 variant='outline'
-                className={`flex items-center gap-2 ${getStatusColor(milestone.status)}`}
+                className={`flex items-center gap-2 ${getStatusColor(milestone.reviewStatus)}`}
               >
-                {getStatusIcon(milestone.status)}
+                {getStatusIcon(milestone.reviewStatus)}
                 <span className='text-xs font-medium capitalize'>
-                  {milestone.status}
+                  {milestone.reviewStatus || 'Pending'}
                 </span>
               </Badge>
             </div>
@@ -119,7 +120,7 @@ export function MilestoneCard({
                   Amount
                 </p>
                 <p className='text-foreground text-sm font-semibold'>
-                  ${milestone.amount.toLocaleString()}
+                  ${amount.toLocaleString()}
                 </p>
               </div>
             </div>
@@ -132,8 +133,13 @@ export function MilestoneCard({
                   Timeline
                 </p>
                 <p className='text-foreground text-sm font-semibold'>
-                  {format(new Date(milestone.startDate), 'MMM d')} -{' '}
-                  {format(new Date(milestone.endDate), 'MMM d')}
+                  {milestone.startDate
+                    ? format(new Date(milestone.startDate), 'MMM d')
+                    : 'TBD'}{' '}
+                  -{' '}
+                  {milestone.endDate
+                    ? format(new Date(milestone.endDate), 'MMM d')
+                    : 'TBD'}
                 </p>
               </div>
             </div>

@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { Github } from 'lucide-react';
 import Image from 'next/image';
-import { CrowdfundingProject } from '@/types/project';
+import { CrowdfundingProject } from '@/features/projects/types';
 
 interface MilstoneOverviewProps {
   project?: CrowdfundingProject | null;

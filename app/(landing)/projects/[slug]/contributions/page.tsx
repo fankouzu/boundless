@@ -1,9 +1,9 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { getCrowdfundingProject } from '@/lib/api/project';
-import type { Crowdfunding } from '@/types/project';
-import { ContributionsDataTable } from './contributions-data-table';
+import { getCrowdfundingProject } from '@/features/projects/api';
+import type { Crowdfunding } from '@/features/projects/types';
+import { ContributionsDataTable } from '@/features/projects/components/Contributions/ContributionsDataTable';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -61,7 +61,7 @@ export default function ContributionsPage({ params }: ContributionsPageProps) {
                   {project.project.title}
                 </span>
               </p>
-              <span className='text-[#484848]'>•</span>
+              <span className='text-gray-800'>•</span>
               <p className='text-[#B5B5B5]'>
                 {project.contributors.length}{' '}
                 {project.contributors.length === 1
@@ -83,7 +83,7 @@ export default function ContributionsPage({ params }: ContributionsPageProps) {
           <ContributionsDataTable data={project.contributors} loading={false} />
         ) : (
           <div className='flex items-center justify-center py-20'>
-            <p className='text-[#919191]'>Failed to load contributions</p>
+            <p className='text-gray-600'>Failed to load contributions</p>
           </div>
         )}
       </div>

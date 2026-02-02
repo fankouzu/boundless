@@ -6,9 +6,9 @@ import {
   getCrowdfundingMilestone,
   validateMilestoneSubmission,
   updateMilestone,
-} from '@/lib/api/project';
+} from '@/features/projects/api';
 import { uploadMilestoneDocuments } from '@/lib/api/upload';
-import { Crowdfunding, Milestone } from '@/types/project';
+import { Crowdfunding, Milestone } from '@/features/projects/types';
 import { MilestoneDetailHeader } from '@/components/crowdfunding/milestone-detail-header';
 import { MilestoneDetailInfo } from '@/components/crowdfunding/milestone-detail-info';
 import { MilestoneDetailDescription } from '@/components/crowdfunding/milestone-detail-description';
@@ -78,7 +78,7 @@ export default function MilestoneDetailPage({ params }: PageProps) {
 
         const [campaignData, milestoneData] = await Promise.all([
           getCrowdfundingProject(slug),
-          getCrowdfundingMilestone(slug, milestoneIndex),
+          getCrowdfundingMilestone(slug, milestoneIndex.toString()),
         ]);
 
         setCampaign(campaignData);
@@ -113,7 +113,8 @@ export default function MilestoneDetailPage({ params }: PageProps) {
 
   const handleSubmitEvidence = async (data: {
     status: string;
-    evidence: string;
+    submissionNotes: string;
+    proofOfWorkLinks: string[];
     documents?: File[];
   }) => {
     if (!campaign || !milestone) return;
@@ -147,9 +148,10 @@ export default function MilestoneDetailPage({ params }: PageProps) {
         campaign.slug,
         milestoneIndex,
         {
-          evidence: data.evidence,
+          submissionNotes: data.submissionNotes,
+          proofOfWorkLinks: data.proofOfWorkLinks,
+          proofOfWorkFiles: documentUrls,
           status: data.status as 'completed' | 'in_review' | 'submitted',
-          documents: documentUrls,
         }
       );
 
@@ -163,9 +165,9 @@ export default function MilestoneDetailPage({ params }: PageProps) {
       const { unsignedTransaction } = await changeMilestoneStatus(
         {
           contractId: campaign.escrowAddress,
-          milestoneIndex: `${milestoneIndex}`,
+          milestoneIndex: (milestone.orderIndex ?? milestoneIndex).toString(),
           newStatus: data.status === 'completed' ? 'completed' : 'in_progress',
-          newEvidence: data.evidence,
+          newEvidence: data.submissionNotes, // Use submission notes as evidence description
           serviceProvider: walletAddress || '',
         },
         'multi-release'
@@ -194,8 +196,9 @@ export default function MilestoneDetailPage({ params }: PageProps) {
           | 'in_progress'
           | 'completed'
           | 'cancelled',
-        evidence: data.evidence,
-        documents: documentUrls,
+        submissionNotes: data.submissionNotes,
+        proofOfWorkLinks: data.proofOfWorkLinks,
+        proofOfWorkFiles: documentUrls,
         completedAt:
           data.status === 'completed' ? new Date().toISOString() : undefined,
         releaseTransactionHash: '',
@@ -204,7 +207,7 @@ export default function MilestoneDetailPage({ params }: PageProps) {
       // Step 5: Refetch milestone data
       const updatedMilestone = await getCrowdfundingMilestone(
         campaign.slug,
-        milestoneIndex
+        milestoneIndex.toString()
       );
 
       if (updatedMilestone) {
@@ -255,7 +258,7 @@ export default function MilestoneDetailPage({ params }: PageProps) {
       </div>
     );
   }
-
+  console.log(milestone.orderIndex);
   return (
     <div className='px-6 py-8'>
       <MilestoneDetailHeader
