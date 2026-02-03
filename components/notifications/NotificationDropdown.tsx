@@ -77,6 +77,14 @@ export const NotificationDropdown = ({
 }: NotificationDropdownProps) => {
   const router = useRouter();
 
+  const getProjectUrl = (data: Notification['data']): string => {
+    // Prefer slug over ID for project links
+    if (data.projectSlug) {
+      return `/projects/${data.projectSlug}`;
+    }
+    return `/projects/${data.projectId}`;
+  };
+
   const handleNotificationClick = async (notification: Notification) => {
     if (onNotificationClick) {
       onNotificationClick(notification);
@@ -109,21 +117,11 @@ export const NotificationDropdown = ({
       notification.data.teamInvitationId &&
       notification.data.projectId
     ) {
-      // Prefer slug over ID for project links
-      if (notification.data.projectSlug) {
-        router.push(`/projects/${notification.data.projectSlug}`);
-      } else {
-        router.push(`/projects/${notification.data.projectId}`);
-      }
+      router.push(getProjectUrl(notification.data));
     }
     // Project notifications
     else if (notification.data.projectId) {
-      // Prefer slug over ID for project links
-      if (notification.data.projectSlug) {
-        router.push(`/projects/${notification.data.projectSlug}`);
-      } else {
-        router.push(`/projects/${notification.data.projectId}`);
-      }
+      router.push(getProjectUrl(notification.data));
     }
     // Comment notifications
     else if (notification.data.commentId) {
