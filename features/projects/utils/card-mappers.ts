@@ -63,6 +63,7 @@ export const mapCrowdfundingToCardData = (
   const rawStatus = project.status;
   if (rawStatus === 'IDEA') status = 'Validation';
   else if (rawStatus === 'ACTIVE') status = 'Funding';
+  else if (rawStatus === 'LIVE') status = 'Funded';
   else if (rawStatus === 'COMPLETED') status = 'Completed';
   // Add other status mappings as needed
 
@@ -72,7 +73,7 @@ export const mapCrowdfundingToCardData = (
   const totalMilestones = item.milestones?.length || 0;
 
   return {
-    id: item.projectId, // Using the project ID (UUID) not the crowdfunding record ID
+    id: item.projectId,
     slug: item.slug,
     title: project.title,
     vision: project.vision || '',
@@ -111,7 +112,7 @@ export const mapProjectToCardData = (
   let status: ProjectCardStatus = 'Validation';
   if (project.status === 'funding' || project.status === 'in_progress')
     status = 'Funding';
-  else if (project.status === 'funded') status = 'Funded';
+  else if (project.status === 'LIVE') status = 'Funded';
   else if (project.status === 'completed') status = 'Completed';
 
   return {

@@ -1,4 +1,5 @@
 import { Crowdfunding, CrowdfundingProject } from '@/features/projects/types';
+import { VoteCountResponse } from '@/types/votes';
 
 export interface CrowdfundData {
   _id: string;
@@ -28,6 +29,7 @@ export interface ProjectSidebarProgressProps {
   project: CrowdfundingProject;
   crowdfund?: Crowdfunding;
   projectStatus: string;
+  voteCounts: VoteCountResponse | null;
 }
 
 export interface ProjectSidebarActionsProps {
@@ -52,4 +54,5 @@ export type ProjectStatus =
   | 'Funded'
   | 'Completed'
   | 'Validation'
+  | 'Funding'
   | 'idea';

@@ -62,14 +62,14 @@ export function ProjectSidebarActions({
 
           {/* Dropdown text */}
           <div className='absolute top-full left-1/2 z-10 mt-2 hidden w-64 -translate-x-1/2 rounded-xl border border-gray-200 bg-white p-3 text-sm text-gray-700 shadow-lg group-hover:block'>
-            Voting is straightforward and individualistic — it’s for everyone.
+            Voting is straightforward and individualistic — it's for everyone.
             Voting power, weight, and eligibility for who can vote are currently
             under implementation.
           </div>
         </div>
       )}
 
-      {projectStatus === 'IDEA' && (
+      {projectStatus === 'Funding' && (
         <FundingModal
           campaignId={crowdfund?.id || ''}
           projectTitle={project.title}

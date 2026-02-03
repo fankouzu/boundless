@@ -134,7 +134,6 @@ export function CrowdfundingDataTable({
             ))}
           </TableHeader>
           <TableBody>
-            ` `
             {loading ? (
               <TableRow>
                 <TableCell

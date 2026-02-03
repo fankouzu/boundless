@@ -55,159 +55,179 @@ export function RecentProjects({
 }: RecentProjectsProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
-  // Sort projects by createdAt in descending order (newest first)
-  const sortedProjects = [...projects].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-
-  const displayProjects = sortedProjects.slice(0, maxDisplay);
-  const hasMoreProjects = sortedProjects.length > maxDisplay;
+  const { displayProjects, hasMoreProjects } = React.useMemo(() => {
+    const sorted = [...projects].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    return {
+      displayProjects: sorted.slice(0, maxDisplay),
+      hasMoreProjects: sorted.length > maxDisplay,
+    };
+  }, [projects, maxDisplay]);
 
   // Map project status to display status
   const mapProjectStatus = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'active':
-      case 'published':
+      case 'campaigning':
         return 'Funding';
-      case 'draft':
+      case 'idea':
         return 'Validation';
       case 'completed':
         return 'Completed';
-      case 'funded':
+      case 'live':
         return 'Funded';
+      case 'reviewing':
+        return 'Reviewing';
       default:
-        return 'Funding';
+        return 'Not sure';
     }
   };
 
-  // Get status badge variant
-  const getStatusVariant = (status: string) => {
+  // Get status badge specific classes
+  const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'active':
-      case 'published':
-        return 'default';
-      case 'draft':
-        return 'secondary';
+      case 'campaigning':
+        return 'bg-blue-500/15 text-blue-500 hover:bg-blue-500/25 border-blue-500/20';
+      case 'idea':
+        return 'bg-yellow-500/15 text-yellow-500 hover:bg-yellow-500/25 border-yellow-500/20';
       case 'completed':
-        return 'outline';
-      case 'funded':
-        return 'default';
+        return 'bg-green-500/15 text-green-500 hover:bg-green-500/25 border-green-500/20';
+      case 'live':
+        return 'bg-emerald-500/15 text-emerald-500 hover:bg-emerald-500/25 border-emerald-500/20';
+      case 'reviewing':
+        return 'bg-purple-500/15 text-purple-500 hover:bg-purple-500/25 border-purple-500/20';
       default:
-        return 'default';
+        return 'bg-gray-500/15 text-gray-500 hover:bg-gray-500/25 border-gray-500/20';
     }
   };
 
-  const columns: ColumnDef<Project>[] = [
-    {
-      accessorKey: 'title',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant='ghost'
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className='text-foreground hover:bg-muted/50 h-auto p-0 font-medium'
-          >
-            Project
-            <ArrowUpDown className='ml-2 h-4 w-4' />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const project = row.original;
-        const imageUrl = project.logo || project.banner;
-        return (
-          <div className='flex items-center space-x-3'>
-            {imageUrl &&
-              imageUrl !== '' &&
-              !imageUrl.includes('example.com') && (
-                <Image
-                  width={32}
-                  height={32}
-                  src={imageUrl}
-                  alt={project.title}
-                  className='h-8 w-8 rounded-lg object-cover'
-                  onError={e => {
-                    // Hide the image if it fails to load
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              )}
-            <div>
-              <div className='text-foreground font-medium'>{project.title}</div>
+  const columns = React.useMemo<ColumnDef<Project>[]>(
+    () => [
+      {
+        accessorKey: 'title',
+        header: ({ column }) => {
+          return (
+            <Button
+              variant='ghost'
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === 'asc')
+              }
+              className='text-foreground hover:bg-muted/50 h-auto p-0 font-medium'
+            >
+              Project
+              <ArrowUpDown className='ml-2 h-4 w-4' />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const project = row.original;
+          const imageUrl = project.logo || project.banner;
+          return (
+            <div className='flex items-center space-x-3'>
+              {imageUrl &&
+                imageUrl !== '' &&
+                !imageUrl.includes('example.com') && (
+                  <Image
+                    width={32}
+                    height={32}
+                    src={imageUrl}
+                    alt={project.title}
+                    className='h-8 w-8 rounded-lg object-cover'
+                    onError={e => {
+                      // Hide the image if it fails to load
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                )}
+              <div>
+                <div className='text-foreground font-medium'>
+                  {project.title}
+                </div>
+              </div>
             </div>
-          </div>
-        );
+          );
+        },
       },
-    },
-    {
-      accessorKey: 'category',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant='ghost'
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className='text-foreground hover:bg-muted/50 h-auto p-0 font-medium'
-          >
-            Category
-            <ArrowUpDown className='ml-2 h-4 w-4' />
-          </Button>
-        );
+      {
+        accessorKey: 'category',
+        header: ({ column }) => {
+          return (
+            <Button
+              variant='ghost'
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === 'asc')
+              }
+              className='text-foreground hover:bg-muted/50 h-auto p-0 font-medium'
+            >
+              Category
+              <ArrowUpDown className='ml-2 h-4 w-4' />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          return (
+            <div className='text-foreground text-sm'>
+              {row.original.category}
+            </div>
+          );
+        },
       },
-      cell: ({ row }) => {
-        return (
-          <div className='text-foreground text-sm'>{row.original.category}</div>
-        );
+      {
+        accessorKey: 'status',
+        header: ({ column }) => {
+          return (
+            <Button
+              variant='ghost'
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === 'asc')
+              }
+              className='text-foreground hover:bg-muted/50 h-auto p-0 font-medium'
+            >
+              Status
+              <ArrowUpDown className='ml-2 h-4 w-4' />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const status = mapProjectStatus(row.original.status);
+          return (
+            <Badge
+              variant='outline'
+              className={`border text-xs ${getStatusColor(row.original.status)}`}
+            >
+              {status}
+            </Badge>
+          );
+        },
       },
-    },
-    {
-      accessorKey: 'status',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant='ghost'
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className='text-foreground hover:bg-muted/50 h-auto p-0 font-medium'
-          >
-            Status
-            <ArrowUpDown className='ml-2 h-4 w-4' />
-          </Button>
-        );
+      {
+        accessorKey: 'createdAt',
+        header: ({ column }) => {
+          return (
+            <Button
+              variant='ghost'
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === 'asc')
+              }
+              className='text-foreground hover:bg-muted/50 h-auto p-0 font-medium'
+            >
+              Created
+              <ArrowUpDown className='ml-2 h-4 w-4' />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          return (
+            <div className='text-muted-foreground text-sm'>
+              {format(new Date(row.original.createdAt), 'MMM dd, yyyy')}
+            </div>
+          );
+        },
       },
-      cell: ({ row }) => {
-        const status = mapProjectStatus(row.original.status);
-        return (
-          <Badge
-            variant={getStatusVariant(row.original.status)}
-            className='text-xs'
-          >
-            {status}
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: 'createdAt',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant='ghost'
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className='text-foreground hover:bg-muted/50 h-auto p-0 font-medium'
-          >
-            Created
-            <ArrowUpDown className='ml-2 h-4 w-4' />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        return (
-          <div className='text-muted-foreground text-sm'>
-            {format(new Date(row.original.createdAt), 'MMM dd, yyyy')}
-          </div>
-        );
-      },
-    },
-  ];
+    ],
+    []
+  );
 
   const table = useReactTable({
     data: displayProjects,

@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getMe } from '@/lib/api/auth';
 import { GetMeResponse } from '@/lib/api/types';
 import { SectionCards } from '@/components/section-cards';
 import { ChartAreaInteractive } from '@/components/chart-area-interactive';
@@ -10,38 +8,27 @@ import { useAuthStatus } from '@/hooks/use-auth';
 
 export function MeDashboard() {
   const { user, isLoading } = useAuthStatus();
-  const [meData, setMeData] = useState<GetMeResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  // user.profile is typed as any in use-auth, so we cast it here for safety
+  // or checks if it matches GetMeResponse.
+  // Since useAuthStatus fetches getMe(), we assume it is the correct shape.
+  const meData = user?.profile as GetMeResponse | undefined;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getMe();
-        setMeData(data);
-      } catch {
-        // console.error('Failed to fetch user data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (user) {
-      fetchData();
-    }
-  }, [user]);
-
-  if (isLoading || loading) {
+  if (isLoading) {
     return <div className='p-8 text-center'>Loading...</div>;
   }
 
   if (!meData) {
+    // If we have a user but no profile yet (shouldn't happen if isLoading is accurate, but possible)
+    // we might want to return loading or failure.
+    // Given useAuthStatus implementation, isLoading covers profile fetching.
     return <div className='p-8 text-center'>Failed to load data</div>;
   }
 
-  const chartData = meData.chart.map(item => ({
-    date: item.date,
-    projects: item.count,
-  }));
+  const chartData =
+    meData.chart?.map(item => ({
+      date: item.date,
+      projects: item.count,
+    })) || [];
 
   return (
     <div className='@container/main flex flex-1 flex-col gap-2'>
@@ -49,7 +36,7 @@ export function MeDashboard() {
         <SectionCards stats={meData.stats} />
         <div className='px-4 lg:px-6'>
           {' '}
-          <RecentProjects projects={meData.user.projects || []} />
+          <RecentProjects projects={meData.user?.projects || []} />
         </div>
         <div className='px-4 lg:px-6'>
           {' '}

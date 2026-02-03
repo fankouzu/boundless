@@ -14,6 +14,7 @@ import ProjectBackers from './project-backers';
 import { ProjectSidebar } from './project-sidebar';
 import { cn } from '@/lib/utils';
 import { Crowdfunding, CrowdfundingProject } from '@/features/projects/types';
+import { getProjectStatus } from './project-sidebar/utils';
 
 export function ProjectLayout({
   project,
@@ -27,6 +28,36 @@ export function ProjectLayout({
   const [isLeftScrollable, setIsLeftScrollable] = useState(true);
   const [isRightScrollable, setIsRightScrollable] = useState(true);
   const tabsListRef = useRef<HTMLDivElement>(null);
+  const projectStatus = getProjectStatus(project, crowdfund);
+
+  const getVisibleTabs = () => {
+    const baseTabs = [
+      { value: 'details', label: 'Details' },
+      { value: 'team', label: 'Team' },
+      { value: 'milestones', label: 'Milestones' },
+      { value: 'comments', label: 'Comments' },
+    ];
+
+    if (isMobile) {
+      baseTabs.unshift({ value: 'about', label: 'About' });
+    }
+
+    if (projectStatus === 'Validation') {
+      baseTabs.splice(4, 0, { value: 'voters', label: 'Voters' });
+    } else if (projectStatus === 'Funding') {
+      baseTabs.splice(4, 0, { value: 'voters', label: 'Voters' });
+      baseTabs.splice(5, 0, { value: 'backers', label: 'Backers' });
+    } else {
+      // Funded, Completed, etc.
+      baseTabs.splice(4, 0, { value: 'voters', label: 'Voters' });
+      baseTabs.splice(5, 0, { value: 'backers', label: 'Backers' });
+    }
+
+    return baseTabs;
+  };
+
+  const visibleTabs = getVisibleTabs();
+
   const handleScroll = () => {
     if (tabsListRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = tabsListRef.current;
@@ -128,14 +159,7 @@ export function ProjectLayout({
                     />
                   )}
 
-                  {[
-                    { value: 'about', label: 'About' },
-                    { value: 'details', label: 'Details' },
-                    { value: 'team', label: 'Team' },
-                    { value: 'milestones', label: 'Milestones' },
-                    { value: 'voters', label: 'Voters' },
-                    { value: 'comments', label: 'Comments' },
-                  ].map(tab => (
+                  {visibleTabs.map(tab => (
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
@@ -211,14 +235,7 @@ export function ProjectLayout({
               {/* Enhanced Tab Navigation */}
               <div className='bg-background-main-bg/80 sticky top-0 z-30 mb-8 border-b border-gray-800/50 py-0 backdrop-blur-md'>
                 <TabsList className='h-auto w-fit justify-start gap-2 rounded-none bg-transparent p-0'>
-                  {[
-                    { value: 'details', label: 'Details' },
-                    { value: 'team', label: 'Team' },
-                    { value: 'milestones', label: 'Milestones' },
-                    { value: 'voters', label: 'Voters' },
-                    { value: 'backers', label: 'Backers' },
-                    { value: 'comments', label: 'Comments' },
-                  ].map(tab => (
+                  {visibleTabs.map(tab => (
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
