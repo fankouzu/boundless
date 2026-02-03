@@ -109,11 +109,21 @@ export const NotificationDropdown = ({
       notification.data.teamInvitationId &&
       notification.data.projectId
     ) {
-      router.push(`/projects/${notification.data.projectId}`);
+      // Prefer slug over ID for project links
+      if (notification.data.projectSlug) {
+        router.push(`/projects/${notification.data.projectSlug}`);
+      } else {
+        router.push(`/projects/${notification.data.projectId}`);
+      }
     }
     // Project notifications
     else if (notification.data.projectId) {
-      router.push(`/projects/${notification.data.projectId}`);
+      // Prefer slug over ID for project links
+      if (notification.data.projectSlug) {
+        router.push(`/projects/${notification.data.projectSlug}`);
+      } else {
+        router.push(`/projects/${notification.data.projectId}`);
+      }
     }
     // Comment notifications
     else if (notification.data.commentId) {

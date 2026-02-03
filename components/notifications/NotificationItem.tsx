@@ -37,11 +37,19 @@ export const NotificationItem = ({
 
     // Team invitation notifications (navigate to project if available)
     if (notification.data.teamInvitationId && notification.data.projectId) {
+      // Prefer slug over ID for project links
+      if (notification.data.projectSlug) {
+        return `/projects/${notification.data.projectSlug}`;
+      }
       return `/projects/${notification.data.projectId}`;
     }
 
     // Project notifications
     if (notification.data.projectId) {
+      // Prefer slug over ID for project links
+      if (notification.data.projectSlug) {
+        return `/projects/${notification.data.projectSlug}`;
+      }
       return `/projects/${notification.data.projectId}`;
     }
 
