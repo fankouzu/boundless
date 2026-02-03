@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ProjectSidebarHeader } from './ProjectSidebarHeader';
 import { ProjectSidebarProgress } from './ProjectSidebarProgress';
 import { ProjectSidebarActions } from './ProjectSidebarActions';
 import { ProjectSidebarCreator } from './ProjectSidebarCreator';
 import { ProjectSidebarLinks } from './ProjectSidebarLinks';
 import { voteProject } from '@/features/projects/api';
+import { createVote, deleteVote } from '@/lib/api/votes';
 import { getProjectStatus } from './utils';
 import { ProjectSidebarProps } from './types';
 import { VoteCountResponse, VoteEntityType, VoteType } from '@/types/votes';
@@ -17,7 +19,14 @@ export function ProjectSidebar({
   project,
   crowdfund,
   isMobile = false,
+  hideProgress = false,
 }: ProjectSidebarProps) {
+  const searchParams = useSearchParams();
+  const isSubmission = searchParams.get('type') === 'submission';
+  const entityType = isSubmission
+    ? VoteEntityType.HACKATHON_SUBMISSION
+    : VoteEntityType.CROWDFUNDING_CAMPAIGN;
+
   const [isVoting, setIsVoting] = useState(false);
   const [voteCounts, setVoteCounts] = useState<VoteCountResponse | null>(
     project.voting

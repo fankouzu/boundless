@@ -157,6 +157,67 @@ export interface HackathonResources {
   resources: HackathonResourceItem[];
 }
 
+export type SubmissionStatus =
+  | 'SUBMITTED'
+  | 'SHORTLISTED'
+  | 'DISQUALIFIED'
+  | 'WITHDRAWN';
+
+export interface HackathonSubmission {
+  id: string;
+  hackathonId: string;
+  organizationId: string;
+
+  projectId: string;
+  projectName: string;
+  project?: {
+    id: string;
+    title: string;
+    banner: string | null;
+    logo: string | null;
+  };
+
+  category: string | null;
+  description: string;
+  introduction: string;
+
+  logo: string | null;
+  videoUrl: string | null;
+
+  participationType: ParticipantType;
+  teamId: string | null;
+  teamName: string | null;
+  teamMembers: unknown[];
+
+  participantId: string;
+  participant: {
+    id: string;
+    name: string;
+    username: string;
+    image: string | null;
+  };
+
+  status: SubmissionStatus;
+  disqualificationReason: string | null;
+  rank: number | null;
+  comments: number;
+
+  links: Array<{
+    label: string;
+    url: string;
+  }>;
+
+  socialLinks: Record<string, string>;
+
+  submittedAt: string;
+  submissionDate: string;
+  registeredAt: string;
+  reviewedById: string | null;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Draft Data Structure
 export interface HackathonDraftData {
   information?: HackathonInformation;
@@ -292,9 +353,12 @@ export type Hackathon = {
     description: string;
   }>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sponsorsPartners: any[];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   submissions: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   followers: any[];
 
   requireGithub: boolean;
@@ -953,6 +1017,7 @@ export const updateDraftStep = async (
   organizationId: string,
   draftId: string,
   step: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any,
   autoSave?: boolean
 ) => {
@@ -1319,6 +1384,53 @@ export const getParticipants = async (
 };
 
 /**
+ * Get all submissions for a hackathon (organizer view)
+ */
+export const getHackathonSubmissions = async (
+  hackathonId: string,
+  page = 1,
+  limit = 10,
+  filters?: {
+    status?: 'SUBMITTED' | 'SHORTLISTED' | 'DISQUALIFIED' | 'WITHDRAWN';
+    type?: 'INDIVIDUAL' | 'TEAM';
+    search?: string;
+  }
+): Promise<
+  ApiResponse<{
+    submissions: ParticipantSubmission[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }>
+> => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
+
+  if (filters?.status) {
+    params.append('status', filters.status);
+  }
+
+  if (filters?.type) {
+    params.append('type', filters.type);
+  }
+
+  if (filters?.search) {
+    params.append('search', filters.search);
+  }
+
+  const res = await api.get(
+    `/hackathons/${hackathonId}/submissions?${params.toString()}`
+  );
+
+  return res.data;
+};
+
+/**
  * Register for a hackathon
  * Supports both slug-based (public) and organization/hackathon ID (authenticated) endpoints
  */
@@ -1416,6 +1528,17 @@ export const updateSubmission = async (
   // Backend uses /hackathons/submissions/:submissionId with PATCH
   const res = await api.patch(`/hackathons/submissions/${submissionId}`, data);
   return res.data;
+};
+
+export interface DeleteSubmissionResponse extends ApiResponse<null> {
+  success: true;
+  data: null;
+  message: string;
+}
+
+export const deleteSubmission = async (submissionId: string) => {
+  const res = await api.delete(`/hackathons/submissions/${submissionId}`);
+  return res.data as DeleteSubmissionResponse;
 };
 
 /**
@@ -1624,20 +1747,25 @@ export interface ReportDiscussionRequest {
 }
 
 // @deprecated Use GetCommentsResponse from @/types/comment instead
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface GetHackathonDiscussionsResponse extends PaginatedResponse<any> {
   success: true;
 }
 
 // @deprecated Use CreateCommentResponse from @/types/comment instead
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface CreateDiscussionResponse extends ApiResponse<any> {
   success: true;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   message: string;
 }
 
 // @deprecated Use UpdateCommentResponse from @/types/comment instead
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface UpdateDiscussionResponse extends ApiResponse<any> {
   success: true;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   message: string;
 }
@@ -1650,8 +1778,10 @@ export interface DeleteDiscussionResponse extends ApiResponse<null> {
 }
 
 // @deprecated Use CreateCommentResponse from @/types/comment instead
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ReplyToDiscussionResponse extends ApiResponse<any> {
   success: true;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   message: string;
 }
@@ -1847,27 +1977,29 @@ export const getHackathonResources = async (
 // Team Formation API Types and Functions
 // ============================================
 
+export interface TeamMember {
+  userId: string;
+  username: string;
+  name: string;
+  role: string;
+  image?: string;
+  joinedAt: string;
+}
+
 export interface TeamRecruitmentPost {
   id: string;
   hackathonId: string;
   organizationId: string;
-  createdBy: {
-    userId: string;
-    name: string;
-    avatar?: string;
-    username: string;
-  };
-  projectName: string;
-  projectDescription: string;
-  lookingFor: Array<{
-    role: string;
-    skills?: string[];
-  }>;
-  currentTeamSize: number;
-  maxTeamSize: number;
-  contactMethod: 'email' | 'telegram' | 'discord' | 'github' | 'other';
+  teamName: string;
+  description: string;
+  lookingFor: string[];
+  isOpen: boolean;
+  leaderId: string;
+  maxSize: number;
+  memberCount: number;
+  members: TeamMember[];
+  contactMethod?: 'email' | 'telegram' | 'discord' | 'github' | 'other';
   contactInfo: string;
-  status: 'active' | 'filled' | 'closed';
   createdAt: string;
   updatedAt: string;
   views?: number;
@@ -1875,20 +2007,21 @@ export interface TeamRecruitmentPost {
 }
 
 export interface CreateTeamPostRequest {
-  projectName: string;
-  projectDescription: string;
-  lookingFor: Array<{
-    role: string;
-    skills?: string[];
-  }>;
-  currentTeamSize: number;
-  maxTeamSize: number;
+  teamName: string;
+  description: string;
+  lookingFor: string[];
+  maxSize: number;
   contactMethod: 'email' | 'telegram' | 'discord' | 'github' | 'other';
   contactInfo: string;
 }
 
-export interface UpdateTeamPostRequest extends Partial<CreateTeamPostRequest> {
-  status?: 'active' | 'filled' | 'closed';
+export interface UpdateTeamPostRequest {
+  teamName?: string;
+  description?: string;
+  lookingFor?: string[];
+  isOpen?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contactInfo?: any;
 }
 
 export interface GetTeamPostsOptions {
@@ -1902,7 +2035,17 @@ export interface GetTeamPostsOptions {
   sortOrder?: 'asc' | 'desc';
 }
 
-export interface GetTeamPostsResponse extends PaginatedResponse<TeamRecruitmentPost> {
+export interface GetTeamPostsResponse extends ApiResponse<{
+  teams: TeamRecruitmentPost[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}> {
   success: true;
 }
 
@@ -1946,9 +2089,9 @@ export const createTeamPost = async (
 ): Promise<CreateTeamPostResponse> => {
   let url: string;
   if (organizationId) {
-    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/team-posts`;
+    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/teams`;
   } else {
-    url = `/hackathons/${hackathonSlugOrId}/team-posts`;
+    url = `/hackathons/${hackathonSlugOrId}/teams`;
   }
 
   const res = await api.post(url, data);
@@ -1992,9 +2135,9 @@ export const getTeamPosts = async (
 
   let url: string;
   if (organizationId) {
-    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/team-posts?${params.toString()}`;
+    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/teams?${params.toString()}`;
   } else {
-    url = `/hackathons/${hackathonSlugOrId}/team-posts?${params.toString()}`;
+    url = `/hackathons/${hackathonSlugOrId}/teams?${params.toString()}`;
   }
 
   const res = await api.get(url);
@@ -2011,9 +2154,9 @@ export const getTeamPostDetails = async (
 ): Promise<GetTeamPostDetailsResponse> => {
   let url: string;
   if (organizationId) {
-    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/team-posts/${postId}`;
+    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/teams/${postId}`;
   } else {
-    url = `/hackathons/${hackathonSlugOrId}/team-posts/${postId}`;
+    url = `/hackathons/${hackathonSlugOrId}/teams/${postId}`;
   }
 
   const res = await api.get(url);
@@ -2031,12 +2174,12 @@ export const updateTeamPost = async (
 ): Promise<UpdateTeamPostResponse> => {
   let url: string;
   if (organizationId) {
-    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/team-posts/${postId}`;
+    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/teams/${postId}`;
   } else {
-    url = `/hackathons/${hackathonSlugOrId}/team-posts/${postId}`;
+    url = `/hackathons/${hackathonSlugOrId}/teams/${postId}`;
   }
 
-  const res = await api.put(url, data);
+  const res = await api.patch(url, data);
   return res.data;
 };
 
@@ -2076,6 +2219,50 @@ export const trackContactClick = async (
 
   const res = await api.post(url);
   return res.data;
+};
+
+export const getMyTeam = async (
+  hackathonSlugOrId: string,
+  organizationId?: string
+): Promise<ApiResponse<TeamRecruitmentPost | null>> => {
+  let url: string;
+  if (organizationId) {
+    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/my-team`;
+  } else {
+    url = `/hackathons/${hackathonSlugOrId}/my-team`;
+  }
+
+  const res = await api.get(url);
+
+  if (res.data.success && res.data.data) {
+    let teamData: TeamRecruitmentPost | null = null;
+
+    // Check if data is array (based on user feedback) or object
+    if (Array.isArray(res.data.data)) {
+      if (res.data.data.length > 0) {
+        teamData = res.data.data[0] as TeamRecruitmentPost;
+      }
+    } else {
+      teamData = res.data.data as TeamRecruitmentPost;
+    }
+
+    if (teamData) {
+      // Ensure organizationId is present if missing
+      if (!teamData.organizationId && organizationId) {
+        teamData.organizationId = organizationId;
+      }
+
+      return {
+        ...res.data,
+        data: teamData,
+      };
+    }
+  }
+
+  return {
+    ...res.data,
+    data: null,
+  };
 };
 
 // export const GetHackathonBySlug = async (slug): Promise<Hackathon> => {

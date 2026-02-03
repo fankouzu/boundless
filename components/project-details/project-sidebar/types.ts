@@ -18,6 +18,7 @@ export interface ProjectSidebarProps {
   project: CrowdfundingProject;
   crowdfund?: Crowdfunding;
   isMobile?: boolean;
+  hideProgress?: boolean;
 }
 
 export interface ProjectSidebarHeaderProps {
@@ -55,4 +56,6 @@ export type ProjectStatus =
   | 'Completed'
   | 'Validation'
   | 'Funding'
-  | 'idea';
+  | 'idea'
+  | 'pending'
+  | 'SUBMITTED';

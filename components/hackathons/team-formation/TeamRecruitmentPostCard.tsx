@@ -6,9 +6,9 @@ import {
   MessageCircle,
   Users,
   Edit,
-  X,
   Eye,
   ExternalLink,
+  Pin,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,45 +27,42 @@ interface TeamRecruitmentPostCardProps {
   onContactClick?: (post: TeamRecruitmentPost) => void;
   onEditClick?: (post: TeamRecruitmentPost) => void;
   onDeleteClick?: (post: TeamRecruitmentPost) => void;
+  onClick?: (post: TeamRecruitmentPost) => void;
   isMyPost?: boolean;
   onTrackContact?: (postId: string) => void;
+  isPinned?: boolean;
 }
 
-const getContactMethodIcon = (method: TeamRecruitmentPost['contactMethod']) => {
-  switch (method) {
-    case 'email':
-      return Mail;
-    case 'telegram':
-      return MessageCircle;
-    case 'discord':
-      return MessageCircle;
-    case 'github':
-      return ExternalLink;
-    default:
-      return Mail;
-  }
-};
-
-const getContactMethodLabel = (
-  method: TeamRecruitmentPost['contactMethod']
+const getContactMethodIcon = (
+  method?: TeamRecruitmentPost['contactMethod'],
+  contactInfo?: string
 ) => {
-  switch (method) {
-    case 'email':
-      return 'Email';
-    case 'telegram':
-      return 'Telegram';
-    case 'discord':
-      return 'Discord';
-    case 'github':
-      return 'GitHub';
-    default:
-      return 'Contact';
+  if (method) {
+    switch (method) {
+      case 'email':
+        return Mail;
+      case 'telegram':
+        return MessageCircle;
+      case 'discord':
+        return MessageCircle;
+      case 'github':
+        return ExternalLink;
+      default:
+        return Mail;
+    }
   }
+
+  // Infer from contact info if method is missing
+  if (contactInfo?.includes('@') && !contactInfo.startsWith('@')) return Mail;
+  if (contactInfo?.includes('t.me/') || contactInfo?.startsWith('@'))
+    return MessageCircle; // Telegram usually
+  if (contactInfo?.includes('github.com')) return ExternalLink;
+  return Mail;
 };
 
 const handleContact = (
-  method: TeamRecruitmentPost['contactMethod'],
   contactInfo: string,
+  method?: TeamRecruitmentPost['contactMethod'],
   onTrackContact?: (postId: string) => void,
   postId?: string
 ) => {
@@ -73,149 +70,206 @@ const handleContact = (
     onTrackContact(postId);
   }
 
-  switch (method) {
-    case 'email':
-      window.location.href = `mailto:${contactInfo}`;
-      break;
-    case 'telegram':
-      // Handle both @username and full URLs
-      if (contactInfo.startsWith('http')) {
-        window.open(contactInfo, '_blank');
-      } else {
-        const username = contactInfo.startsWith('@')
-          ? contactInfo.slice(1)
-          : contactInfo;
-        window.open(`https://t.me/${username}`, '_blank');
+  let cleanContact = contactInfo;
+
+  // Try to parse as JSON if it looks like one
+  if (contactInfo.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(contactInfo);
+      if (parsed.value) {
+        cleanContact = parsed.value;
       }
-      break;
-    case 'discord':
-      // Discord could be a username or invite link
-      if (contactInfo.startsWith('http')) {
-        window.open(contactInfo, '_blank');
-      } else {
-        // Show in a toast or copy to clipboard
-        navigator.clipboard.writeText(contactInfo).then(() => {
-          toast.success('Discord info copied to clipboard');
+    } catch {
+      // Ignore parse error
+    }
+  }
+
+  // Clean contact info
+  cleanContact = cleanContact.replace(/^"|"$/g, '');
+  cleanContact = cleanContact.replace(/\\"/g, '');
+
+  // If method is provided, use it
+  if (method) {
+    switch (method) {
+      case 'email':
+        window.location.href = `mailto:${cleanContact}`;
+        break;
+      case 'telegram':
+        if (cleanContact.startsWith('http')) {
+          window.open(cleanContact, '_blank');
+        } else {
+          const username = cleanContact.startsWith('@')
+            ? cleanContact.slice(1)
+            : cleanContact;
+          window.open(`https://t.me/${username}`, '_blank');
+        }
+        break;
+      case 'discord':
+        if (cleanContact.startsWith('http')) {
+          window.open(cleanContact, '_blank');
+        } else {
+          navigator.clipboard.writeText(cleanContact).then(() => {
+            toast.success('Discord info copied to clipboard');
+          });
+        }
+        break;
+      case 'github':
+        if (cleanContact.startsWith('http')) {
+          window.open(cleanContact, '_blank');
+        } else {
+          const username = cleanContact.startsWith('@')
+            ? cleanContact.slice(1)
+            : cleanContact;
+          window.open(`https://github.com/${username}`, '_blank');
+        }
+        break;
+      default:
+        navigator.clipboard.writeText(cleanContact).then(() => {
+          toast.success('Contact info copied to clipboard');
         });
-      }
-      break;
-    case 'github':
-      // GitHub could be a profile URL or username
-      if (contactInfo.startsWith('http')) {
-        window.open(contactInfo, '_blank');
-      } else {
-        const username = contactInfo.startsWith('@')
-          ? contactInfo.slice(1)
-          : contactInfo;
-        window.open(`https://github.com/${username}`, '_blank');
-      }
-      break;
-    default:
-      // For 'other', show contact info
-      navigator.clipboard.writeText(contactInfo).then(() => {
+    }
+    return;
+  }
+
+  // Auto-detect if method is missing
+  if (cleanContact.includes('@') && !cleanContact.startsWith('@')) {
+    window.location.href = `mailto:${cleanContact}`;
+  } else if (cleanContact.includes('t.me/')) {
+    window.open(cleanContact, '_blank');
+  } else if (cleanContact.includes('github.com')) {
+    window.open(cleanContact, '_blank');
+  } else {
+    // Default fallback
+    if (cleanContact.startsWith('http')) {
+      window.open(cleanContact, '_blank');
+    } else {
+      navigator.clipboard.writeText(cleanContact).then(() => {
         toast.success('Contact info copied to clipboard');
       });
+    }
   }
+};
+
+const getTimeAgo = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (seconds < 60) return 'posted a few secs ago';
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60)
+    return `posted ${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `posted ${hours} hour${hours > 1 ? 's' : ''} ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `posted ${days} day${days > 1 ? 's' : ''} ago`;
+
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) return `posted ${weeks} week${weeks > 1 ? 's' : ''} ago`;
+
+  const months = Math.floor(days / 30);
+  if (months < 12) return `posted ${months} month${months > 1 ? 's' : ''} ago`;
+
+  const years = Math.floor(days / 365);
+  return `posted ${years} year${years > 1 ? 's' : ''} ago`;
 };
 
 export function TeamRecruitmentPostCard({
   post,
   onContactClick,
   onEditClick,
-  onDeleteClick,
-  isMyPost = false,
+  onClick,
+  isMyPost,
   onTrackContact,
+  isPinned = false,
 }: TeamRecruitmentPostCardProps) {
-  const ContactIcon = getContactMethodIcon(post.contactMethod);
+  const ContactIcon = getContactMethodIcon(
+    post.contactMethod,
+    post.contactInfo
+  );
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEditClick?.(post);
   };
+
+  // const handleDeleteClick = (e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //   onDeleteClick?.(post);
+  // };
 
   const handleContactClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onContactClick) {
       onContactClick(post);
     }
-    if (post.contactMethod && post.contactInfo) {
+    if (post.contactInfo) {
       handleContact(
-        post.contactMethod,
         post.contactInfo,
+        post.contactMethod,
         onTrackContact,
         post.id
       );
     }
   };
 
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onEditClick) {
-      onEditClick(post);
-    }
+  const handleCardClick = () => {
+    onClick?.(post);
   };
 
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onDeleteClick) {
-      onDeleteClick(post);
-    }
-  };
-
-  const getStatusColor = (status: TeamRecruitmentPost['status']) => {
-    switch (status) {
-      case 'active':
-        return 'border-[#A7F950] bg-[#A7F950]/10 text-[#A7F950]';
-      case 'closed':
-        return 'border-gray-500 bg-gray-500/10 text-gray-500';
-      default:
-        return 'border-gray-500 bg-gray-500/10 text-gray-500';
-    }
-  };
+  // Find leader
+  const leader =
+    post.members.find(m => m.role === 'leader' || m.userId === post.leaderId) ||
+    post.members[0];
 
   return (
-    <div className='group hover:border-primary/45 mx-auto w-full max-w-[397px] overflow-hidden rounded-lg border border-[#2B2B2B] bg-[#030303] p-4 transition-all sm:p-5'>
+    <div
+      onClick={handleCardClick}
+      className={`group hover:border-primary/45 mx-auto w-full max-w-[397px] overflow-hidden rounded-lg border border-[#2B2B2B] bg-[#030303] p-4 transition-all sm:p-5 ${onClick ? 'cursor-pointer hover:border-[#A7F950]/50' : ''}`}
+    >
+      {isPinned && (
+        <div className='mb-2 flex items-center gap-1.5 text-xs font-semibold text-[#A7F950]'>
+          <Pin className='h-3.5 w-3.5 fill-[#A7F950]' />
+          <span>Your Team</span>
+        </div>
+      )}
       {/* Header with Creator Info and Status */}
       <div className='mb-3 flex items-center justify-between sm:mb-4'>
         <div className='flex items-center gap-2'>
-          <Avatar className='h-8 w-8 border-2 border-[#2B2B2B] transition-all duration-300 group-hover:border-[#A7F950] sm:h-10 sm:w-10'>
+          <Avatar
+            className={`h-8 w-8 border-2 transition-all duration-300 group-hover:border-[#A7F950] sm:h-10 sm:w-10 ${isPinned ? 'border-[#A7F950]' : 'border-[#2B2B2B]'}`}
+          >
             <AvatarImage
-              src={post.createdBy?.avatar}
-              alt={post.createdBy?.name}
+              src={leader?.image}
+              alt={leader?.name}
               className='object-cover'
             />
             <AvatarFallback className='bg-gray-700 text-white'>
-              {(post.createdBy?.name || 'U').slice(0, 2).toUpperCase()}
+              {(leader?.name || 'U').charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className='flex flex-col'>
             <h4 className='text-sm font-medium text-white'>
-              {post.createdBy?.name}
+              {leader?.name || 'Unknown User'}
             </h4>
             <span className='text-xs text-gray-500'>
-              @{post.createdBy?.username}
+              @{leader?.username || 'user'}
             </span>
           </div>
         </div>
 
         <div className='flex items-center gap-2'>
           <Badge
-            className={`flex-shrink-0 rounded border px-2 py-0.5 text-xs font-medium ${getStatusColor(post.status)}`}
+            className={`flex-shrink-0 rounded border px-2 py-0.5 text-xs font-medium ${
+              post.isOpen
+                ? 'border-[#A7F950] bg-[#E5FFE5] text-[#4E9E00]'
+                : 'border-[#FF5757] bg-[#FFEAEA] text-[#D33]'
+            }`}
           >
-            {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
+            {post.isOpen ? 'Open' : 'Closed'}
           </Badge>
           {isMyPost && (
             <DropdownMenu>
@@ -240,13 +294,13 @@ export function TeamRecruitmentPostCard({
                   <Edit className='mr-2 h-4 w-4' />
                   Edit Post
                 </DropdownMenuItem>
-                <DropdownMenuItem
+                {/* <DropdownMenuItem
                   onClick={handleDeleteClick}
                   className='cursor-pointer text-red-400 focus:bg-red-500/20 focus:text-red-400'
                 >
                   <X className='mr-2 h-4 w-4' />
                   Close Post
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -255,25 +309,21 @@ export function TeamRecruitmentPostCard({
 
       {/* Project Name */}
       <h3 className='mb-2 line-clamp-1 text-lg font-bold text-white sm:text-xl'>
-        {post.projectName}
+        {post.teamName}
       </h3>
 
       {/* Project Description */}
       <p className='mb-3 line-clamp-3 text-sm leading-relaxed text-gray-300 sm:mb-4'>
-        {post.projectDescription}
+        {post.description}
       </p>
 
       {/* Roles Needed */}
       {post.lookingFor.length > 0 && (
-        <div className='mb-3 flex flex-wrap gap-1.5 sm:mb-4'>
-          {post.lookingFor.map((role, idx) => (
-            <Badge
-              key={idx}
-              className='flex-shrink-0 rounded-[4px] border border-[#645D5D] bg-[#E4DBDB] px-2 py-0.5 text-xs font-medium text-[#645D5D]'
-            >
-              {role.role}
-            </Badge>
-          ))}
+        <div className='mb-3 flex items-center gap-2 sm:mb-4'>
+          <span className='text-sm text-gray-400'>
+            {post.lookingFor.length} role
+            {post.lookingFor.length !== 1 ? 's' : ''} needed
+          </span>
         </div>
       )}
 
@@ -281,7 +331,7 @@ export function TeamRecruitmentPostCard({
       <div className='mb-3 flex items-center gap-2 text-sm text-gray-400 sm:mb-4'>
         <Users className='h-4 w-4' />
         <span>
-          {post.currentTeamSize} / {post.maxTeamSize} members
+          {post.memberCount} / {post.maxSize} members
         </span>
       </div>
 
@@ -304,17 +354,21 @@ export function TeamRecruitmentPostCard({
       )}
 
       {/* Footer - Contact Button and Date */}
-      <div className='flex flex-col gap-3'>
-        <div className='flex items-center justify-between text-xs text-gray-400'>
-          <span>Posted: {formatDate(post.createdAt)}</span>
+      <div className='mt-5 flex items-center justify-between gap-3 border-t border-[#2B2B2B] pt-4'>
+        <div className='flex flex-col'>
+          <span className='text-xs text-gray-500'>Posted</span>
+          <span className='text-xs font-medium text-gray-300'>
+            {getTimeAgo(post.createdAt)}
+          </span>
         </div>
 
         <Button
           onClick={handleContactClick}
-          className='flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#A7F950] text-base font-semibold text-black shadow-lg transition-all duration-200 hover:bg-[#8fd93f] hover:shadow-xl'
+          variant='ghost'
+          size='icon'
+          className='text-[#A7F950] hover:bg-[#A7F950]/10 hover:text-[#8fd93f]'
         >
-          <ContactIcon className='h-5 w-5' />
-          <span>Contact via {getContactMethodLabel(post.contactMethod)}</span>
+          <ContactIcon className='h-6 w-6' />
         </Button>
       </div>
     </div>
