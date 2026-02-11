@@ -29,7 +29,7 @@ import { cn } from '@/lib/utils';
 import { BoundlessButton } from '../buttons';
 import { useProtectedAction } from '@/hooks/use-protected-action';
 import WalletRequiredModal from '@/components/wallet/WalletRequiredModal';
-import { WalletButton } from '../wallet/WalletButton';
+import { WalletTrigger } from '../wallet/WalletTrigger';
 import { NotificationBell } from '../notifications/NotificationBell';
 import CreateProjectModal from '@/features/projects/components/CreateProjectModal';
 
@@ -209,7 +209,7 @@ function AuthenticatedActions() {
   return (
     <>
       <div className='flex items-center gap-2'>
-        <WalletButton />
+        <WalletTrigger variant='icon' drawerType='sheet' />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -448,7 +448,7 @@ const MobileMenu = ({
                   <LoadingSkeleton />
                 ) : (
                   <>
-                    <WalletButton />
+                    <WalletTrigger variant='icon' drawerType='family' />
                     {user?.username && (
                       <Link
                         href={`/profile/${user.username}`}
