@@ -3,8 +3,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useWalletContext } from '@/components/providers/wallet-provider';
 import { getTotalPrizePoolForFunding } from '@/lib/utils/hackathon-escrow';
-import { transformToApiFormat } from '@/lib/utils/hackathon-form-transforms';
-import type { Hackathon, PublishHackathonRequest } from '@/lib/api/hackathons';
+import type { Hackathon } from '@/lib/api/hackathons';
 import type { RewardsFormData } from '@/components/organization/hackathons/new/tabs/schemas/rewardsSchema';
 import type { InfoFormData } from '@/components/organization/hackathons/new/tabs/schemas/infoSchema';
 import type { TimelineFormData } from '@/components/organization/hackathons/new/tabs/schemas/timelineSchema';
@@ -78,20 +77,18 @@ export const useHackathonPublish = ({
       return;
     }
 
+    if (!draftId) {
+      toast.error('Draft ID is required');
+      return;
+    }
+
     setIsPublishing(true);
 
     try {
       toast.info('Publishing hackathon...');
       // The backend now handles the custodial wallet and escrow logic
-      const apiData = transformToApiFormat(stepData) as PublishHackathonRequest;
-      if (draftId) {
-        apiData.draftId = draftId;
-      }
+      const hackathon = await publishDraftAction(draftId, organizationId);
 
-      // We no longer need to pass contractId, escrowAddress, transactionHash
-      // as these are handled by the backend using the custodial wallet
-
-      const hackathon = await publishDraftAction(draftId!, organizationId!);
       toast.success('Hackathon published successfully!');
 
       if (organizationId && hackathon.id) {
