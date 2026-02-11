@@ -218,6 +218,47 @@ export interface HackathonSubmission {
   updatedAt: string;
 }
 
+export interface ReviewSubmissionRequest {
+  status: 'SHORTLISTED' | 'SUBMITTED';
+  notes?: string;
+  rank?: number;
+}
+
+export interface ReviewSubmissionResponse {
+  message: string;
+  submission: HackathonSubmission;
+}
+
+export interface DisqualifySubmissionRequest {
+  disqualificationReason: string;
+}
+
+export interface DisqualifySubmissionResponse {
+  message: string;
+  submission: HackathonSubmission;
+}
+
+export interface BulkActionRequest {
+  submissionIds: string[];
+  action: 'SHORTLISTED' | 'SUBMITTED' | 'DISQUALIFIED';
+  reason?: string;
+}
+
+export interface BulkActionResponse {
+  message: string;
+  count: number;
+  action: string;
+}
+
+export interface UpdateRankRequest {
+  rank: number;
+}
+
+export interface UpdateRankResponse {
+  message: string;
+  submission: HackathonSubmission;
+}
+
 // Draft Data Structure
 export interface HackathonDraftData {
   information?: HackathonInformation;
@@ -1081,8 +1122,8 @@ export const getDrafts = async (
   return res.data as GetDraftsResponse;
 };
 
-// Accpet invitition function
-export const acceptTeamInvitation = async (
+// Accpet invitation function (Legacy Token-based)
+export const acceptTeamInvitationToken = async (
   hackathonSlugOrId: string,
   data: AcceptTeamInvitationRequest,
   organizationId?: string
@@ -1611,6 +1652,65 @@ export const removeVote = async (
 };
 
 /**
+ * Review a submission (organizer only)
+ * Update submission status to SHORTLISTED or move back to SUBMITTED
+ */
+export const reviewSubmission = async (
+  organizationId: string,
+  hackathonId: string,
+  submissionId: string,
+  data: ReviewSubmissionRequest
+): Promise<ReviewSubmissionResponse> => {
+  const url = `/organizations/${organizationId}/hackathons/${hackathonId}/submissions/${submissionId}/review`;
+  const res = await api.patch(url, data);
+  return res.data;
+};
+
+/**
+ * Disqualify a submission (organizer only)
+ * Mark a submission as disqualified with a reason
+ */
+export const disqualifyHackathonSubmission = async (
+  organizationId: string,
+  hackathonId: string,
+  submissionId: string,
+  data: DisqualifySubmissionRequest
+): Promise<DisqualifySubmissionResponse> => {
+  const url = `/organizations/${organizationId}/hackathons/${hackathonId}/submissions/${submissionId}/disqualify`;
+  const res = await api.post(url, data);
+  return res.data;
+};
+
+/**
+ * Bulk action on submissions (organizer only)
+ * Approve, Disqualify or Move to Submitted multiple submissions
+ */
+export const bulkActionSubmissions = async (
+  organizationId: string,
+  hackathonId: string,
+  data: BulkActionRequest
+): Promise<BulkActionResponse> => {
+  const url = `/organizations/${organizationId}/hackathons/${hackathonId}/submissions/bulk-action`;
+  const res = await api.post(url, data);
+  return res.data;
+};
+
+/**
+ * Update submission rank (organizer only)
+ * Set numerical rank for leaderboard
+ */
+export const updateSubmissionRank = async (
+  organizationId: string,
+  hackathonId: string,
+  submissionId: string,
+  rank: number
+): Promise<UpdateRankResponse> => {
+  const url = `/organizations/${organizationId}/hackathons/${hackathonId}/submissions/${submissionId}/rank`;
+  const res = await api.patch(url, { rank });
+  return res.data;
+};
+
+/**
  * Get public list of hackathons (no authentication required)
  * This endpoint provides server-side filtering, sorting, and pagination
  */
@@ -1986,6 +2086,12 @@ export interface TeamMember {
   joinedAt: string;
 }
 
+// Team Role Type (for tracking hired status)
+export interface TeamRole {
+  skill: string;
+  hired: boolean;
+}
+
 export interface TeamRecruitmentPost {
   id: string;
   hackathonId: string;
@@ -1993,6 +2099,7 @@ export interface TeamRecruitmentPost {
   teamName: string;
   description: string;
   lookingFor: string[];
+  rolesStatus?: TeamRole[]; // Track hired status for each role
   isOpen: boolean;
   leaderId: string;
   maxSize: number;
@@ -2077,6 +2184,49 @@ export interface TrackContactClickResponse extends ApiResponse<null> {
   success: true;
   data: null;
   message: string;
+}
+
+// ============================================
+// Team Invitation API Types and Functions
+// ============================================
+
+export type InvitationStatus = 'pending' | 'accepted' | 'rejected' | 'expired';
+
+export interface TeamInvitation {
+  id: string;
+  teamId: string;
+  hackathon: Partial<Hackathon>;
+  invitee: Partial<Participant>;
+  inviter: Partial<Participant>;
+  status: InvitationStatus;
+  message: string;
+  role: string;
+  expiresAt: string;
+  createdAt: string;
+  respondedAt: string | null;
+}
+
+export interface InviteUserToTeamRequest {
+  inviteeIdentifier: string;
+  message?: string;
+}
+
+export type GetInvitationsResponse =
+  | {
+      invitations: TeamInvitation[];
+      total: number;
+    }
+  | (ApiResponse<{
+      invitations: TeamInvitation[];
+      total: number;
+    }> & { invitations?: never });
+
+export interface InvitationResponse extends ApiResponse<{
+  message: string;
+  teamId: string;
+  invitation: TeamInvitation;
+}> {
+  success: true;
 }
 
 /**
@@ -2265,6 +2415,95 @@ export const getMyTeam = async (
   };
 };
 
+/**
+ * Invite a user to join a team
+ */
+export const inviteUserToTeam = async (
+  hackathonId: string,
+  teamId: string,
+  data: InviteUserToTeamRequest
+): Promise<ApiResponse<TeamInvitation>> => {
+  const res = await api.post(
+    `/hackathons/${hackathonId}/teams/${teamId}/invite`,
+    data
+  );
+  return res.data;
+};
+
+/**
+ * Get all team invitations received by the current user
+ */
+export const getMyTeamInvitations = async (
+  hackathonId: string,
+  status?: InvitationStatus
+): Promise<GetInvitationsResponse> => {
+  const params = new URLSearchParams();
+  if (status) {
+    params.append('status', status);
+  }
+  const queryString = params.toString();
+  const url = `/hackathons/${hackathonId}/my-invitations${queryString ? `?${queryString}` : ''}`;
+  const res = await api.get(url);
+  return res.data;
+};
+
+/**
+ * Accept a pending team invitation
+ */
+export const acceptTeamInvitation = async (
+  hackathonId: string,
+  inviteId: string
+): Promise<InvitationResponse> => {
+  const res = await api.post(
+    `/hackathons/${hackathonId}/invitations/${inviteId}/accept`
+  );
+  return res.data;
+};
+
+/**
+ * Reject a pending team invitation
+ */
+export const rejectTeamInvitation = async (
+  hackathonId: string,
+  inviteId: string
+): Promise<InvitationResponse> => {
+  const res = await api.post(
+    `/hackathons/${hackathonId}/invitations/${inviteId}/reject`
+  );
+  return res.data;
+};
+
+/**
+ * Cancel a pending invitation (Team leader only)
+ */
+export const cancelTeamInvitation = async (
+  hackathonId: string,
+  inviteId: string
+): Promise<ApiResponse<null>> => {
+  const res = await api.delete(
+    `/hackathons/${hackathonId}/invitations/${inviteId}`
+  );
+  return res.data;
+};
+
+/**
+ * Get all invitations sent by the team (Team leader only)
+ */
+export const getTeamInvitations = async (
+  hackathonId: string,
+  teamId: string,
+  status?: InvitationStatus
+): Promise<GetInvitationsResponse> => {
+  const params = new URLSearchParams();
+  if (status) {
+    params.append('status', status);
+  }
+  const queryString = params.toString();
+  const url = `/hackathons/${hackathonId}/teams/${teamId}/invitations${queryString ? `?${queryString}` : ''}`;
+  const res = await api.get(url);
+  return res.data;
+};
+
 // export const GetHackathonBySlug = async (slug): Promise<Hackathon> => {
 //   const res = await api.get(`hackathons/s/${slug}`);
 //   return
@@ -2284,4 +2523,74 @@ export const GetHackathonBySlug = async (
       requestId: '',
     },
   };
+};
+
+// Leave Team
+export interface LeaveTeamResponse extends ApiResponse<{ message: string }> {
+  success: true;
+  data: {
+    message: string;
+  };
+  message: string;
+}
+
+export const leaveHackathonTeam = async (
+  hackathonId: string,
+  teamId: string,
+  organizationId?: string
+): Promise<LeaveTeamResponse> => {
+  const orgHeader = organizationId
+    ? { 'x-organization-id': organizationId }
+    : {};
+  const res = await api.post(
+    `/hackathons/${hackathonId}/teams/${teamId}/leave`,
+    {},
+    {
+      headers: {
+        ...orgHeader,
+      },
+    }
+  );
+  return res.data;
+};
+
+// ============================================
+// Toggle Role Hired Status
+// ============================================
+
+export interface ToggleRoleHiredRequest {
+  skill: string;
+}
+
+export interface ToggleRoleHiredResponse extends ApiResponse<{
+  role: string;
+  hired: boolean;
+}> {
+  success: true;
+  data: {
+    role: string;
+    hired: boolean;
+  };
+  message: string;
+}
+
+/**
+ * Toggle whether a role has been filled (hired) or is still open
+ * Only team leaders can toggle role status
+ */
+export const toggleRoleHired = async (
+  hackathonSlugOrId: string,
+  teamId: string,
+  data: ToggleRoleHiredRequest,
+  organizationId?: string
+): Promise<ToggleRoleHiredResponse> => {
+  let url: string;
+  if (organizationId) {
+    url = `/organizations/${organizationId}/hackathons/${hackathonSlugOrId}/teams/${teamId}/roles/toggle-hired`;
+  } else {
+    url = `/hackathons/${hackathonSlugOrId}/teams/${teamId}/roles/toggle-hired`;
+  }
+
+  const res = await api.patch(url, data);
+  return res.data;
 };
