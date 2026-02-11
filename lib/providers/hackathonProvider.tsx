@@ -11,12 +11,43 @@ import React, {
 } from 'react';
 import { SubmissionCardProps } from '@/types/hackathon';
 import { Comment } from '@/types/comment';
-import { Hackathon, HackathonResourceItem } from '@/lib/api/hackathons';
+import {
+  Hackathon,
+  HackathonResourceItem,
+  getExploreSubmissions,
+  ExploreSubmissionsResponse,
+  HackathonWinner,
+} from '@/lib/api/hackathons';
 import {
   getHackathons,
   getHackathon,
   getHackathonSubmissions,
+  getHackathonWinners,
 } from '@/lib/api/hackathon';
+
+// -------------------
+// Status Mapper
+// -------------------
+
+/**
+ * Maps API submission status to UI status values
+ * API: 'SUBMITTED' | 'SHORTLISTED' | 'DISQUALIFIED' | 'WITHDRAWN'
+ * UI: 'Pending' | 'Approved' | 'Rejected'
+ */
+function mapSubmissionStatus(apiStatus: string): SubmissionCardProps['status'] {
+  const normalized = apiStatus?.toUpperCase();
+
+  switch (normalized) {
+    case 'SHORTLISTED':
+      return 'Approved';
+    case 'DISQUALIFIED':
+    case 'WITHDRAWN':
+      return 'Rejected';
+    case 'SUBMITTED':
+    default:
+      return 'Pending';
+  }
+}
 
 // -------------------
 // Types
@@ -54,6 +85,8 @@ interface HackathonDataContextType {
   currentHackathon: Hackathon | null;
   discussions: Comment[]; // Using generic Comment type
   submissions: SubmissionCardProps[];
+  exploreSubmissions: SubmissionCardProps[];
+  winners: HackathonWinner[];
   // content: string;
   timelineEvents: TimelineEvent[];
   prizes: Prize[];
@@ -108,6 +141,10 @@ export function HackathonDataProvider({
     string | null
   >(hackathonSlug || null);
   const [submissions, setSubmissions] = useState<SubmissionCardProps[]>([]);
+  const [exploreSubmissions, setExploreSubmissions] = useState<
+    SubmissionCardProps[]
+  >([]);
+  const [winners, setWinners] = useState<HackathonWinner[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setErrorState] = useState<string | null>(null);
 
@@ -204,6 +241,43 @@ export function HackathonDataProvider({
     }
   }, []);
 
+  const fetchExploreSubmissions = useCallback(async (hackathonId: string) => {
+    try {
+      const submissions = await getExploreSubmissions(hackathonId);
+      const mappedSubmissions: SubmissionCardProps[] = submissions.map(sub => ({
+        _id: sub.id,
+        title: sub.projectName,
+        description: sub.description,
+        submitterName:
+          sub.teamName || sub.teamMembers?.[0]?.name || 'Unknown Participant',
+        submitterAvatar: sub.teamMembers?.[0]?.avatar || sub.logo || '',
+        category: sub.category,
+        status: mapSubmissionStatus(sub.status),
+        upvotes: 0,
+        submittedDate: sub.submittedAt,
+        image: sub.logo || '/placeholder.svg',
+      }));
+      setExploreSubmissions(mappedSubmissions);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  // --------------------------------
+  // Fetch winners
+  // --------------------------------
+  const fetchWinners = useCallback(async (hackathonIdOrSlug: string) => {
+    try {
+      const response = await getHackathonWinners(hackathonIdOrSlug);
+      if (response.success && response.data) {
+        setWinners(response.data.winners);
+      }
+    } catch {
+      // If 404 or other error, simply don't show winners
+      setWinners([]);
+    }
+  }, []);
+
   // --------------------------------
   // Computed lists
   // --------------------------------
@@ -239,10 +313,20 @@ export function HackathonDataProvider({
       const data = await fetchHackathonBySlug(slug);
 
       if (data) {
-        await Promise.all([fetchSubmissions(slug)]);
+        await Promise.all([
+          fetchSubmissions(slug),
+          fetchExploreSubmissions(data.id),
+          fetchWinners(data.id), // Fetch by ID as per spec, but slug likely works too if API supports it
+        ]);
       }
     },
-    [currentHackathonSlug, fetchHackathonBySlug, fetchSubmissions]
+    [
+      currentHackathonSlug,
+      fetchHackathonBySlug,
+      fetchSubmissions,
+      fetchExploreSubmissions,
+      fetchWinners,
+    ]
   );
 
   const refreshHackathons = async () => {
@@ -378,6 +462,8 @@ export function HackathonDataProvider({
     currentHackathon,
     discussions: mockDiscussions,
     submissions,
+    exploreSubmissions,
+    winners,
     // content: mockContent,
     timelineEvents: mockTimelineEvents,
     prizes: mockPrizes,

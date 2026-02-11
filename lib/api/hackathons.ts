@@ -29,6 +29,16 @@ export enum ParticipantType {
   TEAM_OR_INDIVIDUAL = 'team_or_individual',
 }
 
+export enum SubmissionVisibility {
+  PUBLIC = 'PUBLIC',
+  PARTICIPANTS_ONLY = 'PARTICIPANTS_ONLY',
+}
+
+export enum SubmissionStatusVisibility {
+  ALL = 'ALL',
+  ACCEPTED_SHORTLISTED = 'ACCEPTED_SHORTLISTED',
+}
+
 export enum VenueType {
   VIRTUAL = 'virtual',
   PHYSICAL = 'physical',
@@ -411,6 +421,9 @@ export type Hackathon = {
   telegram: string;
   socialLinks: string[];
 
+  submissionVisibility?: SubmissionVisibility;
+  submissionStatusVisibility?: SubmissionStatusVisibility;
+
   publishedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -519,6 +532,49 @@ export interface GetHackathonsResponse extends ApiResponse<HackathonsData> {
 }
 
 // Statistics and Analytics Types
+export interface HackathonAnalyticsSummary {
+  participantsCount: number;
+  submissionsCount: number;
+  activeJudges: number;
+  completedMilestones: number;
+}
+
+export interface AnalyticsTrendPoint {
+  date: string;
+  count: number;
+}
+
+export interface HackathonAnalyticsTrends {
+  submissionsOverTime: AnalyticsTrendPoint[];
+  participantSignupsOverTime: AnalyticsTrendPoint[];
+}
+
+export interface TimelineEvent {
+  phase: string;
+  description: string;
+  date: string;
+  status: 'completed' | 'ongoing' | 'upcoming';
+}
+
+export interface GetHackathonAnalyticsResponse extends ApiResponse<{
+  hackathonId: string;
+  summary: HackathonAnalyticsSummary;
+  trends: HackathonAnalyticsTrends;
+  timeline: TimelineEvent[];
+}> {
+  success: true;
+  data: {
+    hackathonId: string;
+    summary: HackathonAnalyticsSummary;
+    trends: HackathonAnalyticsTrends;
+    timeline: TimelineEvent[];
+  };
+}
+
+// Deprecated or legacy statistics types (keeping if still used elsewhere, otherwise replacing if identical)
+// Checking usage, it seems these might be used by existing hooks.
+// Given the request asks for a specific response structure, I will add the new ones.
+
 export interface HackathonStatistics {
   participantsCount: number;
   submissionsCount: number;
@@ -628,6 +684,46 @@ export interface ParticipantSubmission {
     email: string;
   } | null;
   reviewedAt?: string | null;
+}
+
+export interface ExploreSubmissionsResponse {
+  id: string;
+  hackathonId: string;
+  projectId: string;
+  participantId: string;
+  organizationId: string;
+  participationType: 'INDIVIDUAL' | 'TEAM' | 'TEAM_OR_INDIVIDUAL';
+  teamId?: string;
+  teamName?: string;
+  teamMembers?: Array<{
+    userId: string;
+    name: string;
+    username: string;
+    role: string;
+    avatar?: string;
+  }>;
+  projectName: string;
+  category: string;
+  description: string;
+  logo?: string;
+  videoUrl?: string;
+  introduction?: string;
+  links: Array<{
+    type: string;
+    url: string;
+  }>;
+  socialLinks: {
+    github?: string;
+    telegram?: string;
+    twitter?: string;
+    email?: string;
+  };
+  status: string;
+  rank?: number;
+  registeredAt: string;
+  submittedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Participant {
@@ -1143,6 +1239,24 @@ export const acceptTeamInvitationToken = async (
 };
 
 /**
+ * Update hackathon submission visibility settings
+ */
+export const updateSubmissionVisibility = async (
+  organizationId: string,
+  hackathonId: string,
+  data: {
+    submissionVisibility: SubmissionVisibility;
+    submissionStatusVisibility: SubmissionStatusVisibility;
+  }
+): Promise<ApiResponse<null>> => {
+  const res = await api.patch(
+    `/organizations/${organizationId}/hackathons/${hackathonId}/visibility`,
+    data
+  );
+  return res.data;
+};
+
+/**
  * Update an existing published hackathon
  */
 export const updateHackathon = async (
@@ -1169,16 +1283,7 @@ export const getHackathon = async (
   hackathonId: string
 ): Promise<GetHackathonResponse> => {
   const res = await api.get(`/hackathons/${hackathonId}`);
-
-  return {
-    success: true,
-    data: res.data,
-    message: 'Hackathon retrieved successfully',
-    meta: {
-      timestamp: new Date().toISOString(),
-      requestId: '',
-    },
-  };
+  return res.data;
 };
 
 /**
@@ -1466,6 +1571,25 @@ export const getHackathonSubmissions = async (
 
   const res = await api.get(
     `/hackathons/${hackathonId}/submissions?${params.toString()}`
+  );
+
+  return res.data;
+};
+
+/**
+ * Explore hackathon submissions (Public showcase)
+ */
+export const getExploreSubmissions = async (
+  hackathonId: string,
+  page?: number,
+  limit?: number
+): Promise<ExploreSubmissionsResponse[]> => {
+  const params = new URLSearchParams();
+  if (page) params.append('page', page.toString());
+  if (limit) params.append('limit', limit.toString());
+
+  const res = await api.get(
+    `/hackathons/${hackathonId}/submissions/explore${params.toString() ? `?${params.toString()}` : ''}`
   );
 
   return res.data;
@@ -2594,3 +2718,25 @@ export const toggleRoleHired = async (
   const res = await api.patch(url, data);
   return res.data;
 };
+
+export interface HackathonWinner {
+  rank: number;
+  projectName: string;
+  projectId?: string;
+  teamName: string | null;
+  participants: Array<{
+    userId?: string;
+    username: string;
+    avatar?: string;
+  }>;
+  prize: string;
+  submissionId: string;
+  slug?: string;
+}
+
+export interface GetHackathonWinnersResponse extends ApiResponse<{
+  hackathonId: string;
+  winners: HackathonWinner[];
+}> {
+  success: true;
+}

@@ -1,7 +1,12 @@
 import { api } from './api';
 import { SubmissionCardProps, ParticipantsResponse } from '@/types/hackathon';
-// Discussion type removed - using generic Comment type from @/types/comment
-import { GetHackathonResponse, Hackathon } from '@/lib/api/hackathons';
+import {
+  GetHackathonResponse,
+  Hackathon,
+  GetHackathonWinnersResponse,
+  HackathonWinner,
+  GetHackathonAnalyticsResponse,
+} from '@/lib/api/hackathons';
 
 export interface HackathonListResponse {
   success: boolean;
@@ -46,13 +51,6 @@ export const getHackathons = async (): Promise<HackathonListResponse> => {
   return response.data;
 };
 
-// Get single hackathon by slug
-// export const getHackathon = async (
-//   slug: string
-// ): Promise<HackathonResponse> => {
-//   const response = await api.get<HackathonResponse>(`/hackathons/${slug}`);
-//   return response.data;
-// };
 export const getHackathon = async (
   slug: string
 ): Promise<GetHackathonResponse> => {
@@ -86,6 +84,15 @@ export const getHackathonParticipants = async (
   return response.data;
 };
 
+export const getHackathonAnalytics = async (
+  organizationId: string,
+  hackathonId: string
+): Promise<GetHackathonAnalyticsResponse> => {
+  const url = `/organizations/${organizationId}/hackathons/${hackathonId}/analytics`;
+  const res = await api.get<GetHackathonAnalyticsResponse>(url);
+  return res.data;
+};
+
 // Get submissions for a hackathon
 export const getHackathonSubmissions = async (
   slug: string,
@@ -103,8 +110,12 @@ export const getHackathonSubmissions = async (
   return response.data;
 };
 
-// Get discussions for a hackathon (you'll need to implement this endpoint)
-// export const getHackathonDiscussions = async (hackathonId: string): Promise<DiscussionsResponse> => {
-//   const response = await api.get(`/hackathons/${hackathonId}/discussions`);
-//   return response.data;
-// };
+// Get winners for a hackathon
+export const getHackathonWinners = async (
+  idOrSlug: string
+): Promise<GetHackathonWinnersResponse> => {
+  const response = await api.get<GetHackathonWinnersResponse>(
+    `/hackathons/${idOrSlug}/winners`
+  );
+  return response.data;
+};

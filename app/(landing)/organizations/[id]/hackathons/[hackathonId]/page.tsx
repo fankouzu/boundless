@@ -1,7 +1,13 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { Loader2, AlertCircle, Calendar, TrendingUp } from 'lucide-react';
+import {
+  Loader2,
+  AlertCircle,
+  Calendar,
+  TrendingUp,
+  Check,
+} from 'lucide-react';
 import { useHackathons } from '@/hooks/use-hackathons';
 import { useEffect } from 'react';
 import { useHackathonAnalytics } from '@/hooks/use-hackathon-analytics';
@@ -23,8 +29,10 @@ export default function HackathonPage() {
       autoFetch: false,
     });
 
-  const { statistics, statisticsLoading, timeSeriesData, timeSeriesLoading } =
-    useHackathonAnalytics(organizationId, hackathonId);
+  const { analytics, loading: analyticsLoading } = useHackathonAnalytics(
+    organizationId,
+    hackathonId
+  );
 
   useEffect(() => {
     if (organizationId && hackathonId) {
@@ -60,6 +68,29 @@ export default function HackathonPage() {
     );
   }
 
+  // Adapt key metrics
+  const statistics = analytics?.summary || null;
+
+  // Adapt charts data
+  const timeSeriesData = analytics?.trends
+    ? {
+        submissions: {
+          daily: analytics.trends.submissionsOverTime.map(p => ({
+            date: p.date,
+            count: p.count,
+          })),
+          weekly: [],
+        },
+        participants: {
+          daily: analytics.trends.participantSignupsOverTime.map(p => ({
+            date: p.date,
+            count: p.count,
+          })),
+          weekly: [],
+        },
+      }
+    : null;
+
   return (
     <AuthGuard redirectTo='/auth?mode=signin' fallback={<Loading />}>
       <div className='min-h-screen bg-black'>
@@ -69,11 +100,6 @@ export default function HackathonPage() {
             <h1 className='text-3xl font-light tracking-tight text-white sm:text-4xl'>
               {currentHackathon?.name || 'Hackathon Dashboard'}
             </h1>
-            {/* {currentHackathon?.information?.description && (
-            <p className='mt-3 max-w-2xl text-sm text-gray-400'>
-              {currentHackathon.information.description}
-            </p>
-          )} */}
           </div>
         </div>
 
@@ -89,7 +115,7 @@ export default function HackathonPage() {
             </div>
             <HackathonStatistics
               statistics={statistics}
-              loading={statisticsLoading}
+              loading={analyticsLoading}
             />
           </section>
 
@@ -97,7 +123,7 @@ export default function HackathonPage() {
           <section className='mb-16'>
             <HackathonCharts
               timeSeriesData={timeSeriesData}
-              loading={timeSeriesLoading}
+              loading={analyticsLoading}
             />
           </section>
 
@@ -109,21 +135,97 @@ export default function HackathonPage() {
                 Timeline
               </h2>
             </div>
-            <HackathonTimeline
-              timeline={{
-                startDate: currentHackathon?.startDate || '',
-                submissionDeadline: currentHackathon?.submissionDeadline || '',
-                judgingDate: currentHackathon?.endDate || '',
-                winnerAnnouncementDate:
-                  currentHackathon?.registrationDeadline || '',
-                timezone: currentHackathon?.timezone || '',
-                phases: currentHackathon?.phases?.map(phase => ({
-                  name: phase.name || '',
-                  startDate: phase.startDate || '',
-                  endDate: phase.endDate || '',
-                })),
-              }}
-            />
+
+            {/* Render new timeline from analytics */}
+            <div className='relative'>
+              <div className='space-y-0'>
+                {(() => {
+                  const timelineEvents = analytics?.timeline || [];
+                  const hasWinnerAnnouncement = timelineEvents.some(
+                    e => e.phase === 'Winner Announcement'
+                  );
+
+                  // Manually append Winner Announcement if missing and date exists
+                  const fullTimeline = [...timelineEvents];
+                  if (!hasWinnerAnnouncement && currentHackathon?.endDate) {
+                    const winnerDate = new Date(currentHackathon.endDate);
+                    const now = new Date();
+                    // Simple status logic for single date event
+                    // If date is passed, completed. If today (roughly), ongoing?
+                    // Or just use 'upcoming' if future, 'completed' if past.
+                    // Ideally we'd match the phase logic, but for a single date event:
+                    let status: 'completed' | 'ongoing' | 'upcoming' =
+                      'upcoming';
+                    if (now > winnerDate) {
+                      status = 'completed';
+                    }
+                    // For "Winner Announcement", it might be "ongoing" on the day of?
+                    // keeping simple for now.
+
+                    fullTimeline.push({
+                      phase: 'Winner Announcement',
+                      description:
+                        'Final results published and prizes distributed to winners.',
+                      date: currentHackathon.endDate,
+                      status: status,
+                    });
+                  }
+
+                  return fullTimeline.map((phase, index) => {
+                    const isLast = index === fullTimeline.length - 1;
+                    const isActive = phase.status === 'ongoing';
+                    const isCompleted = phase.status === 'completed';
+
+                    return (
+                      <div
+                        key={`${phase.phase}-${index}`}
+                        className={`relative flex items-start gap-3 sm:gap-4 ${!isLast ? 'pb-6' : ''}`}
+                      >
+                        <div className='relative flex flex-col items-center'>
+                          {isActive ? (
+                            <div className='bg-active-bg z-10 flex shrink-0 items-center justify-center rounded-full p-1'>
+                              <div className='bg-primary z-10 flex h-4 w-4 shrink-0 items-center justify-center rounded-full' />
+                            </div>
+                          ) : isCompleted ? (
+                            <div className='z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-green-500/20 bg-green-500/10'>
+                              <Check className='h-3 w-3 text-green-500' />
+                            </div>
+                          ) : (
+                            <div className='bg-inactive z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#1C1C1C] opacity-50' />
+                          )}
+                          {!isLast && (
+                            <div className='absolute top-6 left-1/2 h-6 w-0.5 -translate-x-1/2'>
+                              <div className='h-full border-l-2 border-dashed border-gray-600' />
+                            </div>
+                          )}
+                        </div>
+                        <div className='flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4'>
+                          <div className='min-w-0 flex-1'>
+                            <h3 className='mb-1 text-sm font-medium text-white sm:text-base'>
+                              {phase.phase}
+                            </h3>
+                            <p
+                              className={`text-xs sm:text-sm ${
+                                isCompleted
+                                  ? 'text-gray-400'
+                                  : isActive
+                                    ? 'text-white/60'
+                                    : 'text-white/40'
+                              }`}
+                            >
+                              {phase.description}
+                            </p>
+                          </div>
+                          <div className='flex-shrink-0 text-xs whitespace-nowrap text-white/60 sm:text-sm'>
+                            {new Date(phase.date).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
           </section>
         </div>
       </div>
