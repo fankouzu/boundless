@@ -9,6 +9,7 @@ import { FamilyWalletDrawer } from './FamilyWalletDrawer';
 import { Wallet, ChevronDown, WalletCards } from 'lucide-react';
 import { formatAddress } from '@/lib/wallet-utils';
 import { cn } from '@/lib/utils';
+import { GlowingEffect } from '../ui/glowing-effect';
 
 interface WalletTriggerProps {
   variant?: 'icon' | 'balance' | 'floating' | 'family-button';
@@ -78,8 +79,15 @@ export function WalletTrigger({
           onClick={() => setOpen(true)}
           variant='ghost'
           size='icon'
-          className={cn('rounded-full', className)}
+          className={cn('relative rounded-sm', className)}
         >
+          <GlowingEffect
+            spread={40}
+            glow={true}
+            disabled={false}
+            proximity={64}
+            inactiveZone={0.01}
+          />
           <Wallet className='h-5 w-5' />
         </Button>
       )}
