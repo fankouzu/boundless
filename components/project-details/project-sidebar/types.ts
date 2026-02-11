@@ -36,7 +36,7 @@ export interface ProjectSidebarProgressProps {
 export interface ProjectSidebarActionsProps {
   project: CrowdfundingProject;
   crowdfund?: Crowdfunding;
-  projectStatus: string;
+  projectStatus: ProjectStatus;
   isVoting: boolean;
   userVote: 1 | -1 | null;
   onVote: (value: 1 | -1) => void;
