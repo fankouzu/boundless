@@ -14,9 +14,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWallet } from '@/hooks/use-wallet';
+import { useWalletContext } from '@/components/providers/wallet-provider';
 
 interface FamilyWalletButtonProps {
-  onOpenDrawer: () => void;
+  onOpenDrawer: (view?: 'main' | 'receive' | 'send') => void;
   className?: string;
 }
 
@@ -27,8 +28,15 @@ export function FamilyWalletButton({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { handleConnect } = useWallet();
+  const { walletAddress } = useWalletContext();
 
-  const toggleOpen = () => setIsOpen(!isOpen);
+  const toggleOpen = () => {
+    if (!walletAddress) {
+      handleConnect();
+      return;
+    }
+    setIsOpen(!isOpen);
+  };
 
   return (
     <div
@@ -38,7 +46,7 @@ export function FamilyWalletButton({
       )}
     >
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && walletAddress && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -53,7 +61,7 @@ export function FamilyWalletButton({
                 size='icon'
                 className='h-10 w-10 rounded-full shadow-lg'
                 onClick={() => {
-                  onOpenDrawer();
+                  onOpenDrawer('receive');
                   setIsOpen(false);
                 }}
               >
@@ -68,7 +76,7 @@ export function FamilyWalletButton({
                 size='icon'
                 className='h-10 w-10 rounded-full shadow-lg'
                 onClick={() => {
-                  onOpenDrawer();
+                  onOpenDrawer('send');
                   setIsOpen(false);
                 }}
               >
@@ -83,7 +91,7 @@ export function FamilyWalletButton({
                 size='icon'
                 className='h-10 w-10 rounded-full shadow-lg'
                 onClick={() => {
-                  onOpenDrawer();
+                  onOpenDrawer('main');
                   setIsOpen(false);
                 }}
               >
@@ -105,7 +113,7 @@ export function FamilyWalletButton({
         whileTap={{ scale: 0.95 }}
       >
         <AnimatePresence mode='wait' initial={false}>
-          {isOpen ? (
+          {isOpen && walletAddress ? (
             <motion.div
               key='close'
               initial={{ rotate: -90, opacity: 0 }}
@@ -123,7 +131,11 @@ export function FamilyWalletButton({
               exit={{ rotate: -90, opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <WalletCards className='h-6 w-6' />
+              {!walletAddress ? (
+                <Plus className='h-6 w-6' />
+              ) : (
+                <WalletCards className='h-6 w-6' />
+              )}
             </motion.div>
           )}
         </AnimatePresence>

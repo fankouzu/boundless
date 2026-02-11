@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Drawer } from 'vaul';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWallet } from '@/hooks/use-wallet';
@@ -23,17 +23,20 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { QRCodeSVG } from 'qrcode.react';
+
+export type DrawerView = 'main' | 'receive' | 'send' | 'activity' | 'assets';
 
 interface FamilyWalletDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialView?: DrawerView;
 }
-
-type DrawerView = 'main' | 'receive' | 'send' | 'activity' | 'assets';
 
 export function FamilyWalletDrawer({
   open,
   onOpenChange,
+  initialView,
 }: FamilyWalletDrawerProps) {
   const [view, setView] = useState<DrawerView>('main');
   const { handleDisconnect } = useWallet();
@@ -46,13 +49,18 @@ export function FamilyWalletDrawer({
   } = useWalletContext();
   const [copied, setCopied] = useState(false);
 
+  // Sync view with initialView when the drawer opens
+  useEffect(() => {
+    if (open && initialView) {
+      setView(initialView);
+    }
+  }, [open, initialView]);
+
   const resetView = () => setView('main');
 
   const handleOpenChange = (isOpen: boolean) => {
     onOpenChange(isOpen);
-    if (!isOpen) {
-      setTimeout(() => resetView(), 300); // Reset after close animation
-    }
+    // Resetting after close is handled by the useEffect on open
   };
 
   const handleCopyAddress = async () => {
@@ -108,7 +116,7 @@ export function FamilyWalletDrawer({
       <Drawer.Portal>
         <Drawer.Overlay className='fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]' />
         <Drawer.Content className='fixed right-0 bottom-0 left-0 z-50 mt-24 flex max-h-[90vh] flex-col outline-none'>
-          <div className='bg-background mx-auto w-full max-w-sm rounded-t-[10px] shadow-2xl ring-1 ring-black/5 dark:ring-white/10'>
+          <div className='bg-background mx-auto w-full max-w-md rounded-t-[20px] shadow-2xl ring-1 ring-black/5 dark:ring-white/10'>
             {/* Handle */}
             <div className='bg-muted/50 mx-auto mt-4 h-1.5 w-12 rounded-full' />
 
@@ -323,7 +331,13 @@ export function FamilyWalletDrawer({
                     </div>
                     <div className='flex flex-col items-center gap-6 py-6'>
                       <div className='rounded-xl bg-white p-4 shadow-sm'>
-                        <QrCode className='h-48 w-48 text-black' />
+                        <QRCodeSVG
+                          value={walletAddress}
+                          size={192}
+                          level='H'
+                          marginSize={0}
+                          className='h-48 w-48'
+                        />
                       </div>
                       <div className='bg-muted/50 w-full space-y-2 rounded-xl p-4'>
                         <div className='text-muted-foreground text-center text-xs font-medium uppercase'>
