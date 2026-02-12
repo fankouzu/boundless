@@ -9,22 +9,22 @@ interface SubmissionLinksTabProps {
   links?: Array<{ type: string; url: string }>;
 }
 
+const getIcon = (type: string) => {
+  switch (type.toLowerCase()) {
+    case 'github':
+      return <Github className='h-5 w-5' />;
+    case 'twitter':
+      return <Twitter className='h-5 w-5' />;
+    case 'website':
+      return <Globe className='h-5 w-5' />;
+    default:
+      return <Link2 className='h-5 w-5' />;
+  }
+};
+
 export const SubmissionLinksTab: React.FC<SubmissionLinksTabProps> = ({
   links,
 }) => {
-  const getIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'github':
-        return <Github className='h-5 w-5' />;
-      case 'twitter':
-        return <Twitter className='h-5 w-5' />;
-      case 'website':
-        return <Globe className='h-5 w-5' />;
-      default:
-        return <Link2 className='h-5 w-5' />;
-    }
-  };
-
   return (
     <ScrollArea className='h-full pr-4'>
       <motion.div

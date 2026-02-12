@@ -223,14 +223,6 @@ function SubmissionFormContent({
     },
   });
 
-  // Effect to auto-select team if user has one
-  useEffect(() => {
-    if (myTeam && open && !submissionId) {
-      // Only auto-select if creating new, not editing (though editing logic might need review)
-      form.setValue('participationType', 'TEAM');
-    }
-  }, [myTeam, open, form, submissionId]);
-
   // Watch links to keep them in sync
   const formLinks = form.watch('links') || [];
 
@@ -499,6 +491,15 @@ function SubmissionFormContent({
   };
 
   const onSubmit = async (data: SubmissionFormDataLocal) => {
+    // Enforce leader-only submission
+    if (
+      data.participationType === 'TEAM' &&
+      myTeam &&
+      myTeam.leaderId !== user?.id
+    ) {
+      toast.error('Only the team leader can submit the project');
+      return;
+    }
     try {
       // Use the data parameter directly (it's already validated by the form)
       // Get current form values as fallback
@@ -560,8 +561,8 @@ function SubmissionFormContent({
         !safeData.description
       ) {
         toast.error('Please fill in all required fields');
-        setCurrentStep(0);
-        updateStepState(0, 'active');
+        setCurrentStep(1);
+        updateStepState(1, 'active');
         return;
       }
 
@@ -938,9 +939,9 @@ function SubmissionFormContent({
           </div>
         );
 
-      case 1:
+      case 2:
         return (
-          <div key='step-1' className='space-y-6'>
+          <div key='step-2' className='space-y-6'>
             <FormField
               control={form.control}
               name='logo'
@@ -1121,7 +1122,7 @@ function SubmissionFormContent({
           </div>
         );
 
-      case 2:
+      case 3:
         return (
           <div className='space-y-6'>
             <div className='rounded-lg border border-gray-700 bg-gray-800/50 p-6'>
@@ -1251,14 +1252,28 @@ function SubmissionFormContent({
                 <Button
                   type='button'
                   onClick={handleNext}
-                  className='bg-[#a7f950] text-black hover:bg-[#8fd93f]'
+                  disabled={
+                    !!(
+                      form.watch('participationType') === 'TEAM' &&
+                      myTeam &&
+                      myTeam.leaderId !== user?.id
+                    )
+                  }
+                  className='bg-[#a7f950] text-black hover:bg-[#8fd93f] disabled:cursor-not-allowed disabled:opacity-50'
                 >
                   Next
                 </Button>
               ) : (
                 <Button
                   type='submit'
-                  disabled={isSubmitting}
+                  disabled={
+                    !!(
+                      isSubmitting ||
+                      (form.watch('participationType') === 'TEAM' &&
+                        myTeam &&
+                        myTeam.leaderId !== user?.id)
+                    )
+                  }
                   className='bg-[#a7f950] text-black hover:bg-[#8fd93f] disabled:cursor-not-allowed disabled:opacity-50'
                 >
                   {isSubmitting ? (

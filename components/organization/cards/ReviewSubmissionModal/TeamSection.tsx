@@ -65,8 +65,8 @@ export const TeamSection: React.FC<TeamSectionProps> = ({ teamMembers }) => {
               </div>
 
               <div className='flex gap-2 pt-1'>
-                <Github className='h-3 w-3 cursor-pointer text-gray-700 transition-colors hover:text-gray-400' />
-                <Twitter className='h-3 w-3 cursor-pointer text-gray-700 transition-colors hover:text-gray-400' />
+                <Github className='h-3 w-3 text-gray-700 transition-colors' />
+                <Twitter className='h-3 w-3 text-gray-700 transition-colors' />
               </div>
             </div>
           </motion.div>

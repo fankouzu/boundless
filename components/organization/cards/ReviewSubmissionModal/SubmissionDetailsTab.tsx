@@ -21,6 +21,7 @@ export const SubmissionDetailsTab: React.FC<SubmissionDetailsTabProps> = ({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
         className='space-y-10'
       >
         <section>
@@ -28,6 +29,17 @@ export const SubmissionDetailsTab: React.FC<SubmissionDetailsTabProps> = ({
             {projectName}.
           </p>
         </section>
+
+        {introduction && (
+          <section>
+            <h4 className='mb-6 text-[11px] font-bold tracking-widest text-gray-500 uppercase'>
+              Introduction
+            </h4>
+            <p className='text-base leading-loose text-gray-400'>
+              {introduction}
+            </p>
+          </section>
+        )}
 
         <section>
           <h4 className='mb-6 text-[11px] font-bold tracking-widest text-gray-500 uppercase'>

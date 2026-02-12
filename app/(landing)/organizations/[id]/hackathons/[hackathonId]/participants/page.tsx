@@ -22,7 +22,9 @@ import {
 } from '@/hooks/use-participant-submission';
 import { Participant } from '@/lib/api/hackathons';
 
-export default function ParticipantsPage() {
+const PAGE_SIZE = 12;
+
+const ParticipantsPage: React.FC = () => {
   const params = useParams();
   const organizationId = params.id as string;
   const hackathonId = params.hackathonId as string;
@@ -30,7 +32,12 @@ export default function ParticipantsPage() {
   const [view, setView] = useState<'table' | 'grid'>('table');
   const [filters, setFilters] = useState({
     search: '',
-    status: 'all' as 'submitted' | 'shortlisted' | 'disqualified' | 'all',
+    status: 'all' as
+      | 'submitted'
+      | 'not_submitted'
+      | 'shortlisted'
+      | 'disqualified'
+      | 'all',
     type: 'all' as 'individual' | 'team' | 'all',
   });
 
@@ -38,7 +45,7 @@ export default function ParticipantsPage() {
     () => ({
       organizationId,
       autoFetch: false,
-      pageSize: 12, // Grid looks better with multiples of 3/4
+      pageSize: PAGE_SIZE, // Grid looks better with multiples of 3/4
     }),
     [organizationId]
   );
@@ -80,7 +87,7 @@ export default function ParticipantsPage() {
 
   useEffect(() => {
     if (actualHackathonId) {
-      fetchParticipants(actualHackathonId, 1, 12, {
+      fetchParticipants(actualHackathonId, 1, PAGE_SIZE, {
         search: filters.search,
         status: filters.status === 'all' ? undefined : filters.status,
         type: filters.type === 'all' ? undefined : filters.type,
@@ -121,7 +128,7 @@ export default function ParticipantsPage() {
   // Handlers
   const handlePageChange = (page: number) => {
     if (actualHackathonId) {
-      fetchParticipants(actualHackathonId, page, 12, {
+      fetchParticipants(actualHackathonId, page, PAGE_SIZE, {
         search: filters.search,
         status: filters.status === 'all' ? undefined : filters.status,
         type: filters.type === 'all' ? undefined : filters.type,
@@ -140,8 +147,8 @@ export default function ParticipantsPage() {
   };
 
   const handleGrade = async (participant: Participant) => {
-    setSelectedParticipant(participant);
     if (!organizationId || !hackathonId) return;
+    setSelectedParticipant(participant);
 
     setIsLoadingCriteria(true);
     try {
@@ -170,7 +177,7 @@ export default function ParticipantsPage() {
       fetchParticipants(
         actualHackathonId,
         participantsPagination.currentPage,
-        12,
+        PAGE_SIZE,
         {
           search: filters.search,
           status: filters.status === 'all' ? undefined : filters.status,
@@ -193,9 +200,14 @@ export default function ParticipantsPage() {
         pageSize: participantsPagination.itemsPerPage,
       },
     },
-    onPaginationChange: (updater: any) => {
+    onPaginationChange: updater => {
       if (typeof updater === 'function') {
-        const newState = updater({
+        const newState = (
+          updater as (old: { pageIndex: number; pageSize: number }) => {
+            pageIndex: number;
+            pageSize: number;
+          }
+        )({
           pageIndex: participantsPagination.currentPage - 1,
           pageSize: participantsPagination.itemsPerPage,
         });
@@ -355,7 +367,7 @@ export default function ParticipantsPage() {
               participantId={selectedParticipant.id}
               judgingCriteria={criteria}
               submission={{
-                id: selectedParticipant.id,
+                id: selectedParticipant.submission.id,
                 projectName: selectedParticipant.submission.projectName,
                 category: selectedParticipant.submission.category,
                 description: selectedParticipant.submission.description,
@@ -374,4 +386,6 @@ export default function ParticipantsPage() {
       )}
     </AuthGuard>
   );
-}
+};
+
+export default ParticipantsPage;

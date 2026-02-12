@@ -40,6 +40,7 @@ export const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
 
   const handleReset = () => {
     setSearchValue('');
+    onSearchChange('');
     setStatusFilter('all');
     setTypeFilter('all');
     onStatusFilterChange('all');
@@ -77,6 +78,7 @@ export const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
             <SelectContent className='bg-background-card border-gray-800 text-white'>
               <SelectItem value='all'>All Status</SelectItem>
               <SelectItem value='submitted'>Submitted</SelectItem>
+              <SelectItem value='not_submitted'>Not Submitted</SelectItem>
               <SelectItem value='shortlisted'>Shortlisted</SelectItem>
               <SelectItem value='disqualified'>Disqualified</SelectItem>
             </SelectContent>

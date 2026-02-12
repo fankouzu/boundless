@@ -86,7 +86,9 @@ export const SubmissionVotesTab: React.FC<SubmissionVotesTabProps> = ({
                     'h-4 w-4 transition-transform group-hover:scale-110',
                     voter.voteType === 'positive'
                       ? 'text-green-500'
-                      : 'rotate-180 text-red-500'
+                      : voter.voteType === 'negative'
+                        ? 'rotate-180 text-red-500'
+                        : 'text-gray-400'
                   )}
                 />
               </div>

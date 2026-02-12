@@ -23,6 +23,8 @@ interface SubmissionInfoProps {
   submission: Submission;
 }
 
+const FALLBACK_LOGO = '/bitmed.png';
+
 export const SubmissionInfo: React.FC<SubmissionInfoProps> = ({
   submission,
 }) => {
@@ -34,7 +36,7 @@ export const SubmissionInfo: React.FC<SubmissionInfoProps> = ({
         ) : (
           <div className='bg-background/20 flex h-full w-full items-center justify-center'>
             <Image
-              src={submission.logo || '/bitmed.png'}
+              src={submission.logo || FALLBACK_LOGO}
               alt={submission.projectName}
               width={400}
               height={225}
@@ -42,7 +44,7 @@ export const SubmissionInfo: React.FC<SubmissionInfoProps> = ({
             />
             <div className='absolute inset-0 flex items-center justify-center'>
               <Image
-                src={submission.logo || '/bitmed.png'}
+                src={submission.logo || FALLBACK_LOGO}
                 alt={submission.projectName}
                 width={120}
                 height={120}

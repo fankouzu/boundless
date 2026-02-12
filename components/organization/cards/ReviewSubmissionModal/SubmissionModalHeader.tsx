@@ -29,7 +29,6 @@ interface SubmissionModalHeaderProps {
   onPrev: () => void;
   onNext: () => void;
   onClose: () => void;
-  submissionName?: string;
 }
 
 export const SubmissionModalHeader: React.FC<SubmissionModalHeaderProps> = ({
@@ -40,11 +39,15 @@ export const SubmissionModalHeader: React.FC<SubmissionModalHeaderProps> = ({
   onPrev,
   onNext,
   onClose,
-  submissionName,
 }) => {
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success('Link copied to clipboard');
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied to clipboard');
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+      toast.error('Failed to copy link to clipboard');
+    }
   };
 
   const handleReport = () => {
@@ -100,7 +103,6 @@ export const SubmissionModalHeader: React.FC<SubmissionModalHeaderProps> = ({
         <div className='flex gap-1'>
           {(() => {
             const visibleCount = Math.min(totalSubmissions, 5);
-            // "const activeIndex = Math.min(currentIndex, visibleCount - 1)"
             const clampedIndex = Math.min(currentIndex, visibleCount - 1);
 
             return Array.from({ length: visibleCount }).map((_, i) => (

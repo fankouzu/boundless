@@ -16,6 +16,7 @@ import {
   Clock,
   Circle,
   Trophy,
+  XCircle,
 } from 'lucide-react';
 import {
   Card,
@@ -67,6 +68,7 @@ export const ParticipantsGrid: React.FC<ParticipantsGridProps> = ({
         const submission = participant.submission;
         const hasSubmission = !!submission;
         const isShortlisted = submission?.status === 'shortlisted';
+        const isDisqualified = submission?.status === 'disqualified';
         const isTeam = participant.participationType === 'team';
 
         const votesCount = Array.isArray(submission?.votes)
@@ -81,7 +83,12 @@ export const ParticipantsGrid: React.FC<ParticipantsGridProps> = ({
         let statusIcon = <Circle className='h-3 w-3 text-gray-400' />;
         let dotColor = 'bg-gray-500';
 
-        if (isShortlisted) {
+        if (isDisqualified) {
+          statusColor = 'bg-red-500';
+          statusText = 'Disqualified';
+          statusIcon = <XCircle className='h-3 w-3 text-red-400' />;
+          dotColor = 'bg-red-500';
+        } else if (isShortlisted) {
           statusColor = 'bg-green-500';
           statusText = 'Shortlisted';
           statusIcon = <CheckCircle2 className='h-3 w-3 text-green-400' />;
@@ -114,14 +121,16 @@ export const ParticipantsGrid: React.FC<ParticipantsGridProps> = ({
                     </AvatarFallback>
                   </Avatar>
                   {/* Status Indicator Dot */}
-                  {(isShortlisted || hasSubmission) && (
+                  {(isShortlisted || hasSubmission || isDisqualified) && (
                     <div
                       className={cn(
                         'absolute right-0 bottom-0 flex h-5 w-5 items-center justify-center rounded-full border-2 border-gray-950',
                         dotColor
                       )}
                     >
-                      {isShortlisted ? (
+                      {isDisqualified ? (
+                        <XCircle className='h-3 w-3 text-white' />
+                      ) : isShortlisted ? (
                         <CheckCircle2 className='h-3 w-3 text-white' />
                       ) : (
                         <Clock className='h-3 w-3 text-white' />
@@ -171,11 +180,13 @@ export const ParticipantsGrid: React.FC<ParticipantsGridProps> = ({
                     <span
                       className={cn(
                         'text-[11px] font-semibold',
-                        isShortlisted
-                          ? 'text-green-400'
-                          : hasSubmission
-                            ? 'text-yellow-400'
-                            : 'text-gray-400'
+                        isDisqualified
+                          ? 'text-red-400'
+                          : isShortlisted
+                            ? 'text-green-400'
+                            : hasSubmission
+                              ? 'text-yellow-400'
+                              : 'text-gray-400'
                       )}
                     >
                       {statusText}

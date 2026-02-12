@@ -115,7 +115,6 @@ export default function ReviewSubmissionModal({
             onPrev={handlePrev}
             onNext={handleNext}
             onClose={() => onOpenChange(false)}
-            submissionName={currentSubmission.projectName}
           />
 
           <div className='flex flex-1 overflow-hidden'>
