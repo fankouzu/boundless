@@ -22,6 +22,7 @@ import {
 } from '@/hooks/use-participant-submission';
 import { Participant } from '@/lib/api/hackathons';
 import { useDebounce } from '@/hooks/use-debounce';
+import { toast } from 'sonner';
 
 const PAGE_SIZE = 12;
 
@@ -188,11 +189,14 @@ const ParticipantsPage: React.FC = () => {
           })) || []
         );
         setIsJudgeModalOpen(true);
+      } else {
+        setCriteria([]);
+        toast.error('Failed to load judging criteria');
       }
     } catch (err) {
       console.error('Failed to load criteria', err);
       setCriteria([]);
-      setIsJudgeModalOpen(true);
+      toast.error('An error occurred while loading judging criteria');
     } finally {
       setIsLoadingCriteria(false);
     }
@@ -395,7 +399,7 @@ const ParticipantsPage: React.FC = () => {
                 description: selectedParticipant.submission.description,
                 votes: Array.isArray(selectedParticipant.submission.votes)
                   ? selectedParticipant.submission.votes.length
-                  : selectedParticipant.submission.votes,
+                  : selectedParticipant.submission.votes || 0,
                 comments: Array.isArray(selectedParticipant.submission.comments)
                   ? selectedParticipant.submission.comments.length
                   : selectedParticipant.submission.comments || 0,

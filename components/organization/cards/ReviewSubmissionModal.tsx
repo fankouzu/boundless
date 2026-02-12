@@ -166,12 +166,11 @@ const ReviewSubmissionModal: React.FC<ReviewSubmissionModalProps> = ({
                         />
                       )}
 
-                      {activeTab === 'team' &&
-                        currentSubmission.teamMembers && (
-                          <TeamSection
-                            teamMembers={currentSubmission.teamMembers}
-                          />
-                        )}
+                      {activeTab === 'team' && (
+                        <TeamSection
+                          teamMembers={currentSubmission.teamMembers || []}
+                        />
+                      )}
 
                       {activeTab === 'links' && (
                         <SubmissionLinksTab

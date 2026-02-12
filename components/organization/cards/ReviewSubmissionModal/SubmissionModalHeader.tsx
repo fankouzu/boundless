@@ -85,7 +85,7 @@ export const SubmissionModalHeader: React.FC<SubmissionModalHeaderProps> = ({
       </div>
 
       {/* Middle side: Main Navigation */}
-      <div className='hidden items-center gap-2 md:flex'>
+      <div className='flex items-center gap-2'>
         <Button
           variant='ghost'
           size='sm'
@@ -94,13 +94,13 @@ export const SubmissionModalHeader: React.FC<SubmissionModalHeaderProps> = ({
             onPrev();
           }}
           disabled={!canGoPrev}
-          className='bg-background-card h-10 border border-gray-900 px-3 text-gray-400 hover:bg-gray-800 hover:text-white disabled:opacity-30'
+          className='bg-background-card h-9 border border-gray-900 px-2 text-gray-400 hover:bg-gray-800 hover:text-white disabled:opacity-30 md:h-10 md:px-3'
         >
-          <ChevronLeft className='mr-1.5 h-4 w-4' />
-          Previous
+          <ChevronLeft className='h-4 w-4 md:mr-1.5' />
+          <span className='hidden md:inline'>Previous</span>
         </Button>
 
-        <div className='flex gap-1'>
+        <div className='flex gap-0.5 md:gap-1'>
           {(() => {
             const visibleCount = Math.min(totalSubmissions, 5);
             const clampedIndex = Math.min(currentIndex, visibleCount - 1);
@@ -109,8 +109,10 @@ export const SubmissionModalHeader: React.FC<SubmissionModalHeaderProps> = ({
               <motion.div
                 key={i}
                 className={cn(
-                  'h-1 w-4 rounded-full transition-all',
-                  i === clampedIndex ? 'bg-primary w-8' : 'bg-gray-800'
+                  'h-1 rounded-full transition-all',
+                  i === clampedIndex
+                    ? 'bg-primary w-4 md:w-8'
+                    : 'w-2 bg-gray-800 md:w-4'
                 )}
               />
             ));
@@ -125,10 +127,10 @@ export const SubmissionModalHeader: React.FC<SubmissionModalHeaderProps> = ({
             onNext();
           }}
           disabled={!canGoNext}
-          className='bg-background-card h-10 border border-gray-900 px-3 text-gray-400 hover:bg-gray-800 hover:text-white disabled:opacity-30'
+          className='bg-background-card h-9 border border-gray-900 px-2 text-gray-400 hover:bg-gray-800 hover:text-white disabled:opacity-30 md:h-10 md:px-3'
         >
-          Next
-          <ChevronRight className='ml-1.5 h-4 w-4' />
+          <span className='hidden md:inline'>Next</span>
+          <ChevronRight className='h-4 w-4 md:ml-1.5' />
         </Button>
       </div>
 
