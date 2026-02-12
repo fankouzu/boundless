@@ -797,7 +797,8 @@ export interface CreateSubmissionRequest {
   teamId?: string;
   teamName?: string;
   teamMembers?: Array<{
-    userId: string;
+    userId?: string;
+    email?: string;
     name: string;
     username?: string;
     role: string;
@@ -2507,6 +2508,7 @@ export const getMyTeam = async (
   }
 
   const res = await api.get(url);
+  console.trace(res);
 
   if (res.data.success && res.data.data) {
     let teamData: TeamRecruitmentPost | null = null;

@@ -48,7 +48,7 @@ const ProjectVoters = ({ project, crowdfund }: ProjectVotersProps) => {
   const [voting, setVoting] = useState(false);
 
   const isOwner = user?.id === project?.creatorId;
-  const team = (crowdfund?.team || []) as any[];
+  const team = crowdfund?.team || [];
   const isTeamMember = team.some(
     member =>
       member.id === user?.id ||
@@ -360,7 +360,11 @@ const ProjectVoters = ({ project, crowdfund }: ProjectVotersProps) => {
         </div>
 
         {voters.length === 0 ? (
-          <Empty projectStatus={project?.status ?? ''} isGated={isGated} />
+          <Empty
+            projectStatus={project?.status ?? ''}
+            isGated={isGated}
+            onVote={() => handleVote(VoteType.UPVOTE)}
+          />
         ) : (
           <div className='space-y-2'>
             {voters.map((voter, index) => (

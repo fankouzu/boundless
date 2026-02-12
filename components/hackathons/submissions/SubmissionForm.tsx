@@ -22,7 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import BoundlessSheet from '@/components/sheet/boundless-sheet';
+import {
+  ExpandableScreen,
+  ExpandableScreenContent,
+  ExpandableScreenTrigger,
+  useExpandableScreen,
+} from '@/components/ui/expandable-screen';
 import Stepper from '@/components/stepper/Stepper';
 import { uploadService } from '@/lib/api/upload';
 import {
@@ -30,8 +35,25 @@ import {
   type SubmissionFormData,
 } from '@/hooks/hackathon/use-submission';
 import { toast } from 'sonner';
-import { Loader2, Upload, X, Link2, Plus } from 'lucide-react';
+import {
+  Loader2,
+  Upload,
+  X,
+  Link2,
+  Plus,
+  Users,
+  User,
+  ShieldAlert,
+  Check,
+} from 'lucide-react';
 import Image from 'next/image';
+import { useTeamPosts } from '@/hooks/hackathon/use-team-posts';
+import { useTeamInvite } from '@/hooks/hackathon/use-team-invite';
+import { useAuthStatus } from '@/hooks/use-auth';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 
 type StepState = 'pending' | 'active' | 'completed';
 
@@ -40,6 +62,18 @@ interface Step {
   description: string;
   state: StepState;
 }
+
+const teamMemberSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required'),
+    role: z.string().min(1, 'Role is required'),
+    email: z.string().email('Invalid email').optional().or(z.literal('')),
+    userId: z.string().optional(),
+  })
+  .refine(data => data.email || data.userId, {
+    message: 'Either email or User ID is required',
+    path: ['email'],
+  });
 
 const submissionSchema = z.object({
   projectName: z.string().min(3, 'Project name must be at least 3 characters'),
@@ -57,13 +91,13 @@ const submissionSchema = z.object({
     })
   ),
   participationType: z.enum(['INDIVIDUAL', 'TEAM']),
+  teamName: z.string().optional(),
+  teamMembers: z.array(teamMemberSchema).optional(),
 });
 
 type SubmissionFormDataLocal = z.infer<typeof submissionSchema>;
 
-interface CreateSubmissionModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface SubmissionFormContentProps {
   hackathonSlugOrId: string;
   organizationId?: string;
   initialData?: Partial<SubmissionFormDataLocal>;
@@ -73,9 +107,14 @@ interface CreateSubmissionModalProps {
 
 const INITIAL_STEPS: Step[] = [
   {
+    title: 'Participation',
+    description: 'Choose how you want to participate',
+    state: 'active',
+  },
+  {
     title: 'Basic Info',
     description: 'Project name, category, and description',
-    state: 'active',
+    state: 'pending',
   },
   {
     title: 'Media & Links',
@@ -119,15 +158,22 @@ const isValidImageUrl = (url: string | undefined): boolean => {
   return false;
 };
 
-export function CreateSubmissionModal({
-  open,
-  onOpenChange,
+function SubmissionFormContent({
   hackathonSlugOrId,
   organizationId,
   initialData,
   submissionId,
   onSuccess,
-}: CreateSubmissionModalProps) {
+}: SubmissionFormContentProps) {
+  const { collapse } = useExpandableScreen();
+  // Use a local state for 'open' behavior if needed, generally expandable screen is always rendered when expanded
+  // But we need 'open' for some effects?
+  // The 'open' in effects was used to reset form or fetch data.
+  // We can use 'useEffect(() => ..., [])' for mount (which happens on expand usually? No, ExpandableScreen keeps content mounted?
+  // Let's check ExpandableScreenContent implementation... It uses AnimatePresence, so it mounts/unmounts!
+  // So 'open' is effectively 'true' when this component is mounted.
+  const open = true;
+  const { user } = useAuthStatus();
   const [currentStep, setCurrentStep] = useState(0);
   const [steps, setSteps] = useState<Step[]>(INITIAL_STEPS);
   const [logoPreview, setLogoPreview] = useState<string>('');
@@ -138,6 +184,27 @@ export function CreateSubmissionModal({
     organizationId,
     autoFetch: false,
   });
+
+  const {
+    myTeam,
+    fetchMyTeam,
+    isLoading: isLoadingPosts,
+    isLoadingMyTeam,
+  } = useTeamPosts({
+    hackathonSlugOrId,
+    organizationId,
+    autoFetch: open, // Only fetch when modal is open
+  });
+
+  // No longer using separate createTeamAndInvite hook here for submission flow
+
+  const [invitees, setInvitees] = useState<
+    Array<{ email?: string; userId?: string; name: string; role: string }>
+  >([]);
+  const [currentInviteeName, setCurrentInviteeName] = useState('');
+  const [currentInviteeEmail, setCurrentInviteeEmail] = useState('');
+  const [currentInviteeRole, setCurrentInviteeRole] = useState('');
+  // const [createdTeamId, setCreatedTeamId] = useState<string | null>(null); // Removed as we send team data in payload
 
   const form = useForm<SubmissionFormDataLocal>({
     resolver: zodResolver(submissionSchema),
@@ -151,8 +218,18 @@ export function CreateSubmissionModal({
       introduction: '',
       links: [],
       participationType: 'INDIVIDUAL',
+      teamName: '',
+      teamMembers: [],
     },
   });
+
+  // Effect to auto-select team if user has one
+  useEffect(() => {
+    if (myTeam && open && !submissionId) {
+      // Only auto-select if creating new, not editing (though editing logic might need review)
+      form.setValue('participationType', 'TEAM');
+    }
+  }, [myTeam, open, form, submissionId]);
 
   // Watch links to keep them in sync
   const formLinks = form.watch('links') || [];
@@ -309,15 +386,81 @@ export function CreateSubmissionModal({
     );
   }, []);
 
+  const handleAddInvitee = () => {
+    if (!currentInviteeName || !currentInviteeRole || !currentInviteeEmail) {
+      toast.error('Please fill in name, email and role');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentInviteeEmail)) {
+      toast.error('Please enter a valid email');
+      return;
+    }
+
+    setInvitees(prev => [
+      ...prev,
+      {
+        name: currentInviteeName,
+        email: currentInviteeEmail,
+        role: currentInviteeRole,
+      },
+    ]);
+
+    // Update form value
+    const currentMembers = form.getValues('teamMembers') || [];
+    form.setValue('teamMembers', [
+      ...currentMembers,
+      {
+        name: currentInviteeName,
+        email: currentInviteeEmail,
+        role: currentInviteeRole,
+      },
+    ]);
+
+    setCurrentInviteeName('');
+    setCurrentInviteeEmail('');
+    setCurrentInviteeRole('');
+  };
+
+  const handleRemoveInvitee = (index: number) => {
+    setInvitees(prev => prev.filter((_, i) => i !== index));
+    // Update form value
+    const currentMembers = form.getValues('teamMembers') || [];
+    form.setValue(
+      'teamMembers',
+      currentMembers.filter((_, i) => i !== index)
+    );
+  };
+
   const handleNext = async (e: React.MouseEvent) => {
     e.preventDefault();
     let isValid = false;
 
     if (currentStep === 0) {
-      // Validate required fields for step 1
-      isValid = await form.trigger(['projectName', 'category', 'description']);
+      // Step 0: Participation Type
+      const participationType = form.getValues('participationType');
+
+      if (participationType === 'TEAM') {
+        if (myTeam) {
+          // Already in a team
+          isValid = true;
+        } else {
+          // Create new team logic - we just validate here, actual creation happens on submit
+          const teamName = form.getValues('teamName');
+          if (!teamName) {
+            form.setError('teamName', { message: 'Team Name is required' });
+            return;
+          }
+          isValid = true;
+        }
+      } else {
+        isValid = true;
+      }
     } else if (currentStep === 1) {
-      // Step 2 fields are all optional, but validate them if filled
+      // Validate required fields for step 1 (Basic Info)
+      isValid = await form.trigger(['projectName', 'category', 'description']);
+    } else if (currentStep === 2) {
+      // Step 2 fields are all optional, but validate them if filled (Media)
       const videoUrl = form.getValues('videoUrl');
       const links = form.getValues('links') || [];
 
@@ -423,6 +566,9 @@ export function CreateSubmissionModal({
       }
 
       // Clean and prepare submission data
+      const participationType = safeData.participationType || 'INDIVIDUAL';
+      const teamId = participationType === 'TEAM' ? myTeam?.id : undefined;
+
       const submissionData: SubmissionFormData = {
         projectName: safeData.projectName,
         category: safeData.category,
@@ -431,7 +577,17 @@ export function CreateSubmissionModal({
         videoUrl: safeData.videoUrl,
         introduction: safeData.introduction,
         links: safeData.links || [],
-        participationType: safeData.participationType || 'INDIVIDUAL',
+        participationType,
+
+        teamId: teamId ?? undefined, // Ensure undefined if null
+        teamName:
+          !myTeam && participationType === 'TEAM'
+            ? safeData.teamName
+            : undefined,
+        teamMembers:
+          !myTeam && participationType === 'TEAM'
+            ? safeData.teamMembers
+            : undefined,
       };
 
       if (submissionId) {
@@ -440,18 +596,265 @@ export function CreateSubmissionModal({
         await create(submissionData);
       }
 
-      onOpenChange(false);
+      collapse();
       onSuccess?.();
     } catch {
       // Error is already handled in the hook
     }
   };
 
+  // Auto-select TEAM if user is already in a team
+  useEffect(() => {
+    if (myTeam && !submissionId) {
+      form.setValue('participationType', 'TEAM');
+    }
+  }, [myTeam, form, submissionId]);
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
         return (
           <div key='step-0' className='space-y-6'>
+            <FormField
+              control={form.control}
+              name='participationType'
+              render={({ field }) => (
+                <FormItem className='space-y-3'>
+                  <FormLabel className='text-white'>
+                    I am participating...
+                  </FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className='flex flex-col space-y-1'
+                      disabled={false} // Always allow switching (validation handles team membership)
+                    >
+                      <FormItem
+                        className={`flex items-center space-y-0 space-x-3 rounded-md border border-gray-800 p-4 hover:border-gray-700 ${myTeam ? 'cursor-not-allowed opacity-50' : ''}`}
+                      >
+                        <FormControl>
+                          <RadioGroupItem
+                            value='INDIVIDUAL'
+                            disabled={!!myTeam}
+                          />
+                        </FormControl>
+                        <div className='flex items-center space-x-2'>
+                          <User className='h-5 w-5 text-gray-400' />
+                          <div>
+                            <FormLabel className='font-normal text-white'>
+                              As an Individual
+                            </FormLabel>
+                            {myTeam && (
+                              <FormDescription className='text-xs text-yellow-500'>
+                                You are already part of a team (
+                                {myTeam.teamName})
+                              </FormDescription>
+                            )}
+                          </div>
+                        </div>
+                      </FormItem>
+                      <FormItem className='flex items-center space-y-0 space-x-3 rounded-md border border-gray-800 p-4 hover:border-gray-700'>
+                        <FormControl>
+                          <RadioGroupItem value='TEAM' />
+                        </FormControl>
+                        <div className='flex items-center space-x-2'>
+                          <Users className='h-5 w-5 text-gray-400' />
+                          <FormLabel className='font-normal text-white'>
+                            As a Team
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {form.watch('participationType') === 'TEAM' && (
+              <div className='mt-6 space-y-6 rounded-lg border border-gray-800 bg-gray-900/50 p-6'>
+                {isLoadingMyTeam ? (
+                  <div className='flex items-center justify-center py-4'>
+                    <Loader2 className='h-6 w-6 animate-spin text-[#a7f950]' />
+                  </div>
+                ) : myTeam ? (
+                  // Existing Team UI
+                  <div className='space-y-4'>
+                    <div className='flex items-center justify-between'>
+                      <div>
+                        <h4 className='text-lg font-semibold text-white'>
+                          {myTeam.teamName}
+                        </h4>
+                        <p className='text-sm text-gray-400'>
+                          {myTeam.members?.length || 1} members
+                        </p>
+                      </div>
+                      <Badge
+                        variant='outline'
+                        className='border-[#a7f950] text-[#a7f950]'
+                      >
+                        Your Team
+                      </Badge>
+                    </div>
+
+                    {myTeam.leaderId !== user?.id && (
+                      <Alert
+                        variant='destructive'
+                        className='mt-4 border-red-900/50 bg-red-900/20'
+                      >
+                        <ShieldAlert className='h-4 w-4 text-red-500' />
+                        <AlertTitle className='text-red-500'>
+                          Permission Denied
+                        </AlertTitle>
+                        <AlertDescription className='text-red-400'>
+                          You are a member of team '{myTeam.teamName}'. Only the
+                          team leader can submit the project.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    <div className='space-y-2'>
+                      <p className='text-sm font-medium text-gray-300'>
+                        Team Members:
+                      </p>
+                      <div className='flex flex-wrap gap-2'>
+                        {myTeam.members?.map(member => (
+                          <Badge
+                            key={member.userId}
+                            variant='secondary'
+                            className='bg-gray-800 text-gray-300'
+                          >
+                            {member.name}{' '}
+                            {member.userId === myTeam.leaderId && '(Leader)'}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Alert className='border-blue-900/50 bg-blue-900/20'>
+                      <AlertTitle className='text-blue-200'>
+                        Team Submission
+                      </AlertTitle>
+                      <AlertDescription className='text-blue-300'>
+                        Submitting this project will submit it on behalf of your
+                        entire team. Only the team leader can perform this
+                        action.
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                ) : (
+                  // Create Team UI
+                  <div className='space-y-4'>
+                    <div className='space-y-2'>
+                      <h4 className='font-semibold text-white'>
+                        Create Your Team
+                      </h4>
+                      <p className='text-sm text-gray-400'>
+                        You'll be the team leader. Invite others to join you!
+                      </p>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name='teamName'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-white'>
+                            Team Name *
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder='e.g. The Innovators'
+                              className='border-gray-700 bg-gray-800/50 text-white'
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className='space-y-3'>
+                      <FormLabel className='text-white'>
+                        Invite Members (Optional)
+                      </FormLabel>
+                      <div className='flex flex-col gap-3'>
+                        <div className='grid grid-cols-1 gap-3 md:grid-cols-3'>
+                          <Input
+                            placeholder='Name'
+                            value={currentInviteeName}
+                            onChange={e =>
+                              setCurrentInviteeName(e.target.value)
+                            }
+                            className='border-gray-700 bg-gray-800/50 text-white'
+                          />
+                          <Input
+                            placeholder='Email'
+                            type='email'
+                            value={currentInviteeEmail}
+                            onChange={e =>
+                              setCurrentInviteeEmail(e.target.value)
+                            }
+                            className='border-gray-700 bg-gray-800/50 text-white'
+                          />
+                          <Input
+                            placeholder='Role (e.g. Designer)'
+                            value={currentInviteeRole}
+                            onChange={e =>
+                              setCurrentInviteeRole(e.target.value)
+                            }
+                            className='border-gray-700 bg-gray-800/50 text-white'
+                          />
+                        </div>
+                        <Button
+                          type='button'
+                          onClick={handleAddInvitee}
+                          className='self-start bg-gray-800 text-white hover:bg-gray-700'
+                        >
+                          <Plus className='mr-2 h-4 w-4' />
+                          Add Member
+                        </Button>
+                      </div>
+
+                      {invitees.length > 0 && (
+                        <div className='mt-4 flex flex-wrap gap-2'>
+                          {invitees.map((invitee, idx) => (
+                            <Badge
+                              key={idx}
+                              variant='secondary'
+                              className='gap-1 bg-gray-800 py-1 pr-1 pl-3 text-gray-300'
+                            >
+                              <div className='mr-2 flex flex-col text-left text-xs'>
+                                <span className='font-semibold'>
+                                  {invitee.name}
+                                </span>
+                                <span className='text-[10px] text-gray-500'>
+                                  {invitee.role} • {invitee.email}
+                                </span>
+                              </div>
+                              <button
+                                type='button'
+                                onClick={() => handleRemoveInvitee(idx)}
+                                className='ml-1 rounded-full p-1 hover:bg-gray-700'
+                              >
+                                <X className='h-3 w-3' />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+
+      case 1:
+        return (
+          <div key='step-1' className='space-y-6'>
             <div className='flex items-center justify-between'>
               <div></div>
               <Button
@@ -818,21 +1221,23 @@ export function CreateSubmissionModal({
   };
 
   return (
-    <BoundlessSheet
-      open={open}
-      setOpen={onOpenChange}
-      title={submissionId ? 'Edit Submission' : 'Create Submission'}
-      size='large'
-    >
+    <div className='bg-background flex h-full flex-col text-white'>
+      <div className='border-b border-gray-800 p-6'>
+        <h2 className='text-xl font-semibold'>
+          {submissionId ? 'Edit Submission' : 'Create Submission'}
+        </h2>
+      </div>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className='flex gap-8 px-10'
+          className='flex flex-1 gap-8 overflow-y-auto px-10 py-6'
         >
-          <Stepper steps={steps} />
-          <div className='flex-1 space-y-6'>
+          <div className='sticky top-0 h-fit'>
+            <Stepper steps={steps} />
+          </div>
+          <div className='flex flex-1 flex-col space-y-6'>
             {renderStepContent()}
-            <div className='flex justify-between pt-6'>
+            <div className='mt-auto flex justify-between pt-6 pb-6'>
               <Button
                 type='button'
                 variant='outline'
@@ -872,6 +1277,28 @@ export function CreateSubmissionModal({
           </div>
         </form>
       </Form>
-    </BoundlessSheet>
+    </div>
+  );
+}
+
+interface SubmissionScreenWrapperProps extends SubmissionFormContentProps {
+  children: React.ReactNode;
+}
+
+export function SubmissionScreenWrapper({
+  children,
+  ...props
+}: SubmissionScreenWrapperProps) {
+  return (
+    <ExpandableScreen
+      layoutId='cta-card'
+      triggerRadius='100px'
+      contentRadius='24px'
+    >
+      {children}
+      <ExpandableScreenContent className='bg-background overflow-hidden border border-gray-800 p-0 sm:rounded-3xl'>
+        <SubmissionFormContent {...props} />
+      </ExpandableScreenContent>
+    </ExpandableScreen>
   );
 }
