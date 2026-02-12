@@ -104,7 +104,7 @@ export const SubmissionInfo: React.FC<SubmissionInfoProps> = ({
                 <div className='h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400' />
               </div>
               <span className='text-xl font-black text-white'>
-                {submission.comments.toLocaleString()}+
+                {submission.comments.toLocaleString()}
               </span>
             </div>
           </div>

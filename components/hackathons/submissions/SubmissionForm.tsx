@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -158,20 +159,14 @@ const isValidImageUrl = (url: string | undefined): boolean => {
   return false;
 };
 
-function SubmissionFormContent({
+const SubmissionFormContent: React.FC<SubmissionFormContentProps> = ({
   hackathonSlugOrId,
   organizationId,
   initialData,
   submissionId,
   onSuccess,
-}: SubmissionFormContentProps) {
+}) => {
   const { collapse, isExpanded: open } = useExpandableScreen();
-  // Use a local state for 'open' behavior if needed, generally expandable screen is always rendered when expanded
-  // But we need 'open' for some effects?
-  // The 'open' in effects was used to reset form or fetch data.
-  // We can use 'useEffect(() => ..., [])' for mount (which happens on expand usually? No, ExpandableScreen keeps content mounted?
-  // Let's check ExpandableScreenContent implementation... It uses AnimatePresence, so it mounts/unmounts!
-  // So 'open' is effectively 'true' when this component is mounted.
 
   const { user } = useAuthStatus();
   const [currentStep, setCurrentStep] = useState(0);
@@ -198,13 +193,11 @@ function SubmissionFormContent({
 
   // No longer using separate createTeamAndInvite hook here for submission flow
 
-  const [invitees, setInvitees] = useState<
-    Array<{ email?: string; userId?: string; name: string; role: string }>
-  >([]);
+  // No longer using separate createTeamAndInvite hook here for submission flow
+
   const [currentInviteeName, setCurrentInviteeName] = useState('');
   const [currentInviteeEmail, setCurrentInviteeEmail] = useState('');
   const [currentInviteeRole, setCurrentInviteeRole] = useState('');
-  // const [createdTeamId, setCreatedTeamId] = useState<string | null>(null); // Removed as we send team data in payload
 
   const form = useForm<SubmissionFormDataLocal>({
     resolver: zodResolver(submissionSchema),
@@ -222,6 +215,8 @@ function SubmissionFormContent({
       teamMembers: [],
     },
   });
+
+  const invitees = form.watch('teamMembers') || [];
 
   // Watch links to keep them in sync
   const formLinks = form.watch('links') || [];
@@ -389,15 +384,6 @@ function SubmissionFormContent({
       return;
     }
 
-    setInvitees(prev => [
-      ...prev,
-      {
-        name: currentInviteeName,
-        email: currentInviteeEmail,
-        role: currentInviteeRole,
-      },
-    ]);
-
     // Update form value
     const currentMembers = form.getValues('teamMembers') || [];
     form.setValue('teamMembers', [
@@ -415,7 +401,6 @@ function SubmissionFormContent({
   };
 
   const handleRemoveInvitee = (index: number) => {
-    setInvitees(prev => prev.filter((_, i) => i !== index));
     // Update form value
     const currentMembers = form.getValues('teamMembers') || [];
     form.setValue(
@@ -627,12 +612,15 @@ function SubmissionFormContent({
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className='flex flex-col space-y-1'
                       disabled={false} // Always allow switching (validation handles team membership)
                     >
                       <FormItem
-                        className={`flex items-center space-y-0 space-x-3 rounded-md border border-gray-800 p-4 hover:border-gray-700 ${myTeam ? 'cursor-not-allowed opacity-50' : ''}`}
+                        className={cn(
+                          'flex items-center space-y-0 space-x-3 rounded-md border border-gray-800 p-4 hover:border-gray-700',
+                          myTeam && 'cursor-not-allowed opacity-50'
+                        )}
                       >
                         <FormControl>
                           <RadioGroupItem
@@ -1294,16 +1282,15 @@ function SubmissionFormContent({
       </Form>
     </div>
   );
-}
+};
 
 interface SubmissionScreenWrapperProps extends SubmissionFormContentProps {
   children: React.ReactNode;
 }
 
-export function SubmissionScreenWrapper({
-  children,
-  ...props
-}: SubmissionScreenWrapperProps) {
+export const SubmissionScreenWrapper: React.FC<
+  SubmissionScreenWrapperProps
+> = ({ children, ...props }) => {
   return (
     <ExpandableScreen
       layoutId='cta-card'
@@ -1316,4 +1303,4 @@ export function SubmissionScreenWrapper({
       </ExpandableScreenContent>
     </ExpandableScreen>
   );
-}
+};

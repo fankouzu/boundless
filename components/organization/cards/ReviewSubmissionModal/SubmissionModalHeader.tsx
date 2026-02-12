@@ -11,7 +11,7 @@ import {
 import { DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
-import { cn } from '@/lib/utils'; // Assuming cn utility is from here
+import { cn } from '@/lib/utils';
 
 import { toast } from 'sonner';
 import {

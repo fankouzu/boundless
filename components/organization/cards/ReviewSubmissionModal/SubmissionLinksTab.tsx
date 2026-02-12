@@ -35,7 +35,7 @@ export const SubmissionLinksTab: React.FC<SubmissionLinksTabProps> = ({
         {links && links.length > 0 ? (
           links.map((link, index) => (
             <motion.a
-              key={index}
+              key={link.url}
               href={link.url}
               target='_blank'
               rel='noopener noreferrer'

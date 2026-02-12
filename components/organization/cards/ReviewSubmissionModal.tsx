@@ -16,7 +16,7 @@ import { TeamSection } from './ReviewSubmissionModal/TeamSection';
 import { useSubmissionActions } from '@/hooks/use-submission-actions';
 import type { ReviewSubmissionModalProps } from './ReviewSubmissionModal/types';
 
-export default function ReviewSubmissionModal({
+const ReviewSubmissionModal: React.FC<ReviewSubmissionModalProps> = ({
   open,
   onOpenChange,
   submissions = [],
@@ -27,7 +27,7 @@ export default function ReviewSubmissionModal({
   onSuccess,
   onShortlist,
   onDisqualify,
-}: ReviewSubmissionModalProps) {
+}) => {
   const [activeTab, setActiveTab] = useState('details');
   const [currentSubmissionIndex, setCurrentSubmissionIndex] =
     useState(currentIndex);
@@ -67,10 +67,10 @@ export default function ReviewSubmissionModal({
     }
   }, [open, currentIndex]);
 
-  // Reset to details tab when submission changes
+  // Reset to details tab when submission changes or modal opens
   useEffect(() => {
     setActiveTab('details');
-  }, [currentSubmissionIndex]);
+  }, [currentSubmissionIndex, open]);
 
   const currentSubmission = submissions[currentSubmissionIndex];
   const canGoPrev = currentSubmissionIndex > 0;
@@ -157,46 +157,33 @@ export default function ReviewSubmissionModal({
                       transition={{ duration: 0.2 }}
                       className='h-full'
                     >
-                      <TabsContent
-                        value='details'
-                        className='mt-0 h-full border-none p-0 outline-none'
-                      >
+                      {activeTab === 'details' && (
                         <SubmissionDetailsTab
                           projectName={currentSubmission.projectName}
                           videoUrl={currentSubmission.videoUrl}
                           introduction={currentSubmission.introduction}
                           description={currentSubmission.description}
                         />
-                      </TabsContent>
+                      )}
 
-                      <TabsContent
-                        value='team'
-                        className='mt-0 h-full border-none p-0 outline-none'
-                      >
-                        {currentSubmission.teamMembers && (
+                      {activeTab === 'team' &&
+                        currentSubmission.teamMembers && (
                           <TeamSection
                             teamMembers={currentSubmission.teamMembers}
                           />
                         )}
-                      </TabsContent>
 
-                      <TabsContent
-                        value='links'
-                        className='mt-0 h-full border-none p-0 outline-none'
-                      >
+                      {activeTab === 'links' && (
                         <SubmissionLinksTab
                           links={currentSubmission.links || []}
                         />
-                      </TabsContent>
+                      )}
 
-                      <TabsContent
-                        value='voters'
-                        className='mt-0 h-full border-none p-0 outline-none'
-                      >
+                      {activeTab === 'voters' && (
                         <SubmissionVotesTab
                           voters={currentSubmission.voters || []}
                         />
-                      </TabsContent>
+                      )}
                     </motion.div>
                   </AnimatePresence>
                 </div>
@@ -222,4 +209,6 @@ export default function ReviewSubmissionModal({
       />
     </Dialog>
   );
-}
+};
+
+export default ReviewSubmissionModal;

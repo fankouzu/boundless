@@ -21,8 +21,29 @@ import {
   SubmissionData,
 } from '@/hooks/use-participant-submission';
 import { Participant } from '@/lib/api/hackathons';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const PAGE_SIZE = 12;
+
+type ParticipantStatus =
+  | 'submitted'
+  | 'not_submitted'
+  | 'shortlisted'
+  | 'disqualified'
+  | 'all';
+type ParticipationType = 'individual' | 'team' | 'all';
+
+interface FilterState {
+  search: string;
+  status: ParticipantStatus;
+  type: ParticipationType;
+}
+
+const mapFiltersToParams = (filters: FilterState, searchOverride?: string) => ({
+  search: searchOverride !== undefined ? searchOverride : filters.search,
+  status: filters.status === 'all' ? undefined : filters.status,
+  type: filters.type === 'all' ? undefined : filters.type,
+});
 
 const ParticipantsPage: React.FC = () => {
   const params = useParams();
@@ -30,15 +51,10 @@ const ParticipantsPage: React.FC = () => {
   const hackathonId = params.hackathonId as string;
 
   const [view, setView] = useState<'table' | 'grid'>('table');
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<FilterState>({
     search: '',
-    status: 'all' as
-      | 'submitted'
-      | 'not_submitted'
-      | 'shortlisted'
-      | 'disqualified'
-      | 'all',
-    type: 'all' as 'individual' | 'team' | 'all',
+    status: 'all',
+    type: 'all',
   });
 
   const hookOptions = useMemo(
@@ -73,6 +89,8 @@ const ParticipantsPage: React.FC = () => {
   >([]);
   const [isLoadingCriteria, setIsLoadingCriteria] = useState(false);
 
+  const debouncedSearch = useDebounce(filters.search, 300);
+
   // Submission data for the selected participant
   const submissionData = useParticipantSubmission(
     selectedParticipant || undefined
@@ -87,13 +105,20 @@ const ParticipantsPage: React.FC = () => {
 
   useEffect(() => {
     if (actualHackathonId) {
-      fetchParticipants(actualHackathonId, 1, PAGE_SIZE, {
-        search: filters.search,
-        status: filters.status === 'all' ? undefined : filters.status,
-        type: filters.type === 'all' ? undefined : filters.type,
-      });
+      fetchParticipants(
+        actualHackathonId,
+        1,
+        PAGE_SIZE,
+        mapFiltersToParams(filters, debouncedSearch)
+      );
     }
-  }, [actualHackathonId, fetchParticipants, filters]);
+  }, [
+    actualHackathonId,
+    fetchParticipants,
+    debouncedSearch,
+    filters.status,
+    filters.type,
+  ]);
 
   // Statistics
   const [statistics, setStatistics] = useState<{
@@ -128,11 +153,12 @@ const ParticipantsPage: React.FC = () => {
   // Handlers
   const handlePageChange = (page: number) => {
     if (actualHackathonId) {
-      fetchParticipants(actualHackathonId, page, PAGE_SIZE, {
-        search: filters.search,
-        status: filters.status === 'all' ? undefined : filters.status,
-        type: filters.type === 'all' ? undefined : filters.type,
-      });
+      fetchParticipants(
+        actualHackathonId,
+        page,
+        PAGE_SIZE,
+        mapFiltersToParams(filters, debouncedSearch)
+      );
     }
   };
 
@@ -178,11 +204,7 @@ const ParticipantsPage: React.FC = () => {
         actualHackathonId,
         participantsPagination.currentPage,
         PAGE_SIZE,
-        {
-          search: filters.search,
-          status: filters.status === 'all' ? undefined : filters.status,
-          type: filters.type === 'all' ? undefined : filters.type,
-        }
+        mapFiltersToParams(filters, debouncedSearch)
       );
     }
   };
@@ -222,11 +244,11 @@ const ParticipantsPage: React.FC = () => {
   }, []);
 
   const handleStatusFilterChange = useCallback((status: string) => {
-    setFilters(f => ({ ...f, status: status as any }));
+    setFilters(f => ({ ...f, status: status as ParticipantStatus }));
   }, []);
 
   const handleTypeFilterChange = useCallback((type: string) => {
-    setFilters(f => ({ ...f, type: type as any }));
+    setFilters(f => ({ ...f, type: type as ParticipationType }));
   }, []);
 
   return (
