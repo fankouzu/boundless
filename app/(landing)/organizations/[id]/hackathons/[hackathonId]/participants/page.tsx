@@ -333,11 +333,12 @@ export default function ParticipantsPage() {
                   .map(transformParticipantToSubmission)
                   .filter((s): s is SubmissionData => s !== undefined) || []
               }
-              currentIndex={
+              currentIndex={Math.max(
+                0,
                 participants
                   .filter(p => !!p.submission)
-                  .findIndex(p => p.id === selectedParticipant.id) || 0
-              }
+                  .findIndex(p => p.id === selectedParticipant.id)
+              )}
               organizationId={organizationId}
               hackathonId={hackathonId}
               participantId={selectedParticipant.id}

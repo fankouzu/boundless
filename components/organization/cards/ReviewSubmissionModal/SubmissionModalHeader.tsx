@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { cn } from '@/lib/utils'; // Assuming cn utility is from here
 
 import { toast } from 'sonner';
@@ -48,7 +48,8 @@ export const SubmissionModalHeader: React.FC<SubmissionModalHeaderProps> = ({
   };
 
   const handleReport = () => {
-    toast.success('Submission reported to admins');
+    // TODO: Implement report submission functionality
+    console.log('Report submission not implemented yet');
   };
 
   return (
@@ -97,15 +98,21 @@ export const SubmissionModalHeader: React.FC<SubmissionModalHeaderProps> = ({
         </Button>
 
         <div className='flex gap-1'>
-          {Array.from({ length: Math.min(totalSubmissions, 5) }).map((_, i) => (
-            <motion.div
-              key={i}
-              className={cn(
-                'h-1 w-4 rounded-full transition-all',
-                i === currentIndex ? 'bg-primary w-8' : 'bg-gray-800'
-              )}
-            />
-          ))}
+          {(() => {
+            const visibleCount = Math.min(totalSubmissions, 5);
+            // "const activeIndex = Math.min(currentIndex, visibleCount - 1)"
+            const clampedIndex = Math.min(currentIndex, visibleCount - 1);
+
+            return Array.from({ length: visibleCount }).map((_, i) => (
+              <motion.div
+                key={i}
+                className={cn(
+                  'h-1 w-4 rounded-full transition-all',
+                  i === clampedIndex ? 'bg-primary w-8' : 'bg-gray-800'
+                )}
+              />
+            ));
+          })()}
         </div>
 
         <Button
@@ -156,10 +163,12 @@ export const SubmissionModalHeader: React.FC<SubmissionModalHeaderProps> = ({
               Copy Link
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={handleReport}
-              className='cursor-pointer text-red-500 hover:text-red-400 focus:bg-gray-900'
+              disabled
+              className='cursor-not-allowed text-gray-500 focus:bg-transparent'
             >
-              <span className='flex items-center'>Report Submission</span>
+              <span className='flex items-center'>
+                Report Submission (Coming Soon)
+              </span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

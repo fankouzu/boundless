@@ -69,13 +69,19 @@ export function ExpandableScreen({
   };
 
   useEffect(() => {
-    if (lockScroll) {
-      if (isExpanded) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = 'unset';
-      }
+    if (!lockScroll) return;
+
+    const originalStyle = document.body.style.overflow;
+
+    if (isExpanded) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
   }, [isExpanded, lockScroll]);
 
   return (

@@ -165,14 +165,14 @@ function SubmissionFormContent({
   submissionId,
   onSuccess,
 }: SubmissionFormContentProps) {
-  const { collapse } = useExpandableScreen();
+  const { collapse, isExpanded: open } = useExpandableScreen();
   // Use a local state for 'open' behavior if needed, generally expandable screen is always rendered when expanded
   // But we need 'open' for some effects?
   // The 'open' in effects was used to reset form or fetch data.
   // We can use 'useEffect(() => ..., [])' for mount (which happens on expand usually? No, ExpandableScreen keeps content mounted?
   // Let's check ExpandableScreenContent implementation... It uses AnimatePresence, so it mounts/unmounts!
   // So 'open' is effectively 'true' when this component is mounted.
-  const open = true;
+
   const { user } = useAuthStatus();
   const [currentStep, setCurrentStep] = useState(0);
   const [steps, setSteps] = useState<Step[]>(INITIAL_STEPS);

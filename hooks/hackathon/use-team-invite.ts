@@ -14,11 +14,20 @@ interface UseTeamInviteOptions {
   onSuccess?: (teamId: string) => void;
 }
 
-export function useTeamInvite({
+interface UseTeamInviteReturn {
+  createTeamAndInvite: (
+    teamData: CreateTeamPostRequest,
+    invitees: string[]
+  ) => Promise<string>;
+  isCreatingTeam: boolean;
+  error: string | null;
+}
+
+export const useTeamInvite = ({
   hackathonSlugOrId,
   organizationId,
   onSuccess,
-}: UseTeamInviteOptions) {
+}: UseTeamInviteOptions): UseTeamInviteReturn => {
   const [isCreatingTeam, setIsCreatingTeam] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,33 +54,46 @@ export function useTeamInvite({
         const newTeamId = teamResponse.data.id;
 
         // 2. Invite Members
+        let failedInvitesCount = 0;
         if (invitees.length > 0) {
-          const invitePromises = invitees.map(async invitee => {
-            try {
-              const res = await inviteUserToTeam(hackathonSlugOrId, newTeamId, {
-                inviteeIdentifier: invitee,
-                message: 'Join my team for the hackathon!',
-              });
+          const results = await Promise.all(
+            invitees.map(async invitee => {
+              try {
+                const res = await inviteUserToTeam(
+                  hackathonSlugOrId,
+                  newTeamId,
+                  {
+                    inviteeIdentifier: invitee,
+                    message: 'Join my team for the hackathon!',
+                  }
+                );
 
-              if (!res.success) {
-                console.warn(`Failed to invite ${invitee}: ${res.message}`);
-                toast.error(`Failed to invite ${invitee}: ${res.message}`);
+                if (!res.success) {
+                  console.warn(`Failed to invite ${invitee}: ${res.message}`);
+                }
+                return res;
+              } catch (err) {
+                console.error(`Error inviting ${invitee}:`, err);
+                return null;
               }
-              return res;
-            } catch (err) {
-              const errorMessage =
-                err instanceof Error ? err.message : 'Unknown error';
-              console.error(`Error inviting ${invitee}:`, err);
-              toast.error(`Error inviting ${invitee}: ${errorMessage}`);
-              return null;
-            }
-          });
-
-          await Promise.all(invitePromises);
+            })
+          );
+          failedInvitesCount = results.filter(
+            res => !res || !res.success
+          ).length;
         }
 
-        toast.success('Team created successfully!');
-        onSuccess?.(newTeamId);
+        if (failedInvitesCount === 0) {
+          toast.success('Team created successfully!');
+          onSuccess?.(newTeamId);
+        } else {
+          const message =
+            failedInvitesCount === invitees.length
+              ? `Team created, but all ${failedInvitesCount} invites failed to send.`
+              : `Team created, but ${failedInvitesCount} of ${invitees.length} invites failed.`;
+          toast.error(message);
+        }
+
         return newTeamId;
       } catch (err) {
         const errorMessage =
@@ -91,4 +113,4 @@ export function useTeamInvite({
     isCreatingTeam,
     error,
   };
-}
+};

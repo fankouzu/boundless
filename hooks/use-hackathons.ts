@@ -31,7 +31,7 @@ export interface UseHackathonsOptions {
     search?: string;
   };
   participantFilters?: {
-    status?: 'submitted' | 'shortlisted' | 'disqualified';
+    status?: 'submitted' | 'not_submitted' | 'shortlisted' | 'disqualified';
     type?: 'individual' | 'team';
     search?: string;
   };
@@ -228,7 +228,6 @@ export function useHackathons(
           organizationId, // Add organization filter
         });
 
-        console.trace('response.data', response.data?.hackathons);
         setHackathons(response.data?.hackathons || []);
         setHackathonsPagination({
           currentPage: response.data?.pagination.page || 1,

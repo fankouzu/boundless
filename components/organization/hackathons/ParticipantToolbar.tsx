@@ -22,14 +22,16 @@ interface ParticipantToolbarProps {
   currentView: 'grid' | 'table';
 }
 
-export function ParticipantToolbar({
+export const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
   onSearchChange,
   onStatusFilterChange,
   onTypeFilterChange,
   onViewChange,
   currentView,
-}: ParticipantToolbarProps) {
+}) => {
   const [searchValue, setSearchValue] = React.useState('');
+  const [statusFilter, setStatusFilter] = React.useState('all');
+  const [typeFilter, setTypeFilter] = React.useState('all');
   const debouncedSearch = useDebounce(searchValue, 500);
 
   React.useEffect(() => {
@@ -38,8 +40,20 @@ export function ParticipantToolbar({
 
   const handleReset = () => {
     setSearchValue('');
+    setStatusFilter('all');
+    setTypeFilter('all');
     onStatusFilterChange('all');
     onTypeFilterChange('all');
+  };
+
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value);
+    onStatusFilterChange(value);
+  };
+
+  const handleTypeChange = (value: string) => {
+    setTypeFilter(value);
+    onTypeFilterChange(value);
   };
 
   return (
@@ -56,7 +70,7 @@ export function ParticipantToolbar({
 
       <div className='flex flex-wrap items-center gap-3'>
         <div className='w-[140px]'>
-          <Select onValueChange={onStatusFilterChange} defaultValue='all'>
+          <Select onValueChange={handleStatusChange} value={statusFilter}>
             <SelectTrigger className='bg-background-card border-gray-800 text-xs text-white'>
               <SelectValue placeholder='Status' />
             </SelectTrigger>
@@ -70,7 +84,7 @@ export function ParticipantToolbar({
         </div>
 
         <div className='w-[140px]'>
-          <Select onValueChange={onTypeFilterChange} defaultValue='all'>
+          <Select onValueChange={handleTypeChange} value={typeFilter}>
             <SelectTrigger className='bg-background-card border-gray-800 text-xs text-white'>
               <SelectValue placeholder='Type' />
             </SelectTrigger>
@@ -125,4 +139,4 @@ export function ParticipantToolbar({
       </div>
     </div>
   );
-}
+};

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import SubmissionActionButtons from './SubmissionActionButtons';
 import RejectSubmissionModal from './RejectSubmissionModal';
 import { SubmissionModalHeader } from './ReviewSubmissionModal/SubmissionModalHeader';
@@ -106,7 +106,7 @@ export default function ReviewSubmissionModal({
         className='bg-background-card flex h-fit max-h-[95vh] min-h-[85vh] w-full max-w-[1400px]! gap-0! overflow-hidden border-gray-900/60 p-0 shadow-2xl'
         showCloseButton={false}
       >
-        <div className='h- flex w-full flex-col'>
+        <div className='flex w-full flex-col'>
           <SubmissionModalHeader
             currentIndex={currentSubmissionIndex}
             totalSubmissions={submissions.length}

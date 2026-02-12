@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { VideoPlayer } from './VideoPlayer';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Star } from 'lucide-react';
 
 interface Submission {

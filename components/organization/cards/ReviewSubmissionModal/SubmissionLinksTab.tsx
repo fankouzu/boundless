@@ -3,7 +3,7 @@
 import React from 'react';
 import { ArrowUpRight, Github, Twitter, Globe, Link2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 interface SubmissionLinksTabProps {
   links?: Array<{ type: string; url: string }>;

@@ -32,13 +32,13 @@ interface ParticipantsGridProps {
   loading?: boolean;
 }
 
-export function ParticipantsGrid({
+export const ParticipantsGrid: React.FC<ParticipantsGridProps> = ({
   data,
   onReview,
   onViewTeam,
   onGrade,
   loading,
-}: ParticipantsGridProps) {
+}) => {
   if (loading) {
     return (
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
@@ -246,4 +246,4 @@ export function ParticipantsGrid({
       })}
     </div>
   );
-}
+};

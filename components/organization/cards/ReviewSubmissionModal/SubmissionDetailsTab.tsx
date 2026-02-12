@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 interface SubmissionDetailsTabProps {
   projectName: string;

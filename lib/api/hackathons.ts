@@ -2508,7 +2508,6 @@ export const getMyTeam = async (
   }
 
   const res = await api.get(url);
-  console.trace(res);
 
   if (res.data.success && res.data.data) {
     let teamData: TeamRecruitmentPost | null = null;
