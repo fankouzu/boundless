@@ -117,7 +117,8 @@ export const calculateTimelineStatus = (
     judgingEnd;
 
   // Judging phase (from judgingStart to judgingEnd)
-  if (judgingStart && judgingEnd) {
+  // Only create if explicitly set and has non-zero duration
+  if (judgingStart && judgingEnd && judgingStart !== judgingEnd) {
     phases.push({
       name: 'Judging',
       startDate: judgingStart,
@@ -133,7 +134,8 @@ export const calculateTimelineStatus = (
   }
 
   // Winner Announcement phase (from judgingEnd to winnersAnnouncedAt)
-  if (judgingEnd && winnersAnnouncedAt) {
+  // Only create if explicitly set and has non-zero duration
+  if (judgingEnd && winnersAnnouncedAt && judgingEnd !== winnersAnnouncedAt) {
     phases.push({
       name: 'Winner Announcement',
       startDate: judgingEnd,
