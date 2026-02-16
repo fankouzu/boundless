@@ -23,7 +23,7 @@ export const TIMEZONES = [
   { label: 'UTC (Coordinated Universal Time)', value: 'UTC' },
   // Americas - North America
   { label: 'EST (Eastern Standard Time)', value: 'America/New_York' },
-  { label: 'CST (Central Standard Time)', value: 'America/Chicago' },
+  { label: 'US Central Standard Time (CST)', value: 'America/Chicago' },
   { label: 'MST (Mountain Standard Time)', value: 'America/Denver' },
   { label: 'PST (Pacific Standard Time)', value: 'America/Los_Angeles' },
   { label: 'AKST (Alaska Standard Time)', value: 'America/Anchorage' },
@@ -45,14 +45,14 @@ export const TIMEZONES = [
   { label: 'EAT (East Africa Time)', value: 'Africa/Nairobi' },
   { label: 'WAT (West Africa Time)', value: 'Africa/Lagos' },
   { label: 'SAST (South Africa Standard Time)', value: 'Africa/Johannesburg' },
-  { label: 'IST (India Standard Time)', value: 'Asia/Kolkata' },
   { label: 'GST (Gulf Standard Time)', value: 'Asia/Dubai' },
 
   // Asia
   { label: 'ICT (Indochina Time)', value: 'Asia/Bangkok' },
+  { label: 'IST (India Standard Time)', value: 'Asia/Kolkata' },
   { label: 'SGT (Singapore Time)', value: 'Asia/Singapore' },
   { label: 'HKT (Hong Kong Time)', value: 'Asia/Hong_Kong' },
-  { label: 'CST (China Standard Time)', value: 'Asia/Shanghai' },
+  { label: 'China Standard Time (CST)', value: 'Asia/Shanghai' },
   { label: 'JST (Japan Standard Time)', value: 'Asia/Tokyo' },
   { label: 'KST (Korea Standard Time)', value: 'Asia/Seoul' },
 

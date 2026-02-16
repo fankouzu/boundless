@@ -100,16 +100,11 @@ export const useHackathonPublish = ({
       // The backend now handles the custodial wallet and escrow logic
       const response = await publishDraftAction(draftId, organizationId);
 
-      console.log('Publish response received:', response);
-
       // Handle different response formats
       // Could be: { success, message, data: {...} } or direct Hackathon object
       let hackathon = response;
 
-      console.log('Extracted hackathon data:', hackathon);
-
       if (!hackathon || !hackathon.id) {
-        console.error('Invalid hackathon data:', hackathon);
         throw new Error('Invalid publish response: missing hackathon ID');
       }
 
@@ -123,7 +118,6 @@ export const useHackathonPublish = ({
         transactionHash: hackathon.transactionHash || null,
       };
 
-      console.log('Setting publish response:', responseData);
       setPublishResponse(responseData);
 
       // Show success toast with hackathon ID
@@ -139,7 +133,6 @@ export const useHackathonPublish = ({
         errorMessage = error.message;
       }
 
-      console.error('Publish error:', error);
       toast.error(errorMessage);
       throw error;
     } finally {

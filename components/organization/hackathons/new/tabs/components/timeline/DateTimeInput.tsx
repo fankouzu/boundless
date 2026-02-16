@@ -69,7 +69,15 @@ export default function DateTimeInput({
             mode='single'
             selected={field.value}
             onSelect={field.onChange}
-            disabled={disabledPast ? date => date < new Date() : undefined}
+            disabled={
+              disabledPast
+                ? date => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return date < today;
+                  }
+                : undefined
+            }
             initialFocus
           />
         </PopoverContent>

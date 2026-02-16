@@ -9,6 +9,7 @@ import {
 import { BoundlessButton } from '@/components/buttons';
 import { Check, Building2, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { NETWORKS, getCurrentNetwork } from '@/lib/wallet-utils';
 import type { PublishResponseData } from '@/hooks/use-hackathon-publish';
 
 interface HackathonPublishedModalProps {
@@ -27,7 +28,7 @@ export default function HackathonPublishedModal({
   const router = useRouter();
 
   const handleViewHackathon = () => {
-    if (publishResponse?.id) {
+    if (publishResponse?.slug) {
       onOpenChange(false);
       router.push(`/hackathons/${publishResponse.slug}`);
     }
@@ -44,11 +45,9 @@ export default function HackathonPublishedModal({
 
   const handleViewEscrow = () => {
     if (publishResponse?.escrowAddress) {
-      window.open(
-        `https://stellar.expert/explorer/testnet/contract/${publishResponse.escrowAddress}`,
-        '_blank',
-        'noopener,noreferrer'
-      );
+      const network = getCurrentNetwork();
+      const explorerUrl = `${NETWORKS[network].explorer}/contract/${publishResponse.escrowAddress}`;
+      window.open(explorerUrl, '_blank', 'noopener,noreferrer');
     }
   };
 

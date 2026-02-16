@@ -72,7 +72,7 @@ export const timelineSchema = z
       });
     }
 
-    if (data.judgingEnd && data.judgingEnd > data.endDate) {
+    if (data.judgingEnd && data.judgingEnd >= data.endDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Judging end must be before hackathon end date',

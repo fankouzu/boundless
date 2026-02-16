@@ -38,7 +38,6 @@ interface ReviewTabProps {
   onSaveDraft?: () => Promise<void>;
   isLoading?: boolean;
   isSavingDraft?: boolean;
-  hackathonUrl?: string;
   organizationId?: string;
   draftId?: string | null;
   publishResponse?: PublishResponseData | null;
@@ -51,7 +50,6 @@ export default function ReviewTab({
   onSaveDraft,
   isLoading = false,
   isSavingDraft = false,
-  hackathonUrl,
   organizationId,
   draftId,
   publishResponse,
@@ -65,9 +63,7 @@ export default function ReviewTab({
 
   // Show published modal only when we have a successful publish response
   useEffect(() => {
-    console.log('ReviewTab - publishResponse changed:', publishResponse);
     if (publishResponse) {
-      console.log('Setting showPublishedModal to true');
       setShowPublishedModal(true);
     }
   }, [publishResponse]);
