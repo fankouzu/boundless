@@ -79,7 +79,7 @@ export default function ReviewTab({
         // Modal will be shown automatically when publishResponse is set via useEffect
       }
     } catch {
-      toast.error('Failed to publish hackathon. Please try again.');
+      // Error is handled in the hook, so we don't need to show another toast
     }
   };
 
