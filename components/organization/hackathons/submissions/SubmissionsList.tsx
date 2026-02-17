@@ -11,6 +11,7 @@ import {
   Trophy,
   MoreHorizontal,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -181,7 +182,13 @@ export function SubmissionsList({
             return (
               <Card
                 key={subData.id}
-                className={`group hover:border-primary/40 relative cursor-pointer overflow-hidden border-gray-800/60 bg-gray-950/40 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] transition-all hover:-translate-y-0.5 hover:bg-gray-900/40 hover:shadow-[0_10px_28px_-20px_rgba(0,0,0,0.55)] ${selectedIds?.includes(subData.id) ? 'border-primary/50 ring-primary/30 ring-1' : ''}`}
+                className={cn(
+                  'group hover:border-primary/40 relative cursor-pointer overflow-hidden border-gray-800/60 bg-gray-950/40 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] transition-all hover:-translate-y-0.5 hover:bg-gray-900/40 hover:shadow-[0_10px_28px_-20px_rgba(0,0,0,0.55)]',
+                  {
+                    'border-primary/50 ring-primary/30 ring-1':
+                      selectedIds?.includes(subData.id),
+                  }
+                )}
                 onClick={() => handleSubmissionClick(subData.id)}
               >
                 <CardContent className='p-4'>
@@ -228,9 +235,11 @@ export function SubmissionsList({
                       </div>
                       <div className='mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400'>
                         {subData.category ? (
-                          <span className='truncate'>{subData.category}</span>
+                          <>
+                            <span className='truncate'>{subData.category}</span>
+                            <span className='text-gray-600'>•</span>
+                          </>
                         ) : null}
-                        <span className='text-gray-600'>•</span>
                         <span className='inline-flex items-center gap-1'>
                           {subData.participationType === 'TEAM' ? (
                             <>

@@ -175,7 +175,7 @@ export const useScoreForm = ({
               comment: overallComment,
             });
 
-      const isSuccess = (response as any)?.success !== false;
+      const isSuccess = response.success !== false;
 
       if (isSuccess) {
         setShowSuccess(true);

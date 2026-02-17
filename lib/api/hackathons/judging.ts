@@ -231,15 +231,13 @@ export interface OverrideSubmissionScoreRequest {
   judgeId?: string;
 }
 
-export interface OverrideSubmissionScoreResponse {
-  success?: boolean;
-  message?: string;
+export interface OverrideSubmissionScoreResponse extends ApiResponse<{
   judgingScore?: unknown;
   complianceChecks?: {
     rubricValid?: boolean;
     isOrganizerOverride?: boolean;
   };
-}
+}> {}
 
 export interface GetJudgingSubmissionsResponse extends ApiResponse<any> {
   success: true;
@@ -566,7 +564,11 @@ export const getJudgingWinners = async (
     } as GetJudgingWinnersResponse;
   }
 
-  return (res.data || {}) as GetJudgingWinnersResponse;
+  return {
+    success: false,
+    data: [],
+    message: 'No winners found or unexpected response format',
+  } as GetJudgingWinnersResponse;
 };
 
 /**
