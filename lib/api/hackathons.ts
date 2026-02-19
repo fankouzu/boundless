@@ -75,8 +75,13 @@ export interface HackathonPhase {
 export interface HackathonTimeline {
   startDate: string; // ISO 8601 date
   submissionDeadline: string; // ISO 8601 date
-  judgingDate: string; // ISO 8601 date
-  winnerAnnouncementDate: string; // ISO 8601 date
+  judgingStart: string; // ISO 8601 date
+  endDate: string; // ISO 8601 date
+  judgingEnd?: string; // ISO 8601 date
+  winnersAnnouncedAt?: string; // ISO 8601 date
+  // Legacy fields for backward compatibility
+  judgingDate?: string; // ISO 8601 date
+  winnerAnnouncementDate?: string; // ISO 8601 date
   timezone: string;
   phases?: HackathonPhase[];
 }
@@ -128,6 +133,8 @@ export interface HackathonRewards {
 
 // Judging Tab Types
 export interface JudgingCriterion {
+  id?: string;
+  name?: string;
   title: string;
   weight: number; // 0-100
   description?: string;
@@ -230,6 +237,7 @@ export interface HackathonSubmission {
 
 export interface ReviewSubmissionRequest {
   status: 'SHORTLISTED' | 'SUBMITTED';
+  judgeId: string;
   notes?: string;
   rank?: number;
 }
@@ -241,6 +249,7 @@ export interface ReviewSubmissionResponse {
 
 export interface DisqualifySubmissionRequest {
   disqualificationReason: string;
+  judgeId: string;
 }
 
 export interface DisqualifySubmissionResponse {
@@ -251,6 +260,7 @@ export interface DisqualifySubmissionResponse {
 export interface BulkActionRequest {
   submissionIds: string[];
   action: 'SHORTLISTED' | 'SUBMITTED' | 'DISQUALIFIED';
+  judgeId: string;
   reason?: string;
 }
 
@@ -437,7 +447,8 @@ export type Hackathon = {
 
   contractId?: string;
   escrowAddress?: string;
-  transactionHash?: string;
+  transactionHash?: string | null;
+  message?: string;
   escrowDetails?: object;
 };
 
@@ -1182,7 +1193,7 @@ export const publishDraft = async (
     `/organizations/${organizationId}/hackathons/draft/${draftId}/publish`
   );
 
-  return res.data.data as PublishHackathonResponse;
+  return res.data as unknown as PublishHackathonResponse;
 };
 
 /**
@@ -1411,10 +1422,11 @@ export const getJudgingSubmissions = async (
   const params = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),
+    status: 'SHORTLISTED',
   });
 
   const res = await api.get(
-    `/organizations/${organizationId}/hackathons/${hackathonId}/judging/submissions?${params.toString()}`
+    `/hackathons/${hackathonId}/submissions?${params.toString()}`
   );
   return res.data;
 };
@@ -1721,6 +1733,9 @@ export const getMySubmission = async (
 
 /**
  * Get submission details by ID
+ * Returns full submission with votes and comments
+ */
+/**
  * Returns full submission with votes and comments
  */
 export const getSubmissionDetails = async (
