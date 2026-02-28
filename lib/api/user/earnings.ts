@@ -3,18 +3,19 @@ import { ApiResponse } from '../types';
 
 export interface EarningActivity {
   id: string;
-  source: 'hackathon' | 'grant' | 'crowdfund' | 'bounty';
+  source: 'hackathons' | 'grants' | 'crowdfunding' | 'bounties';
   title: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'completed' | 'claimable';
-  createdAt: string;
+  occurredAt: string;
 }
 
 export interface EarningsData {
-  totalEarned: number;
-  pendingWithdrawal: number;
-  completedWithdrawal: number;
+  summary: {
+    totalEarned: number;
+    pendingWithdrawal: number;
+    completedWithdrawal: number;
+  };
   breakdown: {
     hackathons: number;
     grants: number;
@@ -52,7 +53,12 @@ export const getUserEarnings = async (): Promise<GetEarningsResponse> => {
 /**
  * Claim a specific earning
  */
-export const claimEarning = async (data: ClaimEarningRequest): Promise<ClaimEarningResponse> => {
-  const res = await api.post<ClaimEarningResponse>('/user/earnings/claim', data);
+export const claimEarning = async (
+  data: ClaimEarningRequest
+): Promise<ClaimEarningResponse> => {
+  const res = await api.post<ClaimEarningResponse>(
+    '/user/earnings/claim',
+    data
+  );
   return res.data;
 };
