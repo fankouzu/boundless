@@ -20,6 +20,116 @@ import { getUserEarnings, claimEarning, EarningsData, EarningActivity } from '@/
 import { toast } from 'sonner';
 
 /**
+ * Interface for SummaryCard props.
+ */
+interface SummaryCardProps {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  description: string;
+}
+
+/**
+ * SummaryCard component for displaying high-level stats.
+ */
+const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, description }) => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      {icon}
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">{value}</div>
+      <p className="text-xs text-muted-foreground mt-1">{description}</p>
+    </CardContent>
+  </Card>
+);
+
+/**
+ * Interface for BreakdownItem props.
+ */
+interface BreakdownItemProps {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+}
+
+/**
+ * BreakdownItem component for showing source-specific earnings.
+ */
+const BreakdownItem: React.FC<BreakdownItemProps> = ({ label, value, icon }) => (
+  <div className="flex items-center justify-between group">
+    <div className="flex items-center gap-3">
+      <div className="p-2 rounded-md bg-muted group-hover:bg-primary/10 transition-colors">
+        {icon}
+      </div>
+      <span className="font-medium">{label}</span>
+    </div>
+    <span className="font-semibold">${value.toLocaleString()}</span>
+  </div>
+);
+
+/**
+ * Interface for ActivityItem props.
+ */
+interface ActivityItemProps {
+  activity: EarningActivity;
+  onClaim: () => void;
+  isClaiming: boolean;
+}
+
+/**
+ * ActivityItem component for displaying a single reward entry.
+ */
+const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onClaim, isClaiming }) => (
+  <div className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
+    <div className="space-y-1">
+      <div className="font-semibold flex items-center gap-2">
+        {activity.title}
+        <Badge variant={activity.status === 'completed' ? 'default' : activity.status === 'pending' ? 'secondary' : 'outline'}>
+          {activity.status}
+        </Badge>
+      </div>
+      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+        <span className="capitalize">{activity.source}</span>
+        <span>•</span>
+        <span>{new Date(activity.createdAt).toLocaleDateString()}</span>
+      </div>
+    </div>
+    <div className="text-right space-y-2">
+      <p className="font-bold text-lg">${activity.amount.toLocaleString()}</p>
+      {activity.status === 'claimable' && (
+        <Button size="sm" onClick={onClaim} disabled={isClaiming}>
+          {isClaiming ? 'Claiming...' : 'Claim'}
+          <IconArrowUpRight className="ml-1 h-3 w-3" />
+        </Button>
+      )}
+    </div>
+  </div>
+);
+
+/**
+ * EarningsSkeleton component for loading states.
+ */
+const EarningsSkeleton: React.FC = () => (
+  <div className="container mx-auto py-8 space-y-8">
+    <div className="space-y-2">
+      <Skeleton className="h-10 w-[250px]" />
+      <Skeleton className="h-6 w-[350px]" />
+    </div>
+    <div className="grid gap-4 md:grid-cols-3">
+      <Skeleton className="h-[120px] rounded-xl" />
+      <Skeleton className="h-[120px] rounded-xl" />
+      <Skeleton className="h-[120px] rounded-xl" />
+    </div>
+    <div className="grid gap-8 md:grid-cols-7">
+      <Skeleton className="md:col-span-3 h-[400px] rounded-xl" />
+      <Skeleton className="md:col-span-4 h-[400px] rounded-xl" />
+    </div>
+  </div>
+);
+
+/**
  * EarningsPage component for managing and tracking user rewards.
  */
 const EarningsPage: React.FC = () => {
@@ -73,7 +183,13 @@ const EarningsPage: React.FC = () => {
     return <EarningsSkeleton />;
   }
 
-  if (!data) return <div>No data found.</div>;
+  if (!data) {
+    return (
+      <div className="container mx-auto py-8">
+        <p className="text-center text-muted-foreground py-8">No earnings data found.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 space-y-8">
@@ -150,83 +266,5 @@ const EarningsPage: React.FC = () => {
     </div>
   );
 };
-
-function SummaryCard({ title, value, icon, description }: { title: string, value: string, icon: React.ReactNode, description: string }) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function BreakdownItem({ label, value, icon }: { label: string, value: number, icon: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between group">
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-md bg-muted group-hover:bg-primary/10 transition-colors">
-          {icon}
-        </div>
-        <span className="font-medium">{label}</span>
-      </div>
-      <span className="font-semibold">${value.toLocaleString()}</span>
-    </div>
-  );
-}
-
-function ActivityItem({ activity, onClaim, isClaiming }: { activity: EarningActivity, onClaim: () => void, isClaiming: boolean }) {
-  return (
-    <div className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-      <div className="space-y-1">
-        <div className="font-semibold flex items-center gap-2">
-          {activity.title}
-          <Badge variant={activity.status === 'completed' ? 'default' : activity.status === 'pending' ? 'secondary' : 'outline'}>
-            {activity.status}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <span className="capitalize">{activity.source}</span>
-          <span>•</span>
-          <span>{new Date(activity.createdAt).toLocaleDateString()}</span>
-        </div>
-      </div>
-      <div className="text-right space-y-2">
-        <p className="font-bold text-lg">${activity.amount.toLocaleString()}</p>
-        {activity.status === 'claimable' && (
-          <Button size="sm" onClick={onClaim} disabled={isClaiming}>
-            {isClaiming ? 'Claiming...' : 'Claim'}
-            <IconArrowUpRight className="ml-1 h-3 w-3" />
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function EarningsSkeleton() {
-  return (
-    <div className="container mx-auto py-8 space-y-8">
-      <div className="space-y-2">
-        <Skeleton className="h-10 w-[250px]" />
-        <Skeleton className="h-6 w-[350px]" />
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        <Skeleton className="h-[120px] rounded-xl" />
-        <Skeleton className="h-[120px] rounded-xl" />
-        <Skeleton className="h-[120px] rounded-xl" />
-      </div>
-      <div className="grid gap-8 md:grid-cols-7">
-        <Skeleton className="md:col-span-3 h-[400px] rounded-xl" />
-        <Skeleton className="md:col-span-4 h-[400px] rounded-xl" />
-      </div>
-    </div>
-  );
-}
 
 export default EarningsPage;
