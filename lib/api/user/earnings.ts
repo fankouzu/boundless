@@ -1,4 +1,4 @@
-import api from '../api';
+import { api } from '../api';
 import { ApiResponse } from '../types';
 
 export interface EarningActivity {
@@ -45,7 +45,7 @@ export interface ClaimEarningResponse extends ApiResponse {
  * Get user earnings data
  */
 export const getUserEarnings = async (): Promise<GetEarningsResponse> => {
-  const res = await api.get('/user/earnings');
+  const res = await api.get<GetEarningsResponse>('/user/earnings');
   return res.data;
 };
 
@@ -53,6 +53,6 @@ export const getUserEarnings = async (): Promise<GetEarningsResponse> => {
  * Claim a specific earning
  */
 export const claimEarning = async (data: ClaimEarningRequest): Promise<ClaimEarningResponse> => {
-  const res = await api.post('/user/earnings/claim', data);
+  const res = await api.post<ClaimEarningResponse>('/user/earnings/claim', data);
   return res.data;
 };

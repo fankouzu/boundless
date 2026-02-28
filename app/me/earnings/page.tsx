@@ -19,7 +19,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getUserEarnings, claimEarning, EarningsData, EarningActivity } from '@/lib/api/user/earnings';
 import { toast } from 'sonner';
 
-export default function EarningsPage() {
+/**
+ * EarningsPage component for managing and tracking user rewards.
+ */
+const EarningsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<EarningsData | null>(null);
   const [claimingId, setClaimingId] = useState<string | null>(null);
@@ -41,6 +44,9 @@ export default function EarningsPage() {
     fetchData();
   }, []);
 
+  /**
+   * Handles the claiming of a specific earning activity.
+   */
   const handleClaim = async (id: string) => {
     setClaimingId(id);
     try {
@@ -49,11 +55,14 @@ export default function EarningsPage() {
         toast.success('Claim successful!');
         // Refresh data
         const updated = await getUserEarnings();
-        if (updated.data) setData(updated.data);
+        if (updated.success && updated.data) {
+          setData(updated.data);
+        }
       } else {
         toast.error(res.message || 'Claim failed');
       }
     } catch (error) {
+      console.error('Failed to claim earning:', error);
       toast.error('An error occurred during claiming');
     } finally {
       setClaimingId(null);
@@ -140,7 +149,7 @@ export default function EarningsPage() {
       </div>
     </div>
   );
-}
+};
 
 function SummaryCard({ title, value, icon, description }: { title: string, value: string, icon: React.ReactNode, description: string }) {
   return (
@@ -175,12 +184,12 @@ function ActivityItem({ activity, onClaim, isClaiming }: { activity: EarningActi
   return (
     <div className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
       <div className="space-y-1">
-        <p className="font-semibold flex items-center gap-2">
+        <div className="font-semibold flex items-center gap-2">
           {activity.title}
-          <Badge variant={activity.status === 'completed' ? 'success' : activity.status === 'pending' ? 'secondary' : 'default'}>
+          <Badge variant={activity.status === 'completed' ? 'default' : activity.status === 'pending' ? 'secondary' : 'outline'}>
             {activity.status}
           </Badge>
-        </p>
+        </div>
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <span className="capitalize">{activity.source}</span>
           <span>•</span>
@@ -219,3 +228,5 @@ function EarningsSkeleton() {
     </div>
   );
 }
+
+export default EarningsPage;
