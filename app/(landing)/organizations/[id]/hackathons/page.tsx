@@ -104,14 +104,9 @@ export default function HackathonsPage() {
     onSuccess: () => {
       // Refresh the hackathons list after successful deletion
       refetchAll();
-      toast.success('Hackathon deleted successfully', {
-        description: `"${hackathonToDelete?.title}" has been permanently deleted.`,
-      });
     },
-    onError: error => {
-      toast.error('Failed to delete hackathon', {
-        description: error,
-      });
+    onError: _error => {
+      // Error handled by hook's internal toast
     },
   });
 

@@ -26,14 +26,17 @@ export function useDeleteHackathon({
   const [error, setError] = useState<string | null>(null);
 
   const deleteHackathonAction = useCallback(async () => {
+    const targetLabel = isDraft ? 'draft' : 'hackathon';
+    
     if (!isAuthenticated) {
-      toast.error('Please sign in to delete hackathons');
+      toast.error(`Please sign in to delete ${targetLabel}s`);
       throw new Error('Authentication required');
     }
 
     if (!organizationId || !hackathonId) {
-      toast.error('Organization ID and Hackathon ID are required');
-      throw new Error('Organization ID and Hackathon ID are required');
+      const idError = `Organization ID and ${isDraft ? 'Draft' : 'Hackathon'} ID are required`;
+      toast.error(idError);
+      throw new Error(idError);
     }
 
     setIsDeleting(true);
@@ -49,11 +52,11 @@ export function useDeleteHackathon({
         onSuccess?.();
         return response.data;
       } else {
-        throw new Error(response.message || `Failed to delete ${isDraft ? 'draft' : 'hackathon'}`);
+        throw new Error(response.message || `Failed to delete ${targetLabel}`);
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : `Failed to delete ${isDraft ? 'draft' : 'hackathon'}`;
+        err instanceof Error ? err.message : `Failed to delete ${targetLabel}`;
       setError(errorMessage);
       toast.error(errorMessage);
       onError?.(errorMessage);
