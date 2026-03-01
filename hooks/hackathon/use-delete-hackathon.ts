@@ -27,7 +27,7 @@ export function useDeleteHackathon({
 
   const deleteHackathonAction = useCallback(async () => {
     const targetLabel = isDraft ? 'draft' : 'hackathon';
-    
+
     if (!isAuthenticated) {
       toast.error(`Please sign in to delete ${targetLabel}s`);
       throw new Error('Authentication required');
@@ -43,7 +43,7 @@ export function useDeleteHackathon({
     setError(null);
 
     try {
-      const response = isDraft 
+      const response = isDraft
         ? await deleteDraft(organizationId, hackathonId)
         : await deleteHackathon(hackathonId);
 
