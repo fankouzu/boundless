@@ -4,50 +4,51 @@ import { deleteDraft } from '@/lib/api/hackathons/draft';
 import { useAuthStatus } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 
-interface UseDeleteHackathonOptions {
-  organizationId: string;
-  hackathonId: string;
-  isDraft?: boolean;
-  onSuccess?: () => void;
-  onError?: (error: string) => void;
-}
+type UseDeleteHackathonOptions =
+  | {
+      isDraft: true;
+      organizationId: string;
+      hackathonId: string;
+      onSuccess?: () => void;
+      onError?: (error: string) => void;
+    }
+  | {
+      isDraft?: false;
+      organizationId?: string;
+      hackathonId: string;
+      onSuccess?: () => void;
+      onError?: (error: string) => void;
+    };
 
 /**
  * Hook to handle hackathon and draft deletion with proper API routing and feedback.
  */
-export const useDeleteHackathon = ({
-  organizationId,
-  hackathonId,
-  isDraft = false,
-  onSuccess,
-  onError,
-}: UseDeleteHackathonOptions) => {
+export const useDeleteHackathon = (options: UseDeleteHackathonOptions) => {
+  const { isDraft = false, organizationId, hackathonId, onSuccess, onError } = options;
   const { isAuthenticated } = useAuthStatus();
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const deleteHackathonAction = useCallback(async () => {
     const targetLabel = isDraft ? 'draft' : 'hackathon';
-    
-    if (!isAuthenticated) {
-      toast.error(`Please sign in to delete ${targetLabel}s`);
-      throw new Error('Authentication required');
-    }
-
-    if (!hackathonId) {
-      toast.error('Hackathon ID is required');
-      throw new Error('Hackathon ID is required');
-    }
-
-    if (isDraft && !organizationId) {
-      toast.error('Organization ID is required for draft deletion');
-      throw new Error('Organization ID is required for draft deletion');
-    }
+    const idLabel = isDraft ? 'Draft ID' : 'Hackathon ID';
 
     setIsDeleting(true);
     setError(null);
 
     try {
+      if (!isAuthenticated) {
+        throw new Error(`Please sign in to delete ${targetLabel}s`);
+      }
+
+      if (!hackathonId) {
+        throw new Error(`${idLabel} is required`);
+      }
+
+      if (isDraft && !organizationId) {
+        throw new Error('Organization ID is required for draft deletion');
+      }
+
       const response = isDraft 
         ? await deleteDraft(organizationId, hackathonId)
         : await deleteHackathon(hackathonId);
@@ -66,7 +67,7 @@ export const useDeleteHackathon = ({
       console.error(`Error deleting ${targetLabel}:`, err);
       toast.error(errorMessage);
       onError?.(errorMessage);
-      throw err;
+      // We don't re-throw here to allow callers to handle state via hook instead of try/catch
     } finally {
       setIsDeleting(false);
     }
