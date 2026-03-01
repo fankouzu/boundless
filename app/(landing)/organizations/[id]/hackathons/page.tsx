@@ -87,6 +87,7 @@ export default function HackathonsPage() {
   const [hackathonToDelete, setHackathonToDelete] = useState<{
     id: string;
     title: string;
+    isDraft: boolean;
   } | null>(null);
 
   const { hackathons, hackathonsLoading, drafts, draftsLoading, refetchAll } =
@@ -98,7 +99,8 @@ export default function HackathonsPage() {
   // Use the separate delete hook
   const { isDeleting, deleteHackathon } = useDeleteHackathon({
     organizationId,
-    hackathonId: hackathonToDelete?.id || '', // This will be set when we have a hackathon to delete
+    hackathonId: hackathonToDelete?.id || '',
+    isDraft: hackathonToDelete?.isDraft || false,
     onSuccess: () => {
       // Refresh the hackathons list after successful deletion
       refetchAll();
@@ -181,12 +183,12 @@ export default function HackathonsPage() {
   const handleDeleteClick = (hackathonId: string) => {
     const hackathon = allHackathons.find(item => item.data.id === hackathonId);
     if (hackathon) {
-      const title =
-        hackathon.type === 'draft'
+      const isDraft = hackathon.type === 'draft';
+      const title = isDraft
           ? (hackathon.data as HackathonDraft).data.information?.name ||
             'Untitled Hackathon'
           : (hackathon.data as Hackathon).name || 'Untitled Hackathon';
-      setHackathonToDelete({ id: hackathonId, title });
+      setHackathonToDelete({ id: hackathonId, title, isDraft });
       setDeleteDialogOpen(true);
     }
   };

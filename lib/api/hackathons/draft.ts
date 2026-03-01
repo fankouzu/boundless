@@ -119,3 +119,16 @@ export const getDrafts = async (
 
   return res.data as GetDraftsResponse;
 };
+
+/**
+ * Delete a hackathon draft
+ */
+export const deleteDraft = async (
+  organizationId: string,
+  draftId: string
+): Promise<ApiResponse<void>> => {
+  const res = await api.delete<ApiResponse<void>>(
+    `/organizations/${organizationId}/hackathons/draft/${draftId}`
+  );
+  return res.data;
+};

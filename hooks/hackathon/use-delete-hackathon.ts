@@ -2,12 +2,14 @@
 
 import { useState, useCallback } from 'react';
 import { deleteHackathon } from '@/lib/api/hackathons';
+import { deleteDraft } from '@/lib/api/hackathons/draft';
 import { useAuthStatus } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 
 interface UseDeleteHackathonOptions {
   organizationId: string;
   hackathonId: string;
+  isDraft?: boolean;
   onSuccess?: () => void;
   onError?: (error: string) => void;
 }
@@ -15,6 +17,7 @@ interface UseDeleteHackathonOptions {
 export function useDeleteHackathon({
   organizationId,
   hackathonId,
+  isDraft = false,
   onSuccess,
   onError,
 }: UseDeleteHackathonOptions) {
@@ -37,18 +40,20 @@ export function useDeleteHackathon({
     setError(null);
 
     try {
-      const response = await deleteHackathon(hackathonId);
+      const response = isDraft 
+        ? await deleteDraft(organizationId, hackathonId)
+        : await deleteHackathon(hackathonId);
 
       if (response.success) {
-        toast.success('Hackathon deleted successfully');
+        toast.success(`${isDraft ? 'Draft' : 'Hackathon'} deleted successfully`);
         onSuccess?.();
         return response.data;
       } else {
-        throw new Error(response.message || 'Failed to delete hackathon');
+        throw new Error(response.message || `Failed to delete ${isDraft ? 'draft' : 'hackathon'}`);
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to delete hackathon';
+        err instanceof Error ? err.message : `Failed to delete ${isDraft ? 'draft' : 'hackathon'}`;
       setError(errorMessage);
       toast.error(errorMessage);
       onError?.(errorMessage);
@@ -56,7 +61,7 @@ export function useDeleteHackathon({
     } finally {
       setIsDeleting(false);
     }
-  }, [organizationId, hackathonId, isAuthenticated, onSuccess, onError]);
+  }, [organizationId, hackathonId, isDraft, isAuthenticated, onSuccess, onError]);
 
   return {
     isDeleting,
